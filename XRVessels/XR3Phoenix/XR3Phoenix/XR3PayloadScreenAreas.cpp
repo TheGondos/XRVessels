@@ -118,7 +118,7 @@ bool SelectPayloadSlotArea::Redraw2D(const int event, const SURFHANDLE surf)
         if (pSlot->GetLevel() != activeLevel)
             continue;
         
-        DWORD dwBorderColor = 0;    // NONE
+        uint32_t dwBorderColor = 0;    // NONE
         const VESSEL *pChild = pSlot->GetChild();     // may be null
 
         // NOTE: we apply these tests in order of precedence

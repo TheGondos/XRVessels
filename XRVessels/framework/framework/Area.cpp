@@ -29,6 +29,7 @@
 // ==============================================================
 
 #include "Area.h"
+#include <cassert>
 
 // Constructor
 // Note: default for m_vcPanelTextureID = -1, which means "none"
@@ -59,10 +60,9 @@ RECT Area::GetRectForSize(const int sizeX, const int sizeY)
 }
 
 // Load a bitmap resource and return an Orbiter surface handle.  
-SURFHANDLE Area::CreateSurface(const int resourceID) const
+SURFHANDLE Area::CreateSurface(const char *resourceID) const
 {
-    const HINSTANCE hDLL = GetVessel().GetModuleHandle();
-    return oapiCreateSurface(LoadBitmap(hDLL, MAKEINTRESOURCE (resourceID)));
+    return oapiLoadTexture(resourceID);
 }
 
 // Destroy (free) an Orbiter surface and set the variable containing the surface value to 0
@@ -86,7 +86,7 @@ void Area::TriggerRedraw()
 // the default activate method currently only sets our active flag, which is mainly used by assertion checks
 void Area::Activate()
 {
-    _ASSERTE(!IsActive());  // ensure that the subclass remembered to invoke its superclass's Deactivate method
+    assert(!IsActive());  // ensure that the subclass remembered to invoke its superclass's Deactivate method
     m_isActive = true;
 }
 
@@ -94,7 +94,7 @@ void Area::Activate()
 // and clears the active flag, which is mainly used by assertion checks
 void Area::Deactivate()
 {
-    _ASSERTE(IsActive());  // ensure that the subclass remembered to invoke its superclass's Activate method
+    assert(IsActive());  // ensure that the subclass remembered to invoke its superclass's Activate method
     m_isActive = false;
 
     // destroy surfaces and set handles to 0 (either or both of these may be zero)
@@ -109,15 +109,15 @@ SURFHANDLE Area::GetMeshTextureHandle(const int meshTextureID) const
     // We never use a valid meshTextureID of < 0, so it is good to trap that here because
     // it means we tried to use an area in the VC that does not have a mesh texture handle passed in to
     // the Area constructor.
-    _ASSERTE(meshTextureID >= 0);
+    assert(meshTextureID >= 0);
 
     // Have our parent vessel translate the arbitrary, vessel-specific meshTextureID to an actual 
     // texture index from the vessel's .msh file.
     MESHHANDLE hMesh;  // initialized by MeshTextureIDToTextureIndex below (passed by ref)
-    const DWORD dwTextureIndex = GetVessel().MeshTextureIDToTextureIndex(meshTextureID, hMesh);
+    const int dwTextureIndex = GetVessel().MeshTextureIDToTextureIndex(meshTextureID, hMesh);
     SURFHANDLE hSurf = oapiGetTextureHandle(hMesh, dwTextureIndex);
 
-    _ASSERTE(hSurf != nullptr);
+    assert(hSurf != nullptr);
     return hSurf;
 }
 
@@ -143,12 +143,13 @@ SURFHANDLE Area::GetMeshTextureHandle(const int meshTextureID) const
 */
 
 // replaces oapiSetSurfaceColourKey; as a sanity check, we should never call this with ck == 0 (no transparency)
-void Area::SetSurfaceColorKey(const SURFHANDLE surf, const DWORD ck)
+
+void Area::SetSurfaceColorKey(const SURFHANDLE surf, uint32_t ck)
 {
     oapiSetSurfaceColourKey(surf, ck);  // we set transparency on the NORMAL surface here, never the CACHED surface
-    _ASSERTE(ck != 0);
+    assert(ck != 0);
 }
-
+/*
 // replaces oapiGetDC
 HDC Area::GetDC(const SURFHANDLE surf)
 {
@@ -160,3 +161,4 @@ void Area::ReleaseDC(const SURFHANDLE surf, const HDC hDC)
 {
     oapiReleaseDC(surf, hDC);
 }
+*/

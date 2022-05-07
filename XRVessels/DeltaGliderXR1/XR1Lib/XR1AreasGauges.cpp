@@ -22,6 +22,7 @@
 // must be included BEFORE XR1Areas.h
 #include "DeltaGliderXR1.h"
 #include "XR1Areas.h"
+#include "Bitmaps.h"
 
 //----------------------------------------------------------------------------------
 
@@ -55,7 +56,7 @@ void IndicatorGaugeArea::Activate()
     m_redIndicatorSurface = CreateSurface(IDB_RED_INDICATOR2);  // red indicator arrows
     m_yellowIndicatorSurface = CreateSurface(IDB_YELLOW_INDICATOR2);  // yellow indicator arrows
 
-    DWORD white = 0xFFFFFF;           // set WHITE as transparent color (Note: to use black, set 0xFF000000, not 0!)
+    uint32_t white = 0xFFFFFF;           // set WHITE as transparent color (Note: to use black, set 0xFF000000, not 0!)
     SetSurfaceColorKey(m_mainSurface, white);
     SetSurfaceColorKey(m_redIndicatorSurface, white);
     SetSurfaceColorKey(m_yellowIndicatorSurface, white);
@@ -299,15 +300,15 @@ void AnalogGaugeArea::Activate()
     }
     m_lastIndicatorAngle = m_initialAngle;
 
-    m_pen0 = CreatePen(PS_SOLID, 1, RGB(224, 224, 224));
-    m_pen1 = CreatePen(PS_SOLID, 3, RGB(164, 164, 164));
+    m_pen0 = oapiCreatePen(1, 1, oapiGetColour(224, 224, 224));
+    m_pen1 = oapiCreatePen(1, 3, oapiGetColour(164, 164, 164));
 }
 
 void AnalogGaugeArea::Deactivate()
 {
     // clean up our resources
-    DeleteObject(m_pen0);
-    DeleteObject(m_pen1);
+    oapiReleasePen(m_pen0);
+    oapiReleasePen(m_pen1);
 
     XR1Area::Deactivate();  // let superclass clean up
 }
@@ -324,9 +325,9 @@ bool AnalogGaugeArea::Redraw2D(const int event, const SURFHANDLE surf)
     if (forceRedraw || (fabs(dialAngle - m_lastIndicatorAngle) > eps))
     {
         oapiBltPanelAreaBackground(GetAreaID(), surf);
-        HDC hDC = GetDC(surf);
-        DrawNeedle(hDC, 28, 28, 26.0, dialAngle);
-        ReleaseDC(surf, hDC);
+        oapi::Sketchpad *skp = oapiGetSketchpad(surf);
+        DrawNeedle(skp, 28, 28, 26.0, dialAngle);
+        oapiReleaseSketchpad(skp);
         retVal = true;
     }
 
@@ -335,7 +336,7 @@ bool AnalogGaugeArea::Redraw2D(const int event, const SURFHANDLE surf)
 
 // angle = needle angle
 // speed = how fast the dial moves in radians per second.  Default = PI radians per second, or 180 degrees per second
-void AnalogGaugeArea::DrawNeedle(HDC hDC, int x, int y, double rad, double angle, double speed)
+void AnalogGaugeArea::DrawNeedle(oapi::Sketchpad *skp, int x, int y, double rad, double angle, double speed)
 {
     // handle needle response delay
     double dt = oapiGetSimStep();  // delta time since last frame
@@ -350,15 +351,14 @@ void AnalogGaugeArea::DrawNeedle(HDC hDC, int x, int y, double rad, double angle
     m_lastIndicatorAngle = angle;
 
     double dx = rad * cos(angle), dy = rad * sin(angle);
-    HGDIOBJ oldObject = SelectObject(hDC, m_pen1);
-    MoveToEx(hDC, x, y, 0);
-    LineTo(hDC, x + static_cast<int>(0.85 * dx + 0.5), y - static_cast<int>(0.85 * dy + 0.5));
+    auto oldPen = skp->SetPen(m_pen1);
+    skp->MoveTo(x, y);
+    skp->LineTo(x + static_cast<int>(0.85 * dx + 0.5), y - static_cast<int>(0.85 * dy + 0.5));
 
-    SelectObject(hDC, m_pen0);
-    MoveToEx(hDC, x, y, 0);
-    LineTo(hDC, x + static_cast<int>(dx + 0.5), y - static_cast<int>(dy + 0.5));
-
-    SelectObject(hDC, oldObject);    // clean up
+    skp->SetPen(m_pen0);
+    skp->MoveTo(x, y);
+    skp->LineTo(x + static_cast<int>(dx + 0.5), y - static_cast<int>(dy + 0.5));
+    skp->SetPen(oldPen);
 }
 
 //----------------------------------------------------------------------------------
@@ -379,7 +379,7 @@ void AccHorizontalGaugeArea::Activate()
     DestroySurface(&m_mainSurface);
 
     m_mainSurface = CreateSurface(IDB_GREEN_INDICATOR2);  // bright green arrow
-    DWORD white = 0xFFFFFF;           // set WHITE as transparent color; BLACK does not work for some reason!
+    uint32_t white = 0xFFFFFF;           // set WHITE as transparent color; BLACK does not work for some reason!
     SetSurfaceColorKey(m_mainSurface, white);
 }
 

@@ -21,8 +21,6 @@
 
 // ==============================================================
 
-#include "resource.h"
-
 #include "DeltaGliderXR1.h"
 #include "XR1MultiDisplayArea.h"
 
@@ -73,21 +71,21 @@ AttitudeHoldMultiDisplayMode::AttitudeHoldMultiDisplayMode(int modeNumber) :
 
 void AttitudeHoldMultiDisplayMode::Activate()
 {
-    m_backgroundSurface = CreateSurface(IDB_ATTITUDE_HOLD_MULTI_DISPLAY);
+    m_backgroundSurface = CreateSurface("Bitmaps/DeltaGliderXR1/AttitudeHoldMultiDisplay.bmp");
 
-    m_statusFont = CreateFont(12, 0, 0, 0, 600, 0, 0, 0, 0, 0, 0, 0, FF_MODERN, "Microsoft Sans Serif");  // ENGAGED or DISENGAGED
-    m_numberFont = CreateFont(12, 0, 0, 0, 600, 0, 0, 0, 0, 0, 0, 0, FF_MODERN, "Microsoft Sans Serif");  // bank/pitch number text
-    m_buttonFont = CreateFont(12, 0, 0, 0, 600, 0, 0, 0, 0, 0, 0, 0, FF_MODERN, "Microsoft Sans Serif");  // engage/disengage button text
-    m_aoaPitchFont = CreateFont(10, 0, 0, 0, 400, 0, 0, 0, 0, 0, 0, 0, FF_MODERN, "Arial");  // "Hold Pitch", "Hold AOA" text
+    m_statusFont = oapiCreateFont(12, true, "Microsoft Sans Serif", FONT_BOLD);  // ENGAGED or DISENGAGED
+    m_numberFont = oapiCreateFont(12, true, "Microsoft Sans Serif", FONT_BOLD);  // bank/pitch number text
+    m_buttonFont = oapiCreateFont(12, true, "Microsoft Sans Serif", FONT_BOLD);  // engage/disengage button text
+    m_aoaPitchFont = oapiCreateFont(10, true, "Arial", FONT_BOLD);  // "Hold Pitch", "Hold AOA" text
 }
 
 void AttitudeHoldMultiDisplayMode::Deactivate()
 {
     DestroySurface(&m_backgroundSurface);
-    DeleteObject(m_statusFont);
-    DeleteObject(m_numberFont);
-    DeleteObject(m_buttonFont);
-    DeleteObject(m_aoaPitchFont);
+    oapiReleaseFont(m_statusFont);
+    oapiReleaseFont(m_numberFont);
+    oapiReleaseFont(m_buttonFont);
+    oapiReleaseFont(m_aoaPitchFont);
 }
 
 bool AttitudeHoldMultiDisplayMode::Redraw2D(const int event, const SURFHANDLE surf)
@@ -101,15 +99,15 @@ bool AttitudeHoldMultiDisplayMode::Redraw2D(const int event, const SURFHANDLE su
     const COORD2& screenSize = GetScreenSize();
     DeltaGliderXR1::SafeBlt(surf, m_backgroundSurface, 0, 0, 0, 0, screenSize.x, screenSize.y);
 
+    oapi::Sketchpad *skp = oapiGetSketchpad(surf);
     // obtain device context and save existing font
-    HDC hDC = m_pParentMDA->GetDC(surf);
-    HFONT hPrevObject = (HFONT)SelectObject(hDC, m_statusFont); // will render status text first
-    SetBkMode(hDC, TRANSPARENT);
-    SetTextAlign(hDC, TA_LEFT);     // default to LEFT alignment
+    skp->SetFont(m_statusFont);
+    skp->SetBackgroundMode(oapi::Sketchpad::BkgMode::BK_TRANSPARENT);
+    skp->SetTextAlign(oapi::Sketchpad::TAlign_horizontal::LEFT);
 
     // render autopilot status
     const char* pStatus;        // set below
-    COLORREF statusColor;
+    uint32_t statusColor;
     const bool engaged = (GetXR1().m_customAutopilotMode == AUTOPILOT::AP_ATTITUDEHOLD);
     if (engaged && (GetXR1().m_customAutopilotSuspended))
     {
@@ -121,58 +119,56 @@ bool AttitudeHoldMultiDisplayMode::Redraw2D(const int event, const SURFHANDLE su
         pStatus = (engaged ? "ENGAGED" : "DISENGAGED");
         statusColor = (engaged ? CREF(BRIGHT_GREEN) : CREF(BRIGHT_RED));  // use CREF macro to convert to Windows' Blue, Green, Red COLORREF
     }
-    SetTextColor(hDC, statusColor);
-    TextOut(hDC, 46, 24, pStatus, static_cast<int>(strlen(pStatus)));
+    skp->SetTextColor(statusColor);
+    skp->Text(46, 24, pStatus, static_cast<int>(strlen(pStatus)));
 
     // render "Set Pitch" or "Set AOA" text
-    SelectObject(hDC, m_aoaPitchFont);
-    SetTextAlign(hDC, TA_RIGHT);     // RIGHT alignment
+    skp->SetFont(m_aoaPitchFont);
+    skp->SetTextAlign(oapi::Sketchpad::TAlign_horizontal::RIGHT);
     const char* pSetText = (holdAOA ? "SET AOA" : "SET PITCH");
-    SetTextColor(hDC, CREF((holdAOA ? BRIGHT_YELLOW : BRIGHT_GREEN)));
-    TextOut(hDC, 165, 26, pSetText, static_cast<int>(strlen(pSetText)));
-    SetTextAlign(hDC, TA_LEFT);     // restore to default to LEFT alignment
+    skp->SetTextColor(CREF((holdAOA ? BRIGHT_YELLOW : BRIGHT_GREEN)));
+    skp->Text(165, 26, pSetText, static_cast<int>(strlen(pSetText)));
+    skp->SetTextAlign(oapi::Sketchpad::TAlign_horizontal::LEFT);     // restore to default to LEFT alignment
 
     // render button text
-    SelectObject(hDC, m_buttonFont);
+    skp->SetFont(m_buttonFont);
     const char* pEngageDisengage = (engaged ? "Disengage" : "Engage");
-    SetTextColor(hDC, CREF(LIGHT_BLUE));
-    TextOut(hDC, 27, 43, pEngageDisengage, static_cast<int>(strlen(pEngageDisengage)));
+    skp->SetTextColor(CREF(LIGHT_BLUE));
+    skp->Text(27, 43, pEngageDisengage, static_cast<int>(strlen(pEngageDisengage)));
 
     // render ship's current pitch, bank, and AOA
-    SelectObject(hDC, m_numberFont);
-    SetTextColor(hDC, CREF(OFF_WHITE217));
+    skp->SetFont(m_numberFont);
+    skp->SetTextColor(CREF(OFF_WHITE217));
     char temp[15];
-    sprintf(temp, "%+7.2f°", GetVessel().GetPitch() * DEG);
-    TextOut(hDC, 31, 61, temp, static_cast<int>(strlen(temp)));
+    sprintf(temp, "%+7.2fÂ°", GetVessel().GetPitch() * DEG);
+    skp->Text(31, 61, temp, static_cast<int>(strlen(temp)));
 
-    sprintf(temp, "%+7.2f°", GetVessel().GetBank() * DEG);
-    TextOut(hDC, 31, 72, temp, static_cast<int>(strlen(temp)));
+    sprintf(temp, "%+7.2fÂ°", GetVessel().GetBank() * DEG);
+    skp->Text(31, 72, temp, static_cast<int>(strlen(temp)));
 
-    sprintf(temp, "%+7.2f°", GetVessel().GetAOA() * DEG);
-    TextOut(hDC, 98, 61, temp, static_cast<int>(strlen(temp)));
+    sprintf(temp, "%+7.2fÂ°", GetVessel().GetAOA() * DEG);
+    skp->Text(98, 61, temp, static_cast<int>(strlen(temp)));
 
     // render "ZERO PITCH" or "ZERO AOA"
-    SelectObject(hDC, m_aoaPitchFont);
+    skp->SetFont(m_aoaPitchFont);
     const char* pZeroText = (holdAOA ? "ZERO AOA" : "ZERO PITCH");
-    SetTextColor(hDC, CREF((holdAOA ? BRIGHT_YELLOW : BRIGHT_GREEN)));
-    TextOut(hDC, 18, 86, pZeroText, static_cast<int>(strlen(pZeroText)));
+    skp->SetTextColor(CREF((holdAOA ? BRIGHT_YELLOW : BRIGHT_GREEN)));
+    skp->Text(18, 86, pZeroText, static_cast<int>(strlen(pZeroText)));
 
     // render SET pitch/aoa and bank values; these values will be limited to +-90 degrees at the most
-    SelectObject(hDC, m_numberFont);
+    skp->SetFont(m_numberFont);
 
-    SetTextAlign(hDC, TA_RIGHT);
-    SetTextColor(hDC, engaged ? CREF((holdAOA ? BRIGHT_YELLOW : BRIGHT_GREEN)) : CREF(LIGHT_BLUE));
-    sprintf(temp, "%+5.1f°", GetXR1().m_setPitchOrAOA);  // already in degrees
-    TextOut(hDC, 143, 41, temp, static_cast<int>(strlen(temp)));
+    skp->SetTextAlign(oapi::Sketchpad::TAlign_horizontal::RIGHT);
+    skp->SetTextColor(engaged ? CREF((holdAOA ? BRIGHT_YELLOW : BRIGHT_GREEN)) : CREF(LIGHT_BLUE));
+    sprintf(temp, "%+5.1fÂ°", GetXR1().m_setPitchOrAOA);  // already in degrees
+    skp->Text(143, 41, temp, static_cast<int>(strlen(temp)));
 
-    SetTextAlign(hDC, TA_CENTER);
-    SetTextColor(hDC, engaged ? CREF(BRIGHT_GREEN) : CREF(LIGHT_BLUE));
-    sprintf(temp, "%+5.1f°", GetXR1().m_setBank);  // already in degrees
-    TextOut(hDC, 151, 83, temp, static_cast<int>(strlen(temp)));
+    skp->SetTextAlign(oapi::Sketchpad::TAlign_horizontal::CENTER);
+    skp->SetTextColor(engaged ? CREF(BRIGHT_GREEN) : CREF(LIGHT_BLUE));
+    sprintf(temp, "%+5.1fÂ°", GetXR1().m_setBank);  // already in degrees
+    skp->Text(151, 83, temp, static_cast<int>(strlen(temp)));
 
-    // restore previous font and release device context
-    SelectObject(hDC, hPrevObject);
-    m_pParentMDA->ReleaseDC(surf, hDC);
+    oapiReleaseSketchpad(skp);
 
     return true;
 }

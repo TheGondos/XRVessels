@@ -571,7 +571,7 @@ void XR3Phoenix::clbkSetClassCaps(FILEHANDLE cfg)
         m_pSpotlights[i]->Activate(false);
 
     // load meshes
-    // no VC: vcmesh_tpl = oapiLoadMeshGlobal("dg-xr1\\deltaglidercockpit-xr1");  // VC mesh
+    // no VC: vcmesh_tpl = oapiLoadMeshGlobal("DG-XR1\\deltaglidercockpit-xr1");  // VC mesh
     vcmesh_tpl = nullptr;  // no VC; must set this to null so the superclass won't try to use it
     exmesh_tpl = oapiLoadMeshGlobal("XR3Phoenix\\XR3Phoenix");         // exterior mesh
 

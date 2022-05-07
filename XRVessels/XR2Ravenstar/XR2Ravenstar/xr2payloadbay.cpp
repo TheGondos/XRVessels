@@ -29,6 +29,7 @@
 #include "XR2Ravenstar.h"
 #include "XR2PayloadBay.h"
 #include "XRPayloadBaySlot.h"
+#include <cassert>
 
 // Note: all the common payload bay code is in the XR1PayloadBay class
 
@@ -87,8 +88,8 @@ XR2PayloadBay::XR2PayloadBay(VESSEL &parentVessel) :
 // Returns the ship-local coordinates to deploy the selected slot payload while landed
 VECTOR3 XR2PayloadBay::GetLandedDeployToCoords(const int slotNumber)
 {
-    _ASSERTE(slotNumber > 0);
-    _ASSERTE(slotNumber <= GetSlotCount());
+    assert(slotNumber > 0);
+    assert(slotNumber <= GetSlotCount());
 
     double xFactor = -1.0;  // LEFT SIDE of ship (facing forward)
     double xAdjustment = 0;
@@ -108,7 +109,7 @@ VECTOR3 XR2PayloadBay::GetLandedDeployToCoords(const int slotNumber)
     {
         const XRPayloadClassData &pcd = XRPayloadClassData::GetXRPayloadClassDataForClassname(pChild->GetClassName());
         ATTACHMENTHANDLE childAttHandle = pcd.GetAttachmentHandleForPayloadVessel(*pChild);  // will always be valid
-        _ASSERTE(childAttHandle != nullptr);  // sanity check
+        assert(childAttHandle != nullptr);  // sanity check
         VECTOR3 dir, rot;  // not used here
         pChild->GetAttachmentParams(childAttHandle, childAttachmentPoint, dir, rot);
 
@@ -143,6 +144,6 @@ void XR2Ravenstar::CreatePayloadBay()
     //
     // Create our dummy bay vessel attachment point; we want this to be FIRST so that the payload bay slot
     // indices begin at 1 in the scenario file; i.e., the numbers will match the slots.
-    VECTOR3 &attachVector = _V(0.0, 1.079, -2.977);
+    VECTOR3 attachVector = _V(0.0, 1.079, -2.977);
     m_dummyAttachmentPoint = CreateAttachment(false, attachVector, _V(0, -1.0, 0), _V(0, 0, 1.0), "XRDUMMY");
 }

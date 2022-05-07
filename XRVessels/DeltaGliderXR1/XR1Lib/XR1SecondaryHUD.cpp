@@ -21,6 +21,7 @@
 
 #include "DeltaGliderXR1.h"
 #include "XR1HUD.h"
+#include "Bitmaps.h"
 
 // ==============================================================
 
@@ -89,7 +90,7 @@ SecondaryHUDArea::~SecondaryHUDArea()
 {
     // clean up the last font we allocated, if any
     if (m_mainFont != 0)
-        DeleteObject(m_mainFont);
+        oapiReleaseFont(m_mainFont);
 }
 
 // returns TRUE if HUD is on.  NOTE: the HUD is not necessarily fully deployed!
@@ -110,7 +111,7 @@ void SecondaryHUDArea::SetHUDColors()
 
         // set the HUD colors 
         // there is no warning color, at least for now
-        const COLORREF backgroundColor = secondaryHUD.GetBackgroundColor();
+        const uint32_t backgroundColor = secondaryHUD.GetBackgroundColor();
         SetColor(secondaryHUD.GetTextColor());    // normal color
         SetBackgroundColor(backgroundColor);
 
@@ -119,14 +120,15 @@ void SecondaryHUDArea::SetHUDColors()
         // NOTE: do not use ANTIALIASED_QUALITY instead of '0' for the second parameter!  It looks better under Vista to leave it at 0 for some reason.
         if (mode != m_lastHUDMode)
         {
-            const DWORD antialiasFlag = ((backgroundColor == 0xFFFFFF) ? NONANTIALIASED_QUALITY : 0);
+            //const int antialiasFlag = ((backgroundColor == 0xFFFFFF) ? NONANTIALIASED_QUALITY : 0);
 
             // release old font 
             if (m_mainFont != 0)
-                DeleteObject(m_mainFont);
+                oapiReleaseFont(m_mainFont);
 
             // create new font
-            m_mainFont = CreateFont(14, 0, 0, 0, 400, 0, 0, 0, 0, 0, 0, antialiasFlag, 0, "Arial");
+//            m_mainFont = CreateFont(14, 0, 0, 0, 400, 0, 0, 0, 0, 0, 0, antialiasFlag, 0, "Arial");
+            m_mainFont = oapiCreateFont(14, true, "Arial");
         }
     }
 }
@@ -135,7 +137,7 @@ void SecondaryHUDArea::SetHUDColors()
 // NOTE: the subclass MUST draw text from the supplied topY coordinate (plus some border gap space)
 // The X coordinate is zero @ the border
 // Returns: true if HUD was redrawn, false if not
-bool SecondaryHUDArea::DrawHUD(const int event, const int topY, HDC hDC, COLORREF colorRef, bool forceRender)
+bool SecondaryHUDArea::DrawHUD(const int event, const int topY, oapi::Sketchpad *skp, uint32_t colorRef, bool forceRender)
 {
     // NOTE: HUD may be off here if we are turning off!
     int mode = GetXR1().m_secondaryHUDMode;  // mode 1-5
@@ -148,42 +150,42 @@ bool SecondaryHUDArea::DrawHUD(const int event, const int topY, HDC hDC, COLORRE
     SecondaryHUDMode secondaryHUD = config.SecondaryHUD[mode - 1];   // 0 < mode < 5
 
     // set the font
-    HFONT prevFont = (HFONT)SelectObject(hDC, m_mainFont);   // save previous font and select new font
+    oapi::Font *oldFont = skp->SetFont(m_mainFont);
 
     // set the text fg and bg colors
-    const COLORREF bgColor = secondaryHUD.GetBackgroundColor();
-    ::SetTextColor(hDC, secondaryHUD.GetTextColor());
-    SetBkColor(hDC, bgColor);
+    const uint32_t bgColor = secondaryHUD.GetBackgroundColor();
+    skp->SetTextColor(secondaryHUD.GetTextColor());
+    skp->SetBackgroundColor(bgColor);
 
     // NOTE: area was registered with PANEL_MAP_BACKGROUND, so we don't need to always repaint it
     // fill the background area if not transparent; this is to make the background solid between letters
     if (bgColor != CWHITE)
     {
-        RECT r = { 0, m_topYCoordinate, m_width, m_height };
-        FillRect(hDC, &r, m_hBackgroundBrush);
+        //FIXME : filled rectangle
+        skp->Rectangle(0, m_topYCoordinate, m_width, m_height);
     }
 
     // set the background mode
-    SetBkMode(hDC, ((GetBackgroundColor() == CWHITE) ? TRANSPARENT : OPAQUE));
+    skp->SetBackgroundMode(((GetBackgroundColor() == CWHITE) ? oapi::Sketchpad::BkgMode::BK_TRANSPARENT : oapi::Sketchpad::BkgMode::BK_OPAQUE));
 
     // render each cell on the HUD
     // NOTE: must render from the BOTTOM-UP so that the descenders render on each row
     for (int row = SH_ROW_COUNT - 1; row >= 0; row--)
     {
-        RenderCell(hDC, secondaryHUD, row, 0, topY);   // left side
-        RenderCell(hDC, secondaryHUD, row, 1, topY);   // right side
+        RenderCell(skp, secondaryHUD, row, 0, topY);   // left side
+        RenderCell(skp, secondaryHUD, row, 1, topY);   // right side
     }
-
-    SelectObject(hDC, prevFont);   // restore previously selected font
 
     // We always redraw here because 1) it would be almost impossible to accurately track what changes, and
     // 2) we are only invoked at a fixed interval anyway.
+    skp->SetFont(oldFont);
+
     return true;
 }
 
 // Render a single cell on the secondary HUD
 // row and column are NOT validated here; they were validated before
-void SecondaryHUDArea::RenderCell(HDC hDC, SecondaryHUDMode& secondaryHUD, const int row, const int column, const int topY)
+void SecondaryHUDArea::RenderCell(oapi::Sketchpad *skp, SecondaryHUDMode& secondaryHUD, const int row, const int column, const int topY)
 {
     SecondaryHUDMode::Cell& cell = secondaryHUD.GetCell(row, column);
     if (cell.pField == nullptr)
@@ -196,19 +198,19 @@ void SecondaryHUDArea::RenderCell(HDC hDC, SecondaryHUDMode& secondaryHUD, const
     const int xCenter = m_width / 2;    // horizontal center of HUD
 
     // Render the label; e.g., "Altitude:"
-    SetTextAlign(hDC, TA_RIGHT);
+    skp->SetTextAlign(oapi::Sketchpad::RIGHT);
     int x = ((column == 0) ? xOffset : (xCenter + xOffset));
     int y = topY + 2 + (row * m_lineSpacing);    // must render from current top of HUD, since it may be scrolling; also allow some spacing from the HUD top
 
     char temp[MAX_CELL_LABEL_LENGTH + 2];       // allow room for ":"
     sprintf(temp, "%s:", cell.pField->label);  // "Alt:"
-    TextOut(hDC, x, y, temp, static_cast<int>(strlen(temp)));
+    skp->Text(x, y, temp, static_cast<int>(strlen(temp)));
 
     // Render the cell value
-    SetTextAlign(hDC, TA_LEFT);
+    skp->SetTextAlign(oapi::Sketchpad::LEFT);
     x += 4;     // spacing between ":" and value
     const char* pStr = cell.valueStr;
-    TextOut(hDC, x, y, pStr, static_cast<int>(strlen(pStr)));   // "102329 ft"
+    skp->Text(x, y, pStr, static_cast<int>(strlen(pStr)));   // "102329 ft"
 }
 
 // Populate value and valueStr in the supplied cell
@@ -286,28 +288,28 @@ void SecondaryHUDArea::PopulateCell(SecondaryHUDMode::Cell& cell)
         value = GetXR1().GetExternalTemperature();   // Kelvin
         if (units == Units::u_K)
         {
-            sprintf(valueStr, "%.4lf °K", value);
+            sprintf(valueStr, "%.4lf ï¿½K", value);
         }
         else if (units == Units::u_C)
         {
             value = KelvinToCelsius(value);
-            sprintf(valueStr, "%.4lf °C", value);
+            sprintf(valueStr, "%.4lf ï¿½C", value);
         }
         else    // Fahrenheit
         {
             value = KelvinToFahrenheit(value);
-            sprintf(valueStr, "%.4lf °F", value);
+            sprintf(valueStr, "%.4lf ï¿½F", value);
         }
         break;
 
     case FieldID::Hdg:
     {
-        BOOL stat = oapiGetHeading(GetVessel().GetHandle(), &value);
-        if (stat == FALSE)
+        bool stat = oapiGetHeading(GetVessel().GetHandle(), &value);
+        if (stat == false)
             sprintf(valueStr, "---");
         else
         {
-            sprintf(valueStr, "%.3lf°", (value * DEG));
+            sprintf(valueStr, "%.3lfï¿½", (value * DEG));
         }
     }
     break;
@@ -343,12 +345,12 @@ void SecondaryHUDArea::PopulateCell(SecondaryHUDMode::Cell& cell)
 
         if (units == Units::u_met)  // metric
         {
-            sprintf(valueStr, "%.4lf m/s²", value);
+            sprintf(valueStr, "%.4lf m/sï¿½", value);
         }
         else if (units == Units::u_imp)    // imperial
         {
             value = MetersToFeet(value);
-            sprintf(valueStr, "%.4lf fps²", value);
+            sprintf(valueStr, "%.4lf fpsï¿½", value);
         }
         else  // G
         {
@@ -401,7 +403,7 @@ void SecondaryHUDArea::PopulateCell(SecondaryHUDMode::Cell& cell)
         ELEMENTS e;
         GetVessel().GetElements(nullptr, e, nullptr, 0, FRAME_EQU);
         value = e.i * DEG;  // in degrees
-        sprintf(valueStr, "%.4lf°", value);  // reduce to 11 chars for slight clipping issue
+        sprintf(valueStr, "%.4lfï¿½", value);  // reduce to 11 chars for slight clipping issue
     }
     break;
 
@@ -503,7 +505,7 @@ void SecondaryHUDArea::PopulateCell(SecondaryHUDMode::Cell& cell)
             value = GetVessel().GetAOA();
 
         value *= DEG;   // convert to degrees
-        sprintf(valueStr, "%+.3lf°", value);
+        sprintf(valueStr, "%+.3lfï¿½", value);
         break;
 
     case FieldID::Long:
@@ -522,7 +524,7 @@ void SecondaryHUDArea::PopulateCell(SecondaryHUDMode::Cell& cell)
             else
                 dir = ((fieldID == FieldID::Long) ? 'E' : 'N');
 
-            sprintf(valueStr, "%.5lf° %c", fabs(pos), dir);
+            sprintf(valueStr, "%.5lfï¿½ %c", fabs(pos), dir);
         }
     }
     break;
@@ -634,17 +636,17 @@ void SecondaryHUDArea::PopulateCell(SecondaryHUDMode::Cell& cell)
 
         if (units == Units::u_K)
         {
-            sprintf(valueStr, "%.3lf °K", value);
+            sprintf(valueStr, "%.3lf ï¿½K", value);
         }
         else if (units == Units::u_C)
         {
             value = KelvinToCelsius(value);
-            sprintf(valueStr, "%.3lf °C", value);
+            sprintf(valueStr, "%.3lf ï¿½C", value);
         }
         else    // Fahrenheit
         {
             value = KelvinToFahrenheit(value);
-            sprintf(valueStr, "%.3lf °F", value);
+            sprintf(valueStr, "%.3lf ï¿½F", value);
         }
     }
     break;

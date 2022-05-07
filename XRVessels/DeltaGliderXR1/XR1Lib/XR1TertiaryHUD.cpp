@@ -21,6 +21,7 @@
 
 #include "DeltaGliderXR1.h"
 #include "XR1HUD.h"
+#include "Bitmaps.h"
 
 // ==============================================================
 
@@ -81,8 +82,9 @@ TertiaryHUDArea::TertiaryHUDArea(InstrumentPanel& parentPanel, const COORD2 pane
 
     // create our font
     // NOTE: we want an ALIASED font for a non-transparent background, or UNALIASED font for transparent background
-    const DWORD antialiasFlag = ((config.TertiaryHUDBackgroundColor == 0xFFFFFF) ? NONANTIALIASED_QUALITY : 0);
-    m_mainFont = CreateFont(14, 0, 0, 0, 400, 0, 0, 0, 0, 0, 0, antialiasFlag, 0, "Arial");
+//FIXME
+//    const int antialiasFlag = ((config.TertiaryHUDBackgroundColor == 0xFFFFFF) ? NONANTIALIASED_QUALITY : 0);
+    m_mainFont = oapiCreateFont(14, true, "Arial");
     m_lineSpacing = 11;     // pixels between lines
 }
 
@@ -92,7 +94,7 @@ TertiaryHUDArea::~TertiaryHUDArea()
     delete GetTextBox();
 
     // clean up the font we allocated
-    DeleteObject(m_mainFont);
+    oapiReleaseFont(m_mainFont);
 }
 
 // returns TRUE if HUD is on
@@ -116,19 +118,20 @@ void TertiaryHUDArea::SetHUDColors()
 // NOTE: the subclass MUST draw text from the supplied topY coordinate (plus some border gap space)
 // The X coordinate is zero @ the border
 // Returns: true if text re-rendered, false if not
-bool TertiaryHUDArea::DrawHUD(const int event, const int topY, HDC hDC, COLORREF colorRef, bool forceRender)
+bool TertiaryHUDArea::DrawHUD(const int event, const int topY, oapi::Sketchpad *skp, uint32_t colorRef, bool forceRender)
 {
     // NOTE: area was registered with PANEL_MAP_BACKGROUND, so we don't need to always repaint it
     // fill the background area if not transparent; this is to make the background solid between letters
     if (GetXR1().GetXR1Config()->TertiaryHUDBackgroundColor != CWHITE)
     {
-        RECT r = { 0, m_topYCoordinate, m_width, m_height };
-        FillRect(hDC, &r, m_hBackgroundBrush);
+  //      RECT r = { 0, m_topYCoordinate, m_width, m_height };
+        skp->Rectangle(0, m_topYCoordinate, m_width, m_height);
+//        FillRect(hDC, &r, m_hBackgroundBrush);
     }
 
     // invoke new TextBox handler to draw text using a TRANSPARENT background; this same TextBox handler
     // can also be used on the lower panel to render on a normal screen.
     // Note that our text box will never be null here.
-    return m_pTextBox->Render(hDC, topY, m_mainFont, m_lineSpacing, forceRender);  // CWHITE = use transparent background
+    return m_pTextBox->Render(skp, topY, m_mainFont, m_lineSpacing, forceRender);  // CWHITE = use transparent background
 }
 

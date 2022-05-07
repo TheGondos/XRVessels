@@ -33,6 +33,7 @@
 #include "XR2Ravenstar.h"
 #include "XR2PayloadScreenAreas.h"
 #include "XRPayloadBaySlot.h"
+#include "Bitmaps.h"
 
 // TODO NOTE: most of these methods are now in the XR1 base class
 
@@ -112,7 +113,7 @@ bool SelectPayloadSlotArea::Redraw2D(const int event, const SURFHANDLE surf)
     {
         XRPayloadBaySlot *pSlot = GetXR2().m_pPayloadBay->GetSlot(slotNumber);   // will never be null
 
-        DWORD dwBorderColor = 0;    // NONE
+        int dwBorderColor = 0;    // NONE
         const VESSEL *pChild = pSlot->GetChild();     // may be null
 
         // NOTE: we apply these tests in order of precedence
@@ -160,7 +161,7 @@ bool SelectPayloadSlotArea::Redraw2D(const int event, const SURFHANDLE surf)
             else    // it's slot 3 
                 slotY = 5;
 
-            COORD2 &slot = _COORD2(12, slotY);  // upper-left corder of slot where line border starts
+            COORD2 slot = _COORD2(12, slotY);  // upper-left corder of slot where line border starts
 
             // draw the line around the inside of the border
             // Note: the 3 and 4 in the following lines is necessary for the 3 and 4 grid pixel lines that separate columns and rows, respectively.

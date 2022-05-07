@@ -228,15 +228,15 @@ bool XR2Ravenstar::CheckDoorFailure(DoorStatus *doorStatus)
 
 
 // elevon mesh groups
-static UINT LAileronGrp[] = {GRP_top_elevators_top01_port, GRP_top_elevators_bottom_port, GRP_bottom_elevators_bottom_port, GRP_bottom_elevators_bottom_port_fixup_1, GRP_bottom_elevators_bottom_port01, 
+static unsigned int LAileronGrp[] = {GRP_top_elevators_top01_port, GRP_top_elevators_bottom_port, GRP_bottom_elevators_bottom_port, GRP_bottom_elevators_bottom_port_fixup_1, GRP_bottom_elevators_bottom_port01, 
         GRP_top_elevators_bottom_starboard_fixup_4, /* This is actually *PORT TOP piece */
         GRP_top_elevators_bottom_starboard_fixup_3 /* This is actually the *PORT BOTTOM piece */ };
 
-static UINT RAileronGrp[] = {GRP_top_elevators_top01_starboard, GRP_top_elevators_bottom_starboard, GRP_bottom_elevators_top_starboard, GRP_bottom_elevators_bottom_starboard, GRP_bottom_elevators_bottom_starboard_fixup_1,
+static unsigned int RAileronGrp[] = {GRP_top_elevators_top01_starboard, GRP_top_elevators_bottom_starboard, GRP_bottom_elevators_top_starboard, GRP_bottom_elevators_bottom_starboard, GRP_bottom_elevators_bottom_starboard_fixup_1,
                 GRP_top_elevators_bottom_starboard_fixup_1, GRP_top_elevators_bottom_starboard_fixup_2 };
 
 // size of a mesh group array
-#define SizeOfGrp(grp) (sizeof(grp) / sizeof(UINT))
+#define SizeOfGrp(grp) (sizeof(grp) / sizeof(unsigned int))
 
 // invoked at startup and when a crash occurs
 // Note: do not call the base class for this method: visuals are vessel-specific

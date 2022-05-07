@@ -61,13 +61,13 @@
 // convert a unique VC panel ID into an Orbiter VC number (0-n)
 #define ORBITER_VC_NUMBER(panelID) (panelID - VC_PANEL_ID_BASE)
 
-extern const DWORD PILOT_HUD_MESHGRP;
-extern const DWORD COPILOT_HUD_MESHGRP;
+extern const int PILOT_HUD_MESHGRP;
+extern const int COPILOT_HUD_MESHGRP;
 extern const double BAY_OPERATING_SPEED;
 extern const double BAY_LIMIT;
 
-extern const VECTOR3 &DOCKING_PORT_COORD;
-extern const VECTOR3 &PAYLOAD_SLOT1_DIMENSIONS;
+extern const VECTOR3 DOCKING_PORT_COORD;
+extern const VECTOR3 PAYLOAD_SLOT1_DIMENSIONS;
 
 // addtional warning light values
 #define XR2_WARNING_LIGHT_COUNT  1

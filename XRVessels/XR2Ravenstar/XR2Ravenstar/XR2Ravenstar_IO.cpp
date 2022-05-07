@@ -56,9 +56,9 @@ void XR2Ravenstar::clbkLoadStateEx(FILEHANDLE scn, void *vs)
         {
             SSCANF1("%s", skinpath);
             char fname[256];
-            strcpy (fname, "XR2Ravenstar\\Skins\\");
+            strcpy (fname, "XR2Ravenstar/Skins/");
             strcat (fname, skinpath);
-            int n = static_cast<int>(strlen(fname)); fname[n++] = '\\';
+            int n = static_cast<int>(strlen(fname)); fname[n++] = '/';
             strcpy (fname+n, "top_hull_colour_XR2_paint.dds");  skin[0] = oapiLoadTexture (fname);
             strcpy (fname+n, "bottom_hull.dds");                skin[1] = oapiLoadTexture (fname);
         } 

@@ -91,7 +91,7 @@ void DeltaGliderXR1::ActivateLandingGear(DoorStatus action)
 void DeltaGliderXR1::ToggleLandingGear()
 {
     ActivateLandingGear(((gear_status == DoorStatus::DOOR_CLOSED || gear_status == DoorStatus::DOOR_CLOSING) ? DoorStatus::DOOR_OPENING : DoorStatus::DOOR_CLOSING));
-    UpdateCtrlDialog(this);
+    //UpdateCtrlDialog(this);
 }
 
 // activate the bay doors 
@@ -126,7 +126,7 @@ void DeltaGliderXR1::ActivateBayDoors(DoorStatus action)
     bay_status = action;
     TriggerRedrawArea(AID_BAYDOORSSWITCH);
     TriggerRedrawArea(AID_BAYDOORSINDICATOR);
-    UpdateCtrlDialog(this);  // Note: CTRL dialog not used for the XR2
+    //UpdateCtrlDialog(this);  // Note: CTRL dialog not used for the XR2
     RecordEvent("BAYDOORS", close ? "CLOSE" : "OPEN");
 }
 
@@ -156,7 +156,7 @@ void DeltaGliderXR1::ActivateHoverDoors(DoorStatus action)
     TriggerRedrawArea(AID_HOVERDOORSWITCH);
     TriggerRedrawArea(AID_HOVERDOORINDICATOR);
     // no VC switch for this
-    UpdateCtrlDialog(this);
+    //UpdateCtrlDialog(this);
     RecordEvent("HOVERDOORS", close ? "CLOSE" : "OPEN");
 }
 
@@ -178,7 +178,7 @@ void DeltaGliderXR1::ActivateScramDoors(DoorStatus action)
     TriggerRedrawArea(AID_SCRAMDOORSWITCH);
     TriggerRedrawArea(AID_SCRAMDOORINDICATOR);
     // no VC switch for this
-    UpdateCtrlDialog(this);
+    //UpdateCtrlDialog(this);
     RecordEvent("SCRAMDOORS", close ? "CLOSE" : "OPEN");
 }
 
@@ -210,7 +210,7 @@ void DeltaGliderXR1::ActivateRCover(DoorStatus action)
     TriggerRedrawArea(AID_RETRODOORSWITCH);
     TriggerRedrawArea(AID_RETRODOORINDICATOR);
     SetXRAnimation(anim_retroswitch, close ? 0 : 1);
-    UpdateCtrlDialog(this);
+    //UpdateCtrlDialog(this);
     RecordEvent("RCOVER", close ? "CLOSE" : "OPEN");
 }
 
@@ -266,7 +266,7 @@ void DeltaGliderXR1::ActivateNoseCone(DoorStatus action)
     if (close && ladder_status != DoorStatus::DOOR_CLOSED)
         ActivateLadder(action); // retract ladder before closing the nose cone
 
-    UpdateCtrlDialog(this);
+    //UpdateCtrlDialog(this);
     RecordEvent("NOSECONE", close ? "CLOSE" : "OPEN");
 }
 
@@ -348,7 +348,7 @@ void DeltaGliderXR1::ForceActivateCabinHatch(DoorStatus action)
 
     const bool close = (action == DoorStatus::DOOR_CLOSED || action == DoorStatus::DOOR_CLOSING);
     SetXRAnimation(anim_hatchswitch, close ? 0 : 1);
-    UpdateCtrlDialog(this);
+    //UpdateCtrlDialog(this);
     RecordEvent("HATCH", close ? "CLOSE" : "OPEN");
 }
 
@@ -419,7 +419,7 @@ void DeltaGliderXR1::ActivateLadder(DoorStatus action)
     TriggerRedrawArea(AID_LADDERINDICATOR);
 
     SetXRAnimation(anim_ladderswitch, close ? 0 : 1);
-    UpdateCtrlDialog(this);
+    //UpdateCtrlDialog(this);
     RecordEvent("LADDER", close ? "CLOSE" : "OPEN");
 }
 
@@ -514,7 +514,7 @@ void DeltaGliderXR1::ActivateOuterAirlock(DoorStatus action)
     TriggerRedrawArea(AID_OUTERDOORSWITCH);
     TriggerRedrawArea(AID_OUTERDOORINDICATOR);
     SetXRAnimation(anim_olockswitch, close ? 0 : 1);
-    UpdateCtrlDialog(this);
+    //UpdateCtrlDialog(this);
     RecordEvent("OLOCK", close ? "CLOSE" : "OPEN");
 }
 
@@ -572,7 +572,7 @@ void DeltaGliderXR1::ForceActivateInnerAirlock(DoorStatus action)
     TriggerRedrawArea(AID_INNERDOORSWITCH);
     TriggerRedrawArea(AID_INNERDOORINDICATOR);
     SetXRAnimation(anim_ilockswitch, close ? 0 : 1);
-    UpdateCtrlDialog(this);
+    //UpdateCtrlDialog(this);
     RecordEvent("ILOCK", close ? "CLOSE" : "OPEN");
 }
 
@@ -617,7 +617,7 @@ void DeltaGliderXR1::ActivateChamber(DoorStatus action, bool force)
     TriggerRedrawArea(AID_CHAMBERSWITCH);
     TriggerRedrawArea(AID_CHAMBERINDICATOR);
     // TODO: ANIMATE VC SWITCH (need mesh change from Donamy): SetXRAnimation(anim_chamberswitch, close ? 0:1);
-    UpdateCtrlDialog(this);
+//    UpdateCtrlDialog(this);
     RecordEvent("CHAMBER", close ? "CLOSE" : "OPEN");
 }
 
@@ -678,7 +678,7 @@ void DeltaGliderXR1::ActivateRadiator(DoorStatus action)
     TriggerRedrawArea(AID_RADIATORSWITCH);
     TriggerRedrawArea(AID_RADIATORINDICATOR);
     SetXRAnimation(anim_radiatorswitch, close ? 0 : 1);
-    UpdateCtrlDialog(this);
+    //UpdateCtrlDialog(this);
     RecordEvent("RADIATOR", close ? "CLOSE" : "OPEN");
 }
 

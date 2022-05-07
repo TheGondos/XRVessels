@@ -35,8 +35,9 @@
 
 #pragma once
 
-#include "orbitersdk.h"
+#include "Orbitersdk.h"
 #include <vector>
+#include <dlfcn.h>
 
 using namespace std;
 
@@ -328,10 +329,11 @@ public:
         // Since we can't rely on RTTI here to test vessel objects that do not contain RTTI, we instead check 
         // the status of an exported XRVesselCtrlFlag, if any.
         bool retVal = false;  // assume not XRVesselCtrl
-        const HMODULE hDLL = GetModuleHandle(pVessel->GetClassName());  // should always succeed
+        void *hDLL = dlopen(pVessel->GetClassName(), RTLD_NOW);  // should always succeed
+
         if (hDLL != nullptr)
         {
-            const bool *pFlag = reinterpret_cast<const bool *>(GetProcAddress(hDLL, "XRVesselCtrlFlag"));
+            bool *pFlag = (bool *)dlsym(hDLL, "XRVesselCtrlFlag");
             if (pFlag != nullptr)
                 retVal = *pFlag;  // will be 'true' for vessels that implement XRVesselCtrl
             // Do not free hDLL handle here! GetModuleHandle does not increment the reference count.

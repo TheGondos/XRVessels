@@ -23,10 +23,10 @@
 // XRVCMainDialog.cpp : Implementation of main XRVCMainDialog class methods.
 //-------------------------------------------------------------------------
 
-#include <windows.h>
 #include <process.h>
 
 #include "XRVCMainDialog.h"
+#include <cassert>
 
 // define storage for static class data
 XRVCMainDialog *XRVCMainDialog::s_pSingleton;
@@ -77,7 +77,7 @@ XRVCMainDialog::~XRVCMainDialog()
 // Static windows message handler for our help dialog box
 //==============================================================
 
-INT_PTR CALLBACK XRVCMainDialog::MsgProcHelp(const HWND hDlg, const UINT uMsg, const WPARAM wParam, const LPARAM lParam)
+INT_PTR CALLBACK XRVCMainDialog::MsgProcHelp(const HWND hDlg, const unsigned int uMsg, const WPARAM wParam, const LPARAM lParam)
 {
     switch (uMsg) 
     {
@@ -149,7 +149,7 @@ close_window:
 //==============================================================
 // Static windows message handler for our main dialog box
 //==============================================================
-INT_PTR CALLBACK XRVCMainDialog::MsgProcMain(const HWND hDlg, const UINT uMsg, const WPARAM wParam, const LPARAM lParam)
+INT_PTR CALLBACK XRVCMainDialog::MsgProcMain(const HWND hDlg, const unsigned int uMsg, const WPARAM wParam, const LPARAM lParam)
 {
 	switch (uMsg) 
     {
@@ -340,7 +340,7 @@ void XRVCMainDialog::RefreshVesselList()
     SendMessage(hListBox, CB_RESETCONTENT, 0, 0);
 
     // now add all vessels into the drop-down list
-    for (UINT i=0; i < oapiGetVesselCount(); i++)
+    for (int i=0; i < oapiGetVesselCount(); i++)
     {
         const OBJHANDLE hVessel = oapiGetVesselByIndex(i);        // will never be null
         const VESSEL *pVessel = oapiGetVesselInterface(hVessel);  // will never be null
@@ -585,7 +585,7 @@ int XRVCMainDialog::GetActiveModeLeftIDC() const
             break;
         }
     }
-    _ASSERTE(retVal >= 0);
+    assert(retVal >= 0);
     return retVal;
 }
 
@@ -605,7 +605,7 @@ int XRVCMainDialog::GetActiveModeRightIDC() const
             break;
         }
     }
-    _ASSERTE(retVal >= 0);
+    assert(retVal >= 0);
     return retVal;
 }
 
@@ -627,7 +627,7 @@ bool XRVCMainDialog::CheckXRVesselForCommand()
 // keycode = VK_RETURN, VK_ESCAPE, etc.
 // wMsg = WM_KEYDOWN, WM_KEYUP, WM_CHAR
 // Returns: true if key processed and should be ignored, false if the default Windows key handler should process it.
-bool XRVCMainDialog::ProcessCommandKeystroke(WPARAM keycode, const UINT wMsg)
+bool XRVCMainDialog::ProcessCommandKeystroke(WPARAM keycode, const unsigned int wMsg)
 {
 // macro to swallow all KEYUP messages so we don't get beeps on certain keypresses such as RETURN, ESCAPE, and TAB
 #define IGNORE_IF_KEYUP() if (wMsg == WM_KEYUP) return true
@@ -796,7 +796,7 @@ void XRVCMainDialog::GetCommandText(CString &csOut) const
 // Resets the text in the command box to the supplied value; may not be null.
 void XRVCMainDialog::SetCommandText(const char *pNewText) const
 {
-    _ASSERTE(pNewText != nullptr);
+    assert(pNewText != nullptr);
     const HWND hCommandBox = GetDlgItem(m_hwndDlg, IDC_COMMANDBOX);
     SetWindowTextSmart(hCommandBox, pNewText);
 
@@ -955,7 +955,7 @@ HFONT XRVCMainDialog::GetFontForMode(const int modeIDC) const
 
         default:  // should never happen!
             // break into the debugger for debug builds
-            _ASSERTE(false);  // incorrect mode IDC!
+            assert(false);  // incorrect mode IDC!
     }
 
     return hRetVal;
@@ -1008,7 +1008,7 @@ void XRVCMainDialog::XRStatusOut(const int editBoxOutIDC, const int modeIDC)
             break;
 
         default:    // should never happen!
-            _ASSERTE(false);  // break into debugger under debug builds
+            assert(false);  // break into debugger under debug builds
             csOut.Format("INTERNAL ERROR: INVALID modeIDC: %d", modeIDC);
             break;
     }

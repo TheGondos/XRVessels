@@ -42,7 +42,7 @@ class DeployPayloadArea : public XR1Area
 {
 public:
     DeployPayloadArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID,
-                      const int idbDeployPayloadOrbit, const int idbDeployPayloadLanded);
+                      const char *idbDeployPayloadOrbit, const char *idbDeployPayloadLanded);
     virtual void Activate();
     virtual void Deactivate();
     virtual bool Redraw2D(const int event, const SURFHANDLE surf);
@@ -51,9 +51,9 @@ public:
 protected:
     static const COORD2 &s_screenSize;   // size of the screen in pixels
 
-    int m_idbDeployPayloadOrbit;   // resource ID
-    int m_idbDeployPayloadLanded;  // resource ID
-    HFONT m_hFont;
+    const char *m_idbDeployPayloadOrbit;   // resource ID
+    const char *m_idbDeployPayloadLanded;  // resource ID
+    oapi::Font *m_hFont;
     COORD2 m_deployButton;
     COORD2 m_deployAllButton;
     
@@ -81,14 +81,14 @@ class PayloadThumbnailArea : public XR1Area
 {
 public:
     PayloadThumbnailArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID,
-            const int idbPayloadThumbnailNone);
+            const char *idbPayloadThumbnailNone);
     virtual void Activate();
     virtual void Deactivate();
     virtual bool Redraw2D(const int event, const SURFHANDLE surf);
 
 protected:
     static const COORD2 &s_screenSize;   // size of the screen in pixels
-    int m_idbPayloadThumbnailNone;  // resource ID
+    const char *m_idbPayloadThumbnailNone;  // resource ID
 
     SURFHANDLE m_hNoneSurface;
     const XRPayloadClassData *m_pLastRenderedPayloadThumbnailPCD;  // indicates which payload icon rendered on the screen
@@ -99,7 +99,7 @@ protected:
 class GrapplePayloadArea : public XR1Area
 {
 public:
-    GrapplePayloadArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID, const int idbGrapplePayload);
+    GrapplePayloadArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID, const char *idbGrapplePayload);
     virtual void Activate();
     virtual void Deactivate();
     virtual bool Redraw2D(const int event, const SURFHANDLE surf);
@@ -108,8 +108,8 @@ public:
 protected:
     static const COORD2 &s_screenSize;   // size of the screen in pixels
 
-    int m_idbGrapplePayload;  // resource ID
-    HFONT m_hFont;
+    const char *m_idbGrapplePayload;  // resource ID
+    oapi::Font *m_hFont;
     COORD2 m_grappleButton;
     COORD2 m_grappleAllButton;
     COORD2 m_rangeButton;

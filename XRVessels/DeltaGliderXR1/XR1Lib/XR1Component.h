@@ -30,7 +30,7 @@
 #pragma once
 
 #include "Orbitersdk.h"
-#include "vessel3ext.h"
+#include "Vessel3Ext.h"
 #include "DeltaGliderXR1.h"
 #include "Component.h"
 

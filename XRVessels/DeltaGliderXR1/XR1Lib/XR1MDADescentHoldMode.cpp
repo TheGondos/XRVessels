@@ -21,10 +21,9 @@
 
 // ==============================================================
 
-#include "resource.h"
-
 #include "DeltaGliderXR1.h"
 #include "XR1MultiDisplayArea.h"
+#include "Bitmaps.h"
 
 //-------------------------------------------------------------------------
 
@@ -68,17 +67,17 @@ void DescentHoldMultiDisplayMode::Activate()
 {
     m_backgroundSurface = CreateSurface(IDB_DESCENT_HOLD_MULTI_DISPLAY);
 
-    m_statusFont = CreateFont(12, 0, 0, 0, 600, 0, 0, 0, 0, 0, 0, 0, FF_MODERN, "Microsoft Sans Serif");  // ENGAGED or DISENGAGED
-    m_numberFont = CreateFont(12, 0, 0, 0, 600, 0, 0, 0, 0, 0, 0, 0, FF_MODERN, "Microsoft Sans Serif");  // bank/pitch number text
-    m_buttonFont = CreateFont(12, 0, 0, 0, 600, 0, 0, 0, 0, 0, 0, 0, FF_MODERN, "Microsoft Sans Serif");  // engage/disengage button text
+    m_statusFont = oapiCreateFont(12, true, "Microsoft Sans Serif");  // ENGAGED or DISENGAGED
+    m_numberFont = oapiCreateFont(12, true, "Microsoft Sans Serif");  // bank/pitch number text
+    m_buttonFont = oapiCreateFont(12, true, "Microsoft Sans Serif");  // engage/disengage button text
 }
 
 void DescentHoldMultiDisplayMode::Deactivate()
 {
     DestroySurface(&m_backgroundSurface);
-    DeleteObject(m_statusFont);
-    DeleteObject(m_numberFont);
-    DeleteObject(m_buttonFont);
+    oapiReleaseFont(m_statusFont);
+    oapiReleaseFont(m_numberFont);
+    oapiReleaseFont(m_buttonFont);
 }
 
 bool DescentHoldMultiDisplayMode::Redraw2D(const int event, const SURFHANDLE surf)
@@ -91,14 +90,14 @@ bool DescentHoldMultiDisplayMode::Redraw2D(const int event, const SURFHANDLE sur
     DeltaGliderXR1::SafeBlt(surf, m_backgroundSurface, 0, 0, 0, 0, screenSize.x, screenSize.y);
 
     // obtain device context and save existing font
-    HDC hDC = m_pParentMDA->GetDC(surf);
-    HFONT hPrevObject = (HFONT)SelectObject(hDC, m_statusFont); // will render status text first
-    SetBkMode(hDC, TRANSPARENT);
-    SetTextAlign(hDC, TA_LEFT);     // default to LEFT alignment
+    oapi::Sketchpad *skp = oapiGetSketchpad(surf);
+    skp->SetFont(m_statusFont);
+    skp->SetBackgroundMode(oapi::Sketchpad::BkgMode::BK_TRANSPARENT);
+    skp->SetTextAlign(oapi::Sketchpad::TAlign_horizontal::LEFT);
 
     // render autopilot status
     const char* pStatus;        // set below
-    COLORREF statusColor;
+    uint32_t statusColor;
     const bool engaged = (GetXR1().m_customAutopilotMode == AUTOPILOT::AP_DESCENTHOLD);
     if (engaged && (GetXR1().m_customAutopilotSuspended))
     {
@@ -117,17 +116,17 @@ bool DescentHoldMultiDisplayMode::Redraw2D(const int event, const SURFHANDLE sur
             statusColor = CREF(BRIGHT_YELLOW);
         }
     }
-    SetTextColor(hDC, statusColor);
-    TextOut(hDC, 46, 24, pStatus, static_cast<int>(strlen(pStatus)));
+    skp->SetTextColor(statusColor);
+    skp->Text(46, 24, pStatus, static_cast<int>(strlen(pStatus)));
 
     // render button text
-    SelectObject(hDC, m_buttonFont);
+    skp->SetFont(m_buttonFont);
     const char* pEngageDisengage = (engaged ? "Disengage" : "Engage");
-    SetTextColor(hDC, CREF(LIGHT_BLUE));
-    TextOut(hDC, 27, 43, pEngageDisengage, static_cast<int>(strlen(pEngageDisengage)));
+    skp->SetTextColor(CREF(LIGHT_BLUE));
+    skp->Text(27, 43, pEngageDisengage, static_cast<int>(strlen(pEngageDisengage)));
 
-    SelectObject(hDC, m_numberFont);
-    SetTextColor(hDC, CREF(OFF_WHITE217));
+    skp->SetFont(m_numberFont);
+    skp->SetTextColor(CREF(OFF_WHITE217));
     char temp[15];
 
     // vertical speed
@@ -141,7 +140,7 @@ bool DescentHoldMultiDisplayMode::Redraw2D(const int event, const SURFHANDLE sur
     else if (vs < -999.99)
         vs = -999.99;
     sprintf(temp, "%-+7.2f", vs);
-    TextOut(hDC, 49, 62, temp, static_cast<int>(strlen(temp)));
+    skp->Text(49, 62, temp, static_cast<int>(strlen(temp)));
 
     // altitude
     double alt = GetXR1().GetGearFullyUncompressedAltitude();   // adjust for gear down and/or GroundContact
@@ -151,24 +150,24 @@ bool DescentHoldMultiDisplayMode::Redraw2D(const int event, const SURFHANDLE sur
     else if (alt < -999999.9)
         alt = -999999.9;
     sprintf(temp, "%-8.1f", alt);
-    TextOut(hDC, 49, 73, temp, static_cast<int>(strlen(temp)));
+    skp->Text(49, 73, temp, static_cast<int>(strlen(temp)));
 
     // max hover engine acc based on ship mass
     const double maxHoverAcc = GetXR1().m_maxShipHoverAcc;
     if (fabs(maxHoverAcc) > 99.999)        // keep in range
-        sprintf(temp, "------ m/s²");
+        sprintf(temp, "------ m/sÂ²");
     else
-        sprintf(temp, "%.3f m/s²", maxHoverAcc);
+        sprintf(temp, "%.3f m/sÂ²", maxHoverAcc);
 
-    COLORREF cref;  // reused later as well
+    uint32_t cref;  // reused later as well
     if (maxHoverAcc <= 0)
         cref = CREF(MEDB_RED);
     else if (maxHoverAcc <= 1.0)
         cref = CREF(BRIGHT_YELLOW);
     else
         cref = CREF(BRIGHT_GREEN);
-    SetTextColor(hDC, cref);
-    TextOut(hDC, 61, 95, temp, static_cast<int>(strlen(temp)));
+    skp->SetTextColor(cref);
+    skp->Text(61, 95, temp, static_cast<int>(strlen(temp)));
 
     // hover thrurst pct 
     double hoverThrustFrac = GetVessel().GetThrusterGroupLevel(THGROUP_HOVER);  // do not round this; sprintf will do it
@@ -181,18 +180,16 @@ bool DescentHoldMultiDisplayMode::Redraw2D(const int event, const SURFHANDLE sur
     else
         cref = CREF(BRIGHT_GREEN);
 
-    SetTextColor(hDC, cref);
-    TextOut(hDC, 61, 84, temp, static_cast<int>(strlen(temp)));
+    skp->SetTextColor(cref);
+    skp->Text(61, 84, temp, static_cast<int>(strlen(temp)));
 
     // render the set ascent or descent rate
     sprintf(temp, "%+.1f", GetXR1().m_setDescentRate);
-    SetTextAlign(hDC, TA_RIGHT);
-    SetTextColor(hDC, CREF(LIGHT_BLUE));
-    TextOut(hDC, 121, 48, temp, static_cast<int>(strlen(temp)));
+    skp->SetTextAlign(oapi::Sketchpad::TAlign_horizontal::RIGHT);
+    skp->SetTextColor(CREF(LIGHT_BLUE));
+    skp->Text(121, 48, temp, static_cast<int>(strlen(temp)));
 
-    // restore previous font and release device context
-    SelectObject(hDC, hPrevObject);
-    m_pParentMDA->ReleaseDC(surf, hDC);
+    oapiReleaseSketchpad(skp);
 
     return true;
 }

@@ -21,166 +21,13 @@
 
 // ==============================================================
 
-#include "resource.h"
-
 #include "DeltaGliderXR1.h"
 #include "XR1MultiDisplayArea.h"
+#include "Bitmaps.h"
 
 // Note: as of D3D9 RC23 there is no difference in framerate between sketchpad and GetDC on this 
 // MDA area. In addition, the font control isn't quite as precise under sketchpad (FF_MODERN fonts looks a lot
 // better in the MDA), so I am keeping the GetDC version for now.
-#if 1  // GetDC
-// Constructor
-HullTempsMultiDisplayMode::HullTempsMultiDisplayMode(int modeNumber) :
-    MultiDisplayMode(modeNumber),
-    m_backgroundSurface(0), m_indicatorSurface(0)
-{
-    m_kfcButtonCoord.x = 24;
-    m_kfcButtonCoord.y = 25;
-}
-
-void HullTempsMultiDisplayMode::Activate()
-{
-    m_backgroundSurface = CreateSurface(IDB_HULL_TEMP_MULTI_DISPLAY);
-    m_indicatorSurface = CreateSurface(IDB_INDICATOR2);
-    m_pParentMDA->SetSurfaceColorKey(m_indicatorSurface, CWHITE);
-
-    m_pKfcFont = CreateFont(14, 0, 0, 0, 600, 0, 0, 0, 0, 0, 0, 0, FF_MODERN, "Microsoft Sans Serif");
-    m_pCoolantFont = CreateFont(12, 0, 0, 0, 600, 0, 0, 0, 0, 0, 0, 0, FF_MODERN, "Microsoft Sans Serif");
-}
-
-void HullTempsMultiDisplayMode::Deactivate()
-{
-    DestroySurface(&m_backgroundSurface);
-    DestroySurface(&m_indicatorSurface);
-    DeleteObject(m_pKfcFont);
-    DeleteObject(m_pCoolantFont);
-}
-
-bool HullTempsMultiDisplayMode::Redraw2D(const int event, const SURFHANDLE surf)
-{
-    // Always re-render everything; it is too error-prone to try to track all values and clear any 
-    // old data underneath from the previous render.
-
-    // 
-    // Render the graphics
-    // NOTE: must render these BEFORE any text, or the graphics will not paint because of the SelectObject call.
-    //
-
-    // render the background
-    const COORD2& screenSize = GetScreenSize();
-    DeltaGliderXR1::SafeBlt(surf, m_backgroundSurface, 0, 0, 0, 0, screenSize.x, screenSize.y);
-
-    // detect the highest temperature percentage of all surfaces
-    double highestTempFrac = GetHighestTempFrac();  // max percentage of any hull temperature to its limit
-
-    // Render the hull temperature limits gauge; cannot go negative since it is in degrees K
-    if (highestTempFrac > 1.0)
-        highestTempFrac = 1.0;   // keep gauge in range
-
-    int maxIndex = 83;   // total height = 84 pixels (index 0-83, inclusive)
-    int index = static_cast<int>((maxIndex * highestTempFrac) + 0.5);  // round to nearest pixel
-    int tgtY = 102 - index;   // center-3 pixels
-    //      tgt,  src,                tgtx,tgty,srcx,srcy,w,h, <use predefined color key>
-    DeltaGliderXR1::SafeBlt(surf, m_indicatorSurface, 8, tgtY, 0, 0, 6, 7, SURF_PREDEF_CK);
-
-    // Render the coolant temperature gauge
-    // round to nearest pixel
-    const double coolantTemp = GetXR1().m_coolantTemp;  // in degrees C
-    double frac = (coolantTemp - MIN_COOLANT_GAUGE_TEMP) / (MAX_COOLANT_GAUGE_TEMP - MIN_COOLANT_GAUGE_TEMP);
-
-    // keep gauge in range
-    if (frac < 0.0)
-        frac = 0;
-    else if (frac > 1.0)
-        frac = 1.0;
-
-    maxIndex = 72;      // 0-72 inclusive
-    index = static_cast<int>((maxIndex * frac) + 0.5);
-    tgtY = 91 - index;   // center-3 pixels
-    //      tgt,  src,                tgtx,tgty,srcx,srcy,w,h, <use predefined color key>
-    DeltaGliderXR1::SafeBlt(surf, m_indicatorSurface, 165, tgtY, 6, 0, 6, 7, SURF_PREDEF_CK);
-
-    // 
-    // Now draw the text
-    //
-
-    // NOTE: according to jarmonik invoking oapiClearSurface before a GetDC improves performance on the D3D9 client,
-    // but unfortunately we can't do that here since we are rendering on top of a background that we blitted.
-
-    // obtain device context and save existing font
-    HDC hDC = m_pParentMDA->GetDC(surf);
-    HFONT hPrevObject = (HFONT)SelectObject(hDC, m_pKfcFont);
-
-    // render our K/F/C button temp label if necessary
-    SetBkMode(hDC, TRANSPARENT);
-    SetTextColor(hDC, CREF(LIGHT_BLUE));  // use CREF macro to convert to Windows' Blue, Green, Red COLORREF
-    SetTextAlign(hDC, TA_LEFT);
-    char* pScale;
-    if (GetXR1().m_activeTempScale == TempScale::Kelvin)
-        pScale = "°K";
-    else if (GetXR1().m_activeTempScale == TempScale::Celsius)
-        pScale = "°C";
-    else
-        pScale = "°F";
-
-    TextOut(hDC, 35, 22, pScale, static_cast<int>(strlen(pScale)));
-
-    char tempStr[12];   // temperature string; reused for each temperature; includes 1 extra char
-
-    // EXT 
-    SetTextColor(hDC, CREF(OFF_WHITE192));
-    SetTextAlign(hDC, TA_CENTER);
-    GetTemperatureStr(GetXR1().GetExternalTemperature(), tempStr);
-    TextOut(hDC, 142, 36, tempStr, static_cast<int>(strlen(tempStr)));
-
-    const HullTemperatureLimits& limits = GetXR1().m_hullTemperatureLimits;
-
-    // NOSECONE 
-    SetTextColor(hDC, GetTempCREF(GetXR1().m_noseconeTemp, limits.noseCone, GetNoseDoorStatus()));
-    SetTextAlign(hDC, TA_CENTER);
-    GetTemperatureStr(GetXR1().m_noseconeTemp, tempStr);
-    TextOut(hDC, 91, 22, tempStr, static_cast<int>(strlen(tempStr)));
-
-    // LEFT WING
-    const int wingY = 57;
-    SetTextColor(hDC, GetTempCREF(GetXR1().m_leftWingTemp, limits.wings, GetLeftWingDoorStatus()));
-    SetTextAlign(hDC, TA_RIGHT);
-    GetTemperatureStr(GetXR1().m_leftWingTemp, tempStr);
-    TextOut(hDC, 65, wingY, tempStr, static_cast<int>(strlen(tempStr)));
-
-    // RIGHT WING
-    SetTextColor(hDC, GetTempCREF(GetXR1().m_rightWingTemp, limits.wings, GetRightWingDoorStatus()));
-    SetTextAlign(hDC, TA_LEFT);
-    GetTemperatureStr(GetXR1().m_rightWingTemp, tempStr);
-    TextOut(hDC, 119, wingY, tempStr, static_cast<int>(strlen(tempStr)));
-
-    // COCKPIT
-    SetTextColor(hDC, GetTempCREF(GetXR1().m_cockpitTemp, limits.cockpit, GetCockpitDoorStatus()));
-    SetTextAlign(hDC, TA_RIGHT);
-    GetTemperatureStr(GetXR1().m_cockpitTemp, tempStr);
-    TextOut(hDC, 78, 38, tempStr, static_cast<int>(strlen(tempStr)));
-
-    // TOP HULL
-    SetTextColor(hDC, GetTempCREF(GetXR1().m_topHullTemp, limits.topHull, GetTopHullDoorStatus()));
-    SetTextAlign(hDC, TA_CENTER);
-    GetTemperatureStr(GetXR1().m_topHullTemp, tempStr);
-    TextOut(hDC, 91, 75, tempStr, static_cast<int>(strlen(tempStr)));
-
-    // COOL (coolant temperature)
-    SelectObject(hDC, m_pCoolantFont);       // use smaller font
-    SetTextColor(hDC, GetValueCREF(coolantTemp, WARN_COOLANT_TEMP, CRITICAL_COOLANT_TEMP));  // do not round value
-    SetTextAlign(hDC, TA_LEFT);
-    GetCoolantTemperatureStr(coolantTemp, tempStr);
-    TextOut(hDC, 134, 82, tempStr, static_cast<int>(strlen(tempStr)));
-
-    // restore previous font and release device context
-    SelectObject(hDC, hPrevObject);
-    m_pParentMDA->ReleaseDC(surf, hDC);
-
-    return true;
-}
-#else // SKETCHPAD INTERFACE
 
 //
 // Refactored to use the new sketchpad interface for improved performance under the D3D9 client
@@ -268,13 +115,13 @@ bool HullTempsMultiDisplayMode::Redraw2D(const int event, const SURFHANDLE surf)
 
     const int fontSizeDelta = -1;  // text Y coordinate adjustment for larger font size for sketchpad
 
-    char* pScale;
-    if (GetXR1().m_activeTempScale == Kelvin)
-        pScale = "°K";
-    else if (GetXR1().m_activeTempScale == Celsius)
-        pScale = "°C";
+    const char* pScale;
+    if (GetXR1().m_activeTempScale == TempScale::Kelvin)
+        pScale = "\370K";
+    else if (GetXR1().m_activeTempScale == TempScale::Celsius)
+        pScale = "\370C";
     else
-        pScale = "°F";
+        pScale = "\370F";
 
     skp->Text(35, 22 + fontSizeDelta, pScale, static_cast<int>(strlen(pScale)));
 
@@ -332,7 +179,6 @@ bool HullTempsMultiDisplayMode::Redraw2D(const int event, const SURFHANDLE surf)
 
     return true;
 }
-#endif  // GetDC / Sketchpad impls
 
 // returns the highest temperature fraction for any surface (0...n).  
 double HullTempsMultiDisplayMode::GetHighestTempFrac()
@@ -393,7 +239,7 @@ void HullTempsMultiDisplayMode::GetCoolantTemperatureStr(double tempC, char* pSt
 
     // Do not round the value!  We need to match the warning PostStep exactly, and rounding up makes us arrive early.
     // HOWEVER: NOTE THAT sprintf will round the value!
-    sprintf(pStrOut, "%.1lf°", tempConverted);
+    sprintf(pStrOut, "%.1lfï¿½", tempConverted);
 }
 
 // convert temperature in K to a displayable string 
@@ -428,7 +274,7 @@ void HullTempsMultiDisplayMode::GetTemperatureStr(double tempK, char* pStrOut)
 
     // Do not round the value!  We want to match the damage code exactly (although it is technically not critical), and rounding up makes us arrive early.
 
-    sprintf(pStrOut, "%.1lf°", tempConverted);
+    sprintf(pStrOut, "%.1lfï¿½", tempConverted);
 }
 
 bool HullTempsMultiDisplayMode::ProcessMouseEvent(const int event, const int mx, const int my)

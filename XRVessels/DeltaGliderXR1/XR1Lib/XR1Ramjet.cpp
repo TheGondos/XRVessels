@@ -47,7 +47,7 @@ XR1Ramjet::~XR1Ramjet ()
 	if (nthdef) 
     {  
         // delete list of thruster definitions
-		for (UINT i = 0; i < nthdef; i++)
+		for (unsigned int i = 0; i < nthdef; i++)
 			delete thdef[i];
 		delete []thdef;
 	}
@@ -108,7 +108,7 @@ void XR1Ramjet::Thrust (double *F) const
 
         // DEBUG: sprintf(oapiDebugString(), "Td=%lf, precov=%lf, dmafac=%lf, pd=%lf" , Td, precov, dmafac, pd);
 
-		for (UINT i = 0; i < nthdef; i++) 
+		for (unsigned int i = 0; i < nthdef; i++) 
         {
 			Tb0 = thdef[i]->Tb_max;                        // max burner temperature
 
@@ -182,17 +182,19 @@ engines_off:
 	} 
     else  // no atmospheric parameters or engines disabled
     {   
-		for (UINT i = 0; i < nthdef; i++)
+		for (unsigned int i = 0; i < nthdef; i++)
         {
             thdef[i]->dmf = 0.0;
 			thdef[i]->F = F[i] = 0.0;
-            thdef[i]->T[0] = thdef[i]->T[1] = thdef[i]->T[0] = vessel->GetExternalTemperature();  // set to external temperature
+            thdef[i]->T[0] = vessel->GetExternalTemperature();  // set to external temperature
+            thdef[i]->T[1] = vessel->GetExternalTemperature();  // set to external temperature
+            thdef[i]->T[0] = vessel->GetExternalTemperature();  // set to external temperature
             thdef[i]->pd = 0;       // zero pressure
 		}
 	}
 }
 
-double XR1Ramjet::TSFC (UINT idx) const
+double XR1Ramjet::TSFC (unsigned int idx) const
 {
 	const double eps = 1e-5;
 	return thdef[idx]->dmf/(thdef[idx]->F+eps);
@@ -202,7 +204,7 @@ double XR1Ramjet::TSFC (UINT idx) const
 //   idx = 0 or 1 (left or right)
 //   which = 0 (diffuser), 1 (burner), or 2 (exhaust)
 // TODO: refactor 'which' to be an enum; the old integer constants are holdovers from the original DeltaGlider code
-double XR1Ramjet::Temp(UINT idx, UINT which) const
+double XR1Ramjet::Temp(unsigned int idx, unsigned int which) const
 { 
     const double freestreamTemp = vessel->GetExternalTemperature();
 

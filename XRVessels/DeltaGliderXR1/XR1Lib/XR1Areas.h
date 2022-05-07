@@ -31,7 +31,7 @@
 #pragma once
 
 #include "Orbitersdk.h"
-#include "vessel3ext.h"
+#include "Vessel3Ext.h"
 #include "Area.h"
 #include "XR1Colors.h"
 
@@ -54,8 +54,8 @@ public:
     DeltaGliderXR1 &GetXR1() const { return static_cast<DeltaGliderXR1 &>(GetVessel()); }
 
     // utility methods
-    COLORREF XR1Area::GetTempCREF(const double tempK, double limitK, const DoorStatus doorStatus) const;
-    COLORREF GetValueCREF(double value, double warningLimit, double criticalLimit) const;
+    uint32_t GetTempCREF(const double tempK, double limitK, const DoorStatus doorStatus) const;
+    uint32_t GetValueCREF(double value, double warningLimit, double criticalLimit) const;
 
     // static worker methods to convert values
     static double MetersToFeet(const double meters) { return (meters * 3.2808399); }
@@ -80,7 +80,7 @@ public:
     enum class POSITION { UP, DOWN, CENTER };               // switch position
     enum class SWITCHES { LEFT, RIGHT, BOTH, SINGLE, NA };  // which switch(es) moved?   NOTE: do not change the order of these values!
     VerticalCenteringRockerSwitchArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID, const int meshTextureID, bool isDual, bool reverseRotation = false, POSITION initialPosition = POSITION::CENTER);
-    void SetXRAnimationHandle(UINT * const pAnimationHandle) { m_pAnimationHandle = pAnimationHandle; }  // VC 3D switch; defaults to nullptr
+    void SetXRAnimationHandle(unsigned int * const pAnimationHandle) { m_pAnimationHandle = pAnimationHandle; }  // VC 3D switch; defaults to nullptr
     virtual void Activate();
     virtual bool Redraw2D(const int event, const SURFHANDLE surf);
     virtual bool Redraw3D(const int event, const SURFHANDLE surf);
@@ -114,7 +114,7 @@ protected:
     virtual void ProcessSwitchEvent(SWITCHES switches, POSITION position) = 0;
 
     // data
-    UINT *m_pAnimationHandle;
+    unsigned int *m_pAnimationHandle;
     POSITION m_initialPosition;         // switch is set to this on activation
     POSITION m_lastSwitchPosition[2];   // UP, DOWN, CENTER
     bool m_isDual;
@@ -129,7 +129,7 @@ public:
     enum class POSITION { LEFT, RIGHT, CENTER };          // switch position
     enum class SWITCHES { TOP, BOTTOM, BOTH, SINGLE, NA };  // which switch(es) moved?   NOTE: do not change the order of these values!
     HorizontalCenteringRockerSwitchArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID, const int meshTextureID, bool isDual, bool reverseRotation = false, POSITION initialPosition = POSITION::CENTER);
-    void SetXRAnimationHandle(UINT * const pAnimationHandle) { m_pAnimationHandle = pAnimationHandle; }  // VC 3D switch; defaults to nullptr
+    void SetXRAnimationHandle(unsigned int * const pAnimationHandle) { m_pAnimationHandle = pAnimationHandle; }  // VC 3D switch; defaults to nullptr
     virtual void Activate();
     virtual bool Redraw2D(const int event, const SURFHANDLE surf);
     virtual bool Redraw3D(const int event, const SURFHANDLE surf);
@@ -163,7 +163,7 @@ protected:
     virtual void ProcessSwitchEvent(SWITCHES switches, HorizontalCenteringRockerSwitchArea::POSITION position) = 0;
 
     // data
-    UINT *m_pAnimationHandle;
+    unsigned int *m_pAnimationHandle;
     HorizontalCenteringRockerSwitchArea::POSITION m_initialPosition;         // switch is set to this on activation
     HorizontalCenteringRockerSwitchArea::POSITION m_lastSwitchPosition[2];   // LEFT, RIGHT, CENTER
     bool m_isDual;
@@ -357,14 +357,14 @@ public:
     virtual bool Redraw2D(const int event, const SURFHANDLE surf);
    
 protected:
-    void DrawNeedle(HDC hDC, int x, int w, double rad, double angle, double speed = 3.0);
+    void DrawNeedle(oapi::Sketchpad *skp, int x, int w, double rad, double angle, double speed = 3.0);
     // the subclass must hook this to determine the needle angle
     virtual double GetDialAngle() = 0;
 
     // data
     double m_initialAngle;        // angle on initial render, in radians
     double m_lastIndicatorAngle;  // angle in radians
-    HPEN m_pen0, m_pen1;
+    oapi::Pen *m_pen0, *m_pen1;
 };
 
 //----------------------------------------------------------------------------------
@@ -397,7 +397,7 @@ public:
 
 protected:
     const bool &m_isOn;
-    DWORD m_color;
+    uint32_t m_color;
 };
 
 //----------------------------------------------------------------------------------
@@ -405,7 +405,7 @@ protected:
 class DoorIndicatorArea : public XR1Area
 {
 public:
-    DoorIndicatorArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID, const int meshTextureID, const DoorStatus *pDoorStatus, const int surfaceIDB, const double *pAnimationState);
+    DoorIndicatorArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID, const int meshTextureID, const DoorStatus *pDoorStatus, const char *surfaceIDB, const double *pAnimationState);
     virtual void Activate();
     virtual bool Redraw2D(const int event, const SURFHANDLE surf);
     virtual void clbkPrePostStep(const double simt, const double simdt, const double mjd);
@@ -413,9 +413,9 @@ public:
 protected:
     const DoorStatus *m_pDoorStatus;
     int   m_indicatorAreaID;
-    int   m_surfaceIDB;
+    const char *m_surfaceIDB;
     int   m_transitIndex;     // pixel index of transit markers
-    DWORD m_transitColor;     // current color of transit markers
+    uint32_t m_transitColor;     // current color of transit markers
     const double *m_pAnimationState;  // may be null
     bool  m_isTransitVisible; // true if 'Transit' is visible during blinking
 };
@@ -458,18 +458,18 @@ public:
             if (m_pBarArea == nullptr)     // no actual render for this object before?
                 return -1;
 
-            _ASSERTE(startingDarkValue <= value);
-            _ASSERTE(value <= maxValue);
+            assert(startingDarkValue <= value);
+            assert(value <= maxValue);
             const double workingValue = ((bp == BARPORTION::DARK) ? value : startingDarkValue);
             double fraction = SAFE_FRACTION(workingValue, maxValue);  // 0...1
             if (fraction > 1.0)
             {
-                _ASSERTE(false);  // code bug
+                assert(false);  // code bug
                 fraction = 1.0;   
             }
             else if (fraction < 0)
             {
-                _ASSERTE(false);  // code bug
+                assert(false);  // code bug
                 fraction = 0;   
             }
 
@@ -754,7 +754,7 @@ class LargeBarArea : public BarArea
 {
 public:
     // Constructor
-    LargeBarArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID, int sizeX, int sizeY, int resourceID, int darkResourceID);
+    LargeBarArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID, int sizeX, int sizeY, const char *resourceID, const char *darkResourceID);
     virtual void Activate();
     virtual bool Redraw2D(const int event, const SURFHANDLE surf);
     virtual void Deactivate();
@@ -763,8 +763,8 @@ protected:
     virtual RENDERDATA GetRenderData() = 0;  // subclasses must implement this
 
     // state data 
-    int m_resourceID;
-    int m_darkResourceID;
+    const char *m_resourceID;
+    const char *m_darkResourceID;
 
     SURFHANDLE m_darkSurface;   // our dark surface handle
 };
@@ -774,8 +774,8 @@ protected:
 class LargeFuelBarArea : public LargeBarArea
 {
 public:
-    LargeFuelBarArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID, double maxFuelQty, const double *pFuelRemaining, const int resourceID,  const int darkResourceID, const double gaugeMinValue = 0);
-    LargeFuelBarArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID, PROPELLANT_HANDLE ph, const int resourceID, const int darkResourceID, const double gaugeMinValue = 0);
+    LargeFuelBarArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID, double maxFuelQty, const double *pFuelRemaining, const char *resourceID,  const char *darkResourceID, const double gaugeMinValue = 0);
+    LargeFuelBarArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID, PROPELLANT_HANDLE ph, const char *resourceID, const char *darkResourceID, const double gaugeMinValue = 0);
 
 protected:
     virtual RENDERDATA GetRenderData();
@@ -791,7 +791,7 @@ protected:
 class LargeLOXBarArea : public LargeBarArea
 {
 public:
-    LargeLOXBarArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID, const int resourceID, const int darkResourceID);
+    LargeLOXBarArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID, const char *resourceID, const char *darkResourceID);
 
 protected:
     virtual RENDERDATA GetRenderData();
@@ -826,13 +826,13 @@ protected:
 class SupplyHatchToggleSwitchArea : public ToggleSwitchArea
 {
 public:
-    SupplyHatchToggleSwitchArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID, const int indicatorAreaID, DoorStatus &doorStatus, const char *pHatchName, const UINT &animHandle);
+    SupplyHatchToggleSwitchArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID, const int indicatorAreaID, DoorStatus &doorStatus, const char *pHatchName, const unsigned int &animHandle);
 
 protected:
     virtual bool ProcessSwitchEvent(bool switchIsOn);
     virtual bool isOn();
     
-    const UINT &m_animHandle;   // animation handle for this hatch; 0 == none
+    const unsigned int &m_animHandle;   // animation handle for this hatch; 0 == none
     DoorStatus &m_doorStatus;
     char m_hatchName[20]; // e.g., "Fuel", "LOX", etc.; used to construct wav filename
 };

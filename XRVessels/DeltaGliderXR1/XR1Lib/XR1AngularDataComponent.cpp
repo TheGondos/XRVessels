@@ -30,6 +30,7 @@
 #include "DeltaGliderXR1.h"
 #include "XR1AngularDataComponent.h"
 #include "AreaIDs.h"
+#include "Bitmaps.h"
 
 // topLeft = top-left corner @ inside edge of screen
 AngularDataComponent::AngularDataComponent(InstrumentPanel &parentPanel, COORD2 topLeft, const int meshTextureID) :
@@ -65,7 +66,7 @@ void AngularDataArea::Activate()
     Area::Activate();  // invoke superclass method
 
     int sizeX, sizeY;
-    int surfaceID;
+    const char *surfaceID;
     
     switch (m_type)
     {

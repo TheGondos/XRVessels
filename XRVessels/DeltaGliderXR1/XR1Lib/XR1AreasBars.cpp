@@ -66,8 +66,8 @@ bool BarArea::Redraw2D(const int event, const SURFHANDLE surf)
         if ((brightIndex > 0) || (darkIndex > 0))  // anything on the gauge at all?
         {
             // create the color based on the enum
-            DWORD color;
-            DWORD darkColor;
+            uint32_t color;
+            uint32_t darkColor;
             switch (renderData.color)
             {
             case COLOR::GREEN:
@@ -124,7 +124,7 @@ bool BarArea::Redraw2D(const int event, const SURFHANDLE surf)
 
 // sizeX, sizeY = size of bar
 // resourceID = texture to use for bar
-LargeBarArea::LargeBarArea(InstrumentPanel& parentPanel, const COORD2 panelCoordinates, const int areaID, int sizeX, int sizeY, int resourceID, int darkResourceID) :
+LargeBarArea::LargeBarArea(InstrumentPanel& parentPanel, const COORD2 panelCoordinates, const int areaID, int sizeX, int sizeY, const char *resourceID, const char *darkResourceID) :
     BarArea(parentPanel, panelCoordinates, areaID, sizeX, sizeY, ORIENTATION::VERTICAL),
     m_resourceID(resourceID), m_darkResourceID(darkResourceID), m_darkSurface(nullptr)
 {
@@ -135,7 +135,7 @@ void LargeBarArea::Activate()
     Area::Activate();  // invoke superclass method
     m_mainSurface = CreateSurface(m_resourceID);
 
-    if (m_darkResourceID > 0)  // dark resource is optional
+    if (m_darkResourceID != nullptr)  // dark resource is optional
         m_darkSurface = CreateSurface(m_darkResourceID);
 
     oapiRegisterPanelArea(GetAreaID(), GetRectForSize(m_sizeX, m_sizeY), PANEL_REDRAW_ALWAYS, PANEL_MOUSE_IGNORE, PANEL_MAP_BGONREQUEST);
@@ -196,14 +196,14 @@ bool LargeBarArea::Redraw2D(const int event, const SURFHANDLE surf)
 //----------------------------------------------------------------------------------
 
 // darkResourceID: -1 = none
-LargeFuelBarArea::LargeFuelBarArea(InstrumentPanel& parentPanel, const COORD2 panelCoordinates, const int areaID, PROPELLANT_HANDLE ph, const int resourceID, const int darkResourceID, const double gaugeMinValue) :
+LargeFuelBarArea::LargeFuelBarArea(InstrumentPanel& parentPanel, const COORD2 panelCoordinates, const int areaID, PROPELLANT_HANDLE ph, const char *resourceID, const char *darkResourceID, const double gaugeMinValue) :
     LargeBarArea(parentPanel, panelCoordinates, areaID, 49, 141, resourceID, darkResourceID),   // 49 wide x 141 high
     m_maxFuelQty(-1), m_pFuelRemaining(nullptr), m_propHandle(ph), m_gaugeMinValue(gaugeMinValue)
 {
 }
 
 
-LargeFuelBarArea::LargeFuelBarArea(InstrumentPanel& parentPanel, const COORD2 panelCoordinates, const int areaID, double maxFuelQty, const double* pFuelRemaining, const int resourceID, const int darkResourceID, const double gaugeMinValue) :
+LargeFuelBarArea::LargeFuelBarArea(InstrumentPanel& parentPanel, const COORD2 panelCoordinates, const int areaID, double maxFuelQty, const double* pFuelRemaining, const char *resourceID, const char *darkResourceID, const double gaugeMinValue) :
     LargeBarArea(parentPanel, panelCoordinates, areaID, 49, 141, resourceID, darkResourceID),   // 49 wide x 141 high, VERTICAL orientation
     m_maxFuelQty(maxFuelQty), m_pFuelRemaining(pFuelRemaining), m_propHandle(nullptr), m_gaugeMinValue(gaugeMinValue)
 {
@@ -241,7 +241,7 @@ BarArea::RENDERDATA LargeFuelBarArea::GetRenderData()
 
 //----------------------------------------------------------------------------------
 
-LargeLOXBarArea::LargeLOXBarArea(InstrumentPanel& parentPanel, const COORD2 panelCoordinates, const int areaID, const int resourceID, const int darkResourceID) :
+LargeLOXBarArea::LargeLOXBarArea(InstrumentPanel& parentPanel, const COORD2 panelCoordinates, const int areaID, const char *resourceID, const char *darkResourceID) :
     LargeBarArea(parentPanel, panelCoordinates, areaID, 49, 141, resourceID, darkResourceID)   // 49 wide x 141 high
 {
 }

@@ -27,7 +27,6 @@
 // Handles non-component 2D and 2D/3D shared main panel areas
 // ==============================================================
 
-#include "resource.h"
 #include "AreaIDs.h"
 
 #include "DeltaGliderXR1.h"
@@ -119,7 +118,7 @@ void ElevatorTrimArea::Activate()
 bool ElevatorTrimArea::Redraw2D(const int event, const SURFHANDLE surf)
 {
     double level = GetVessel().GetControlSurfaceLevel(AIRCTRL_ELEVATORTRIM);
-    UINT pos = (UINT)((1.0+level)*23.0);
+    int pos = (int)((1.0+level)*23.0);
     
     if (pos != m_elevTrimPos) // has trim moved since last redraw?
     {
@@ -138,7 +137,7 @@ bool ElevatorTrimArea::Redraw2D(const int event, const SURFHANDLE surf)
 bool ElevatorTrimArea::Redraw3D(const int event, const SURFHANDLE surf)
 {
     double level = GetVessel().GetControlSurfaceLevel(AIRCTRL_ELEVATORTRIM);
-    UINT pos = (UINT)((1.0+level)*23.0);
+    int pos = (int)((1.0+level)*23.0);
     
     if (pos != m_elevTrimPos) // has trim moved since last redraw?
     {
@@ -480,7 +479,7 @@ bool MWSArea::Redraw3D(const int event, const SURFHANDLE surf)
     if (GetXR1().vcmesh != nullptr)
     {
         NTVERTEX vtx[4];
-		static WORD vidx[4] = {32,33,34,35};
+		static uint16_t vidx[4] = {32,33,34,35};
 		GROUPEDITSPEC ges;
 		ges.flags = GRPEDIT_VTXTEXU;
 		ges.nVtx = 4;
@@ -520,7 +519,7 @@ bool MWSArea::ProcessMouseEvent(const int event, const int mx, const int my)
 
 //----------------------------------------------------------------------------------
 
-RCSModeArea::RCSModeArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID, const WORD resourceID) :
+RCSModeArea::RCSModeArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID, const char *resourceID) :
     XR1Area(parentPanel, panelCoordinates, areaID),
     m_resourceID(resourceID)
 

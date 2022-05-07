@@ -298,10 +298,10 @@ bool XR3Phoenix::CheckDoorFailure(DoorStatus *doorStatus)
 
 
 // alieron mesh groups
-static UINT AileronGrp[4] = {GRP_upper_brake_left, GRP_lower_brake_left, GRP_lower_brake_right, GRP_upper_brake_right};
+static unsigned int AileronGrp[4] = {GRP_upper_brake_left, GRP_lower_brake_left, GRP_lower_brake_right, GRP_upper_brake_right};
 
 // elevator mesh groups
-static UINT ElevatorGrp[2] = {GRP_elevator_left, GRP_elevator_right};
+static unsigned int ElevatorGrp[2] = {GRP_elevator_left, GRP_elevator_right};
 
 // invoked at startup and when a crash occurs
 void XR3Phoenix::SetDamageVisuals()

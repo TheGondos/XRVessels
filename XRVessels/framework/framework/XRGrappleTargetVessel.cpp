@@ -25,7 +25,7 @@
 // ==============================================================
 
 #include "XRGrappleTargetVessel.h"
-#include "vessel3ext.h"
+#include "Vessel3Ext.h"
 
 // Constructor
 XRGrappleTargetVessel::XRGrappleTargetVessel(VESSEL &targetVessel, VESSEL3_EXT &parentVessel) :

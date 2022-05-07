@@ -27,12 +27,12 @@
 // DG-XR1 components on the main panel
 // ==============================================================
 
-#include "orbitersdk.h"
-#include "resource.h"
+#include "Orbitersdk.h"
 #include "AreaIDs.h"
 #include "XR1InstrumentPanels.h"
 #include "XR1Areas.h"
 #include "XR1MainPanelComponents.h"
+#include "Bitmaps.h"
 
 // Constructor
 // parentPanel = parent instrument panel
@@ -179,7 +179,7 @@ ScramTSFCGaugeArea::ScramTSFCGaugeArea(InstrumentPanel &parentPanel, const COORD
 VerticalGaugeArea::RENDERDATA ScramTSFCGaugeArea::GetRenderData(const SIDE side)
 {
     // NOTE: must use UNSIGNED int here because TSFC can become very large, tripping the MSB
-    int p = 66 - min(66, static_cast<unsigned int>(GetXR1().ramjet->TSFC(static_cast<unsigned int>(side))*(1e3 * 66.0 / SCRAM_TSFC_GAUGE_MAX)));
+    int p = 66 - std::min(66, static_cast<int>(GetXR1().ramjet->TSFC(static_cast<unsigned int>(side))*(1e3 * 66.0 / SCRAM_TSFC_GAUGE_MAX)));
 
     // show in yellow if off-scale 
     COLOR color = ((p == 0) ? COLOR::YELLOW : COLOR::GREEN);
@@ -237,7 +237,7 @@ void MainTSFCGagueArea::Activate()
     m_yellowIndicatorSurface = CreateSurface(IDB_YELLOW_INDICATOR2);  // yellow indicator arrows
     m_redIndicatorSurface = CreateSurface(IDB_RED_INDICATOR2);        // red indicator arrows
     
-    DWORD white = 0xFFFFFF;           // set WHITE as transparent color; BLACK does not work for some reason!
+    uint32_t white = 0xFFFFFF;           // set WHITE as transparent color; BLACK does not work for some reason!
     SetSurfaceColorKey(m_mainSurface, white);
     SetSurfaceColorKey(m_yellowIndicatorSurface, white);
     SetSurfaceColorKey(m_redIndicatorSurface, white);
@@ -264,7 +264,7 @@ void MainTSFCGagueArea::Redraw2DFirstHook(const int event, SURFHANDLE surf)
     {
         // get bright white color
         // NOTE: cannot use 255,255,255 here: that is the transparent color
-        DWORD fillColor = BRIGHT_WHITE;
+        uint32_t fillColor = BRIGHT_WHITE;
 
         // now render the white bar; must add 3 pixels here because the arrow is seven pixels high and we are one pixel high
         // NOTE: paintable area starts 3 pixes ABOVE bar so we have to adjust for that here by using 69 instead of 66
@@ -298,7 +298,7 @@ VerticalGaugeArea::RENDERDATA MainFlowGaugeArea::GetRenderData(const SIDE side)
             isRetro = true;
     }
 
-    int p = 66 - static_cast<int>(min(totalFlowRate * 66 / MAIN_FLOW_GAUGE_MAX, 66));
+    int p = 66 - static_cast<int>(std::min(totalFlowRate * 66.0 / MAIN_FLOW_GAUGE_MAX, 66.0));
 
     // use a green indicator for main engines or a red indicator for retro engines
     return _RENDERDATA(isRetro ? COLOR::RED : COLOR::GREEN, p);
@@ -672,7 +672,7 @@ void SlipGaugeArea::Activate()
     m_mainSurface   = CreateSurface(IDB_INDICATOR4);
     m_yellowSurface = CreateSurface(IDB_INDICATOR4_YELLOW);
     
-    DWORD white = 0xFFFFFF;           // set WHITE as transparent color; BLACK does not work for some reason!
+    uint32_t white = 0xFFFFFF;           // set WHITE as transparent color; BLACK does not work for some reason!
     SetSurfaceColorKey(m_mainSurface, white);
     SetSurfaceColorKey(m_yellowSurface, white);
 

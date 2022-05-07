@@ -33,9 +33,9 @@
 bool XR5Vanguard::clbkPlaybackEvent(double simt, double event_t, const char* event_type, const char* event)
 {
     // check for XR5-specific events
-    if (!_stricmp(event_type, "ELEVATOR"))
+    if (!strcasecmp(event_type, "ELEVATOR"))
     {
-        ActivateElevator(!_stricmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
+        ActivateElevator(!strcasecmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
         return true;
     }
 

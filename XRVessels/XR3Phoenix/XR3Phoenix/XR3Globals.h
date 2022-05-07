@@ -34,7 +34,7 @@
 #include "XR1Globals.h"   
 
 // size of a mesh group array
-#define SizeOfGrp(grp) (sizeof(grp) / sizeof(UINT))
+#define SizeOfGrp(grp) (sizeof(grp) / sizeof(unsigned int))
 
 // unique panel IDs; standard panels are 0,1,2 and are defined in xr1globals.h
 #define PANEL_OVERHEAD  3   // Orbiter 2D panel ID
@@ -77,5 +77,5 @@ extern const DamageItem D_END;
 // ==============================================================
 // Global callback prototypes 
 
-INT_PTR CALLBACK XR3Ctrl_DlgProc(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK XR3Ctrl_DlgProc(HWND, unsigned int, WPARAM, LPARAM);
 

@@ -28,30 +28,40 @@
 // by the XR1: it for subclasses to use.
 // ==============================================================
 
-#pragma once
-
 #include "DeltaGliderXR1.h"
 #include "XR1PayloadDialog.h"
 #include "resource_common.h"  // for our dialog controls that must match in each subclass that uses this dialog
-#include "ScnEditorAPI.h"
-#include "DlgCtrl.h"
+//#include "ScnEditorAPI.h"
 #include "XRPayload.h"
 #include "XRPayloadBaySlot.h"
+#include <cassert>
+#include <imgui.h>
 
 // static font handles
-HFONT XR1PayloadDialog::s_hOrgFont;      // normal button font handle
-HFONT XR1PayloadDialog::s_hBoldFont;     // bold button font handle
+//HFONT XR1PayloadDialog::s_hOrgFont;      // normal button font handle
+//HFONT XR1PayloadDialog::s_hBoldFont;     // bold button font handle
+
+
+const std::string XR1PayloadDialog::etype = "XR1PayloadDialog";
+DeltaGliderXR1 *XR1PayloadDialog::m_pDGXR1;
+std::string XR1PayloadDialog::m_SelectedPayloadClass;
+
+XR1PayloadDialog::XR1PayloadDialog(const std::string &name) : GUIElement(name, "XR1PayloadDialog") {
+    show = false;
+}
 
 // Invoked at initialization time when the user clicks our "payload" button; instantiates a 
 // new XR1PayloadDialog instance and dispatches messages.  Returns when dialog is closed.
+/*
 void XR1PayloadDialog::EditorFunc(OBJHANDLE hVessel)
 {
     DeltaGliderXR1 *pXR1 = static_cast<DeltaGliderXR1 *>(oapiGetVesselInterface(hVessel));
     Launch(hVessel);
 }
-
+*/
 // method invoked by the Vanguard to open a new instance
 // Returns: handle to new dialog
+/*
 HWND XR1PayloadDialog::Launch(OBJHANDLE hVessel)
 {
     DeltaGliderXR1 *pXR1 = static_cast<DeltaGliderXR1 *>(oapiGetVesselInterface(hVessel));
@@ -62,9 +72,205 @@ HWND XR1PayloadDialog::Launch(OBJHANDLE hVessel)
 
 #define TIMERID_REFRESH_MASS 1
 #define TIMERID_REFRESH_BAY  2
+*/
+
+void XR1PayloadDialog::DrawPayloadSelection() {
+    const XRPayloadClassData **ppAllPayloadClasses = XRPayloadClassData::GetAllAvailableXRPayloads();  // this is a static global array that should not be freed by us
+
+    std::vector<std::string> classes;
+    for (const XRPayloadClassData **ppClassData = ppAllPayloadClasses; *ppClassData != nullptr; ppClassData++) {
+        classes.push_back((*ppClassData)->GetClassname());
+    }
+
+    std::sort(classes.begin(), classes.end());
+
+    ImGui::BeginChild("ChildLeft", ImVec2(ImGui::GetContentRegionAvail().x/4, ImGui::GetContentRegionAvail().y), true);
+
+    for (const auto &c: classes)
+    {
+        const char *pClassname = c.c_str();
+        const bool is_selected = m_SelectedPayloadClass == pClassname;
+        ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+        if(is_selected) node_flags |= ImGuiTreeNodeFlags_Selected;
+        ImGui::TreeNodeEx(pClassname, node_flags);
+        if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
+            m_SelectedPayloadClass = pClassname;
+        }
+    }
+
+    ImGui::EndChild();
+
+    ImGui::SameLine();
+    ImGui::BeginChild("ChildRight", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y), true);
+
+    if(m_SelectedPayloadClass.length()>0) {
+        const XRPayloadClassData &pd = XRPayloadClassData::GetXRPayloadClassDataForClassname(m_SelectedPayloadClass.c_str());
+
+        ImGui::BeginChild("ChildInnerLeft", ImVec2(ImGui::GetContentRegionAvail().y * 2, ImGui::GetContentRegionAvail().y), false);
+
+        // show the bitmap preview, if any (may be null)
+        const ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
+        const ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
+        const ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
+        const ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // 50% opaque white
+        oapiIncrTextureRef(pd.GetThumbnailBitmapHandle());
+        ImGui::ImageButton(pd.GetThumbnailBitmapHandle(), ImVec2(ImGui::GetContentRegionAvail().y * 2, ImGui::GetContentRegionAvail().y), uv_min, uv_max, 0, tint_col, border_col);
+        ImGui::EndChild();
+        ImGui::SameLine();
+        ImGui::BeginChild("ChildInnerRight", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y), false);
+
+        // description
+        ImGui::Text("Description : %s", pd.GetDescription());
+        
+        // mass
+        ImGui::Text("Mass : %.3f", pd.GetMass());
+
+        // dimensions
+        const VECTOR3 dim = pd.GetDimensions();
+        ImGui::Text("Dimensions : %.2f L x %.2f W x %.2f H", dim.z, dim.x, dim.y); 
+
+        // slots occupied
+        const VECTOR3 slots = pd.GetSlotsOccupied();  
+        ImGui::Text("Slots occupied : %.1f L x %.1f W x %.1f H", slots.z, slots.x, slots.y); 
+
+
+        ImGui::EndChild();
+    } else {
+        ImGui::TextUnformatted("No payload selected");
+    }
+    ImGui::EndChild();
+
+}
+
+void XR1PayloadDialog::Show() {
+
+    const ImVec4 emptyColor { 0.0f, 0.0f, 0.0f, 0.0f };
+    const ImVec4 filledColor { 0.4f, 0.8f, 0.4f, 1.0f };
+    const ImVec4 highlightedColor { 0.6f, 0.6f, 0.1f, 1.0f };
+    const ImVec4 disabledColor { 0.8f, 0.1f, 0.1f, 1.0f };
+    ImVec4 cols[slotCount];
+    if(show && slotCount > 0) {
+		ImGui::Begin(name.c_str(), &show);
+        ImGui::BeginChild("ChildTop", ImVec2(ImGui::GetContentRegionAvail().x, 120));
+        DrawPayloadSelection();
+        ImGui::EndChild();
+
+        if(ImGui::Button("Empty Payload Bay")) {
+            // Remove all items of the currently-selected payload.
+            m_pDGXR1->m_pPayloadBay->DeleteAllAttachedPayloadVessels();
+            m_pDGXR1->PlaySound(m_pDGXR1->SwitchOff, DeltaGliderXR1::ST_Other, MED_CLICK);  // medium click 
+        }
+
+        ImGui::SameLine();
+        if(ImGui::Button("Fill Bay") && m_SelectedPayloadClass.length() > 0) {
+            // Fill all open slots in the bay with the currently-selected payload;
+            // this will walk through each slot in order and try to add a module to each.
+
+            m_pDGXR1->m_pPayloadBay->CreateAndAttachPayloadVesselInAllSlots(m_SelectedPayloadClass.c_str());
+            m_pDGXR1->PlaySound(m_pDGXR1->SwitchOn, DeltaGliderXR1::ST_Other, MED_CLICK);  // medium click 
+        }
+
+        ImGui::SameLine();
+        if(ImGui::Button("Remove All") && m_SelectedPayloadClass.length() > 0) {
+            // Remove all items of the currently-selected payload.
+
+            m_pDGXR1->m_pPayloadBay->DeleteAllAttachedPayloadVesselsOfClassname(m_SelectedPayloadClass.c_str());
+            m_pDGXR1->PlaySound(m_pDGXR1->SwitchOff, DeltaGliderXR1::ST_Other, MED_CLICK);  // medium click 
+        }
+
+        XR1PayloadBay *pBay = static_cast<XR1PayloadBay *>(m_pDGXR1->m_pPayloadBay);
+        for (int i=0; i < pBay->GetSlotCount(); i++)
+        {
+            const int slotNumber = i+1;   // slot numbers are one-based
+            const XRPayloadBaySlot *pSlot = pBay->GetSlot(slotNumber);  
+            const bool isEnabled = pSlot->IsEnabled();
+
+            // Set color based on whether payload is in this slot
+            if(isEnabled) {
+                if(pSlot->IsOccupied()) {
+
+                    VESSEL *pChildVessel = pSlot->GetChild();
+                    if (pChildVessel != nullptr && m_SelectedPayloadClass == pChildVessel->GetClassName()) {
+                        cols[i] = highlightedColor;
+                    } else {
+                        cols[i] = filledColor;
+                    }
+                } else {
+                    cols[i] = emptyColor;
+                }
+            } else {
+                // enable/disable the button for this slot
+                cols[i] = disabledColor;
+            }
+        }
+
+        ImGui::BeginChild("ChildSlots", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - 60));
+        int slotClicked = m_pDGXR1->DrawPayloadSlots(cols);
+        ImGui::EndChild();
+
+        if(slotClicked) {
+            const XRPayloadBaySlot *pSlot = pBay->GetSlot(slotClicked);
+            if(pSlot->IsEnabled() && !pSlot->IsOccupied())
+            {
+                AddPayloadToSlot(slotClicked);
+                m_pDGXR1->PlaySound(m_pDGXR1->SwitchOn, DeltaGliderXR1::ST_Other, MED_CLICK);  // medium click 
+            }
+            else
+            {
+                RemovePayloadFromSlot(slotClicked);
+                m_pDGXR1->PlaySound(m_pDGXR1->SwitchOff, DeltaGliderXR1::ST_Other, MED_CLICK);  // medium click 
+            }
+
+        }
+
+
+        const double vesselMass = m_pDGXR1->GetMass();
+        const double payloadMass = m_pDGXR1->GetPayloadMass();
+
+        ImGui::Text("Total Payload Mass : %10.1f kg (%10.1lf lb)", payloadMass, payloadMass * 2.20462262);
+        ImGui::Text("Total Vessel Mass : %10.1f kg (%10.1lf lb)", vesselMass, vesselMass * 2.20462262);
+
+        ImGui::End();
+    }
+}
+
+// Instantiate a new instance of the selected payload vessel and add it to the
+// specified slot if there is room.
+// Returns: true on success, false if slot is already occupied or if there is no room for the new vessel
+bool XR1PayloadDialog::AddPayloadToSlot(int slotNumber)
+{
+    assert(slotNumber > 0);
+    bool retVal = false;
+
+    if (m_SelectedPayloadClass.length()>0)  // anything selected in the box?
+    {
+        retVal = m_pDGXR1->m_pPayloadBay->CreateAndAttachPayloadVessel(m_SelectedPayloadClass.c_str(), slotNumber);
+
+        if (retVal == false)     // no room for payload?
+            m_pDGXR1->PlaySound(DeltaGliderXR1::Error1, DeltaGliderXR1::ST_Other, ERROR1_VOL);      // error beep
+    }
+    
+    return retVal;
+}
+  
+// Delete the vessel in the selected slot
+// Returns: true on success, false if no payload is in the selected slot.
+bool XR1PayloadDialog::RemovePayloadFromSlot(int slotNumber)
+{
+    assert(slotNumber > 0);
+    bool retVal = false;
+
+    XRPayloadBay *pBay = m_pDGXR1->m_pPayloadBay;
+
+    // delete the attached vessel
+    retVal = pBay->DeleteAttachedPayloadVessel(slotNumber);
+    
+    return retVal;
+}
 
 // message proc that handles all our Windows messages
 // Returns: TRUE if message handled, FALSE if message not handled; i.e., the next window in the chain should handle it
+#if 0
 INT_PTR CALLBACK XR1PayloadDialog::Proc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     // handle bay slot buttons here via a for loop since there are an unknown number of them
@@ -329,52 +535,6 @@ bool XR1PayloadDialog::ProcessSlotButtonMsg(HWND hDlg, const int slotNumber, con
     return retVal;
 }
 
-// Instantiate a new instance of the selected payload vessel and add it to the
-// specified slot if there is room.
-// Returns: true on success, false if slot is already occupied or if there is no room for the new vessel
-bool XR1PayloadDialog::AddPayloadToSlot(const int slotNumber, HWND hDlg, HWND hButton)
-{
-    _ASSERTE(slotNumber > 0);
-    bool retVal = false;
-
-    // retrieve selected vessel classname
-    char pSelectedClassname[256];
-    if (GetSelectedPayloadClassname(hDlg, pSelectedClassname, sizeof(pSelectedClassname)) > 0)  // anything selected in the box?
-    {
-        DeltaGliderXR1 &xr1 = GetXR1(hDlg);
-        retVal = xr1.m_pPayloadBay->CreateAndAttachPayloadVessel(pSelectedClassname, slotNumber);
-
-        // update the button enabled/disabled pushed/unpushed states based on the new payload in the bay
-        // We must always rescan in order to "unpush" any failed buttons.
-        RescanBayAndUpdateButtonStates(hDlg);   
-        if (retVal == false)     // no room for payload?
-            xr1.PlaySound(DeltaGliderXR1::Error1, DeltaGliderXR1::ST_Other, ERROR1_VOL);      // error beep
-    }
-    
-    return retVal;
-}
-  
-// Delete the vessel in the selected slot
-// Returns: true on success, false if no payload is in the selected slot.
-bool XR1PayloadDialog::RemovePayloadFromSlot(const int slotNumber, HWND hDlg, HWND hButton)
-{
-    _ASSERTE(slotNumber > 0);
-    bool retVal = false;
-
-    DeltaGliderXR1 &xr1 = GetXR1(hDlg);
-    XRPayloadBay *pBay = xr1.m_pPayloadBay;
-
-    // delete the attached vessel
-    retVal = pBay->DeleteAttachedPayloadVessel(slotNumber);
-    if (retVal) // success?
-    {
-        // update the button enabled/disabled pushed/unpushed states based on the new payload in the bay
-        RescanBayAndUpdateButtonStates(hDlg);   
-    }
-    
-    return retVal;
-}
-
 // Rescan the payload bay and update button states based on the state of the payload bay;
 // a slot that is occupied by a neighboring payload will be disabled.  Note that primary
 // slots (slots to which a payload is attached) are *always* enabled, as are empty slots.
@@ -479,3 +639,4 @@ void XR1PayloadDialog::ProcessSelectedPayloadChanged(HWND hDlg, DeltaGliderXR1 *
         RescanBayAndUpdateButtonStates(hDlg, pXR1);
     }
 }
+#endif

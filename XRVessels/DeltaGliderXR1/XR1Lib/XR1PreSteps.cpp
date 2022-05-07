@@ -31,6 +31,7 @@
 #include "XR1PreSteps.h"
 #include "AreaIDs.h"
 #include "XRPayloadBay.h"
+#include <cassert>
 
 //---------------------------------------------------------------------------
 
@@ -183,7 +184,7 @@ double DrainBayFuelTanksPreStep::FlowBayFuel(const PROPELLANT_HANDLE ph, const b
     }
 
     const double requestedFlowQty = maxInternalTankQty - internalTankQty;
-    _ASSERTE(requestedFlowQty >= 0);  // should never flowing in the other direction here!
+    assert(requestedFlowQty >= 0);  // should never flowing in the other direction here!
     double fuelFlowedToMainTank = 0;
     if (requestedFlowQty > 0)
     {
@@ -275,20 +276,20 @@ void ParkingBrakePreStep::clbkPrePostStep(const double simt, const double simdt,
 					char planetName[256];
 					oapiGetObjectName(GetXR1().GetSurfaceRef(), planetName, sizeof(planetName));  // "Earth", "Mars", etc.
 					
-					char landedStr[256];
+					char landedStr[270];
 					sprintf(landedStr, "Landed %s", planetName);  // "Landed Earth"
 					
 					const char *pVesselNameInScenario = GetXR1().GetName();	// "XR2-01", etc.
 
-					CString filename;
-					filename.Format("%s_temp", pVesselNameInScenario);   // file will be created in $ORBITER_HOME\config
+                    char filename[256];
+                    sprintf(filename, "%s_temp", pVesselNameInScenario);
 
-					FILEHANDLE fh = oapiOpenFile(static_cast<const char *>(filename), FILE_OUT, CONFIG);
+					FILEHANDLE fh = oapiOpenFile(filename, FILE_OUT, CONFIG);
 					oapiWriteScenario_string(fh, "STATUS", landedStr);
 					oapiWriteScenario_float(fh, "HEADING", status.surf_hdg * DEG);
 
 					char gearParams[256];   
-					sprintf(gearParams, "%d %f", GetXR1().gear_status, GetXR1().gear_proc);   // must write out the landing gear status, too, or the Orbiter core will raise the landing gear on calling scenario load
+					sprintf(gearParams, "%d %f", (int)GetXR1().gear_status, GetXR1().gear_proc);   // must write out the landing gear status, too, or the Orbiter core will raise the landing gear on calling scenario load
 					oapiWriteScenario_string(fh, "GEAR", gearParams);
 
 					char position[256];

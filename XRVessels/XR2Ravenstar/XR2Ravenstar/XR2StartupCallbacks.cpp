@@ -25,10 +25,11 @@
 #include "XR1PreSteps.h"
 #include "XR1PostSteps.h"
 #include "XR1FuelPostSteps.h"
-#include "XR1AnimationPoststep.h"
+#include "XR1AnimationPostStep.h"
 
 #include "XR2PreSteps.h"
 #include "XR2PostSteps.h"
+#include <cassert>
 
 static XR2Ravenstar* s_pVessel;   // initialized right before our callback is invoked
 
@@ -129,7 +130,7 @@ void XR2Ravenstar::clbkSetClassCaps(FILEHANDLE cfg)
 
     default:
         // should never happen!
-        _ASSERTE(false);
+        assert(false);
         // use default config
         max_rocketfuel = TANK1_CAPACITY;
         max_scramfuel = TANK2_CAPACITY;
@@ -167,7 +168,8 @@ void XR2Ravenstar::clbkSetClassCaps(FILEHANDLE cfg)
         PARTICLESTREAMSPEC::LVL_PSQRT, // mapping between level and opacity              
         0, 2,                          // min/max levels for alpha mapping               
         PARTICLESTREAMSPEC::ATM_PLOG,  // mapping between atm params and particle opacity
-        1e-4, 1                        // min/max values for alpha mapping               
+        1e-4, 1,                       // min/max values for alpha mapping               
+        nullptr
     };
     // increase level
     PARTICLESTREAMSPEC exhaust_main = {
@@ -185,7 +187,8 @@ void XR2Ravenstar::clbkSetClassCaps(FILEHANDLE cfg)
         PARTICLESTREAMSPEC::LVL_SQRT,  // mapping between level and opacity              
         0, 1,                          // min/max levels for alpha mapping               
         PARTICLESTREAMSPEC::ATM_PLOG,  // mapping between atm params and particle opacity
-        1e-5, 0.1                      // min/max values for alpha mapping               
+        1e-5, 0.1,                     // min/max values for alpha mapping               
+        nullptr
     };
     // increase level
     PARTICLESTREAMSPEC exhaust_hover = {
@@ -203,7 +206,8 @@ void XR2Ravenstar::clbkSetClassCaps(FILEHANDLE cfg)
         PARTICLESTREAMSPEC::LVL_SQRT,  // mapping between level and opacity              
         0, 1,                          // min/max levels for alpha mapping               
         PARTICLESTREAMSPEC::ATM_PLOG,  // mapping between atm params and particle opacity
-        1e-5, 0.1                      // min/max values for alpha mapping               
+        1e-5, 0.1,                     // min/max values for alpha mapping               
+        nullptr
     };
     // increase level and particle lifetime
     PARTICLESTREAMSPEC exhaust_scram = {
@@ -220,7 +224,8 @@ void XR2Ravenstar::clbkSetClassCaps(FILEHANDLE cfg)
         PARTICLESTREAMSPEC::LVL_SQRT,  // mapping between level and opacity
         0, 1,                          // min/max levels for alpha mapping
         PARTICLESTREAMSPEC::ATM_PLOG,  // mapping between atm params and particle opacity
-        1e-5, 0.1                      // min/max values for alpha mapping
+        1e-5, 0.1,                     // min/max values for alpha mapping
+        nullptr
     };
 
     // NEW for XR2: retros  (NOT USED CURRENTLY)
@@ -252,7 +257,8 @@ void XR2Ravenstar::clbkSetClassCaps(FILEHANDLE cfg)
         PARTICLESTREAMSPEC::LVL_LIN,   // mapping between level and opacity
         0.8, 1.0,                      // min and max levels for level PLIN and PSQRT mapping types
         PARTICLESTREAMSPEC::ATM_FLAT,  // mapping between atm params and particle opacity
-        0.8, 1.0                       // min/max values for alpha mapping
+        0.8, 1.0,                       // min/max values for alpha mapping
+        nullptr
     };
 
     // clone the local variable in our member var
@@ -293,7 +299,7 @@ void XR2Ravenstar::clbkSetClassCaps(FILEHANDLE cfg)
 
     thg_main = CreateThrusterGroup(th_main, 2, THGROUP_MAIN);
     // increase thruster flame: stock was 12, 1
-    SURFHANDLE mainExhaustTex = oapiRegisterExhaustTexture("XR2Ravenstar\\ExhaustXR2");
+    SURFHANDLE mainExhaustTex = oapiRegisterExhaustTexture("XR2Ravenstar/ExhaustXR2");
 
     // XR1 org was 12 long, 0.811 wide
     // BETA-1 ORG: const double mainLscale = 14;
@@ -346,7 +352,7 @@ void XR2Ravenstar::clbkSetClassCaps(FILEHANDLE cfg)
     // BETA-1 ORG: const double retroWscale = 0.20;   // 0.431 as measured, but way too wide!  Is this actually radius???
     const double retroWscale = 0.2155;   // 0.431 is *radius*
 
-    SURFHANDLE retroExhaustTex = oapiRegisterExhaustTexture("XR2Ravenstar\\ExhaustXR2-rcs");  // orange texture for this
+    SURFHANDLE retroExhaustTex = oapiRegisterExhaustTexture("XR2Ravenstar/ExhaustXR2-rcs");  // orange texture for this
 #define ADD_RETRO_EXHAUST(th, x) \
     AddXRExhaust (th, retroLscale, retroWscale, _V(x, 0.461, retroZCoord), _V(0,0,1), retroExhaustTex)
     /* NO: AddExhaustStream (th, _V(x, 0, retroZCoord + 0.3), &exhaust_retro) */
@@ -423,8 +429,8 @@ void XR2Ravenstar::clbkSetClassCaps(FILEHANDLE cfg)
 #define RCS_DCOORD(c, dir) (c + (dir * rcsDepthModifier))
 
     // Note: these four exhausts are angled, but they rotate the ship around the Y axis
-    const VECTOR3& forwardRCSYVectorLeft = _V(-0.527, -0.844, 0.102);
-    const VECTOR3& forwardRCSYVectorRight = _V(0.527, -0.844, 0.102);
+    const VECTOR3 forwardRCSYVectorLeft = _V(-0.527, -0.844, 0.102);
+    const VECTOR3 forwardRCSYVectorRight = _V(0.527, -0.844, 0.102);
     ADD_RCS_EXHAUST(th_rcs[0], _V(-1.417, -0.339, 8.696), forwardRCSYVectorLeft);   // nose bottom forward port
     ADD_RCS_EXHAUST(th_rcs[0], _V(1.417, -0.339, 8.696), forwardRCSYVectorRight);  // nose bottom forward starboard
 
@@ -508,8 +514,8 @@ void XR2Ravenstar::clbkSetClassCaps(FILEHANDLE cfg)
 
     // forward translation jets (Z axis) on the side of the nose
     // Note: these vectors are not straight along the Z axis because the jets fire on an angle
-    const VECTOR3& forwardRCSZVectorLeft = _V(-0.313, 0.0, 0.95);
-    const VECTOR3& forwardRCSZVectorRight = _V(0.313, 0.0, 0.95);
+    const VECTOR3 forwardRCSZVectorLeft = _V(-0.313, 0.0, 0.95);
+    const VECTOR3 forwardRCSZVectorRight = _V(0.313, 0.0, 0.95);
 
 #define ADD_RCS_EXHAUST_Z(th, coordsV, directionV)                                     \
         AddXRExhaust (th, rcsLscale * 2.0, rcsWscale, coordsV, directionV, rcsExhaustTex)
@@ -690,10 +696,10 @@ void XR2Ravenstar::clbkSetClassCaps(FILEHANDLE cfg)
     //
 
     s_pVessel = this;   // save so static callback can reference it
-    exmesh_tpl = oapiLoadMeshGlobal("XR2Ravenstar\\XR2Ravenstar", LoadMeshGlobalCallback);     // exterior mesh
+    exmesh_tpl = oapiLoadMeshGlobal("XR2Ravenstar/XR2Ravenstar", LoadMeshGlobalCallback);     // exterior mesh
 
     // load the heating mesh
-    heatingmesh_tpl = oapiLoadMeshGlobal("XR2Ravenstar\\RavenstarHeatShield");
+    heatingmesh_tpl = oapiLoadMeshGlobal("XR2Ravenstar/RavenstarHeatShield");
 
     // this call associates a global mesh with a vessel; it does not actually instantiate a copy of the mesh yet
     // This mesh is used both for VC and external views.

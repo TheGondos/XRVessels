@@ -158,7 +158,7 @@ bool XRPayloadBaySlot::CheckSlotSpace(const VESSEL &childVessel) const
 
     // Iterate through each neighbor slot occupied; each occupied neighbor slot 
     // must be be FREE in order for this candidate vessel to fit.
-    for (UINT i=0; i < vOut.size(); i++)
+    for (size_t i=0; i < vOut.size(); i++)
     {
         const XRPayloadBaySlot *pSlot = vOut[i];
         if ((pSlot->GetChild() != nullptr) || (pSlot->IsEnabled() == false))
@@ -240,7 +240,7 @@ bool XRPayloadBaySlot::SweepSlots(const VECTOR3 &childCenterOfMass, const VECTOR
     // For each level, we must sweep left and right (along the X axis) *for each slot along the Z axis*.
     // Note: vOut will be empty here if no slots on neighboring levels are required.
     const size_t latchedVoutSize = vOut.size();   // must latch the size of just our *vertical* slots here because vOut will grow below
-    for (UINT i=0; i < latchedVoutSize; i++)
+    for (size_t i=0; i < latchedVoutSize; i++)
     {
         // Note: vOut contains the origin slot on each level
         const XRPayloadBaySlot *pLayerOriginSlot = vOut[i];
@@ -280,7 +280,7 @@ bool XRPayloadBaySlot::SweepXAxisForSlots(vector<const XRPayloadBaySlot *> &zAxi
     bool retVal = true;     // assume no hull contact
 
     // sweep each slot along the X axis in this Z axis slot
-    for (UINT i=0; i < zAxisOriginSlots.size(); i++)
+    for (size_t i=0; i < zAxisOriginSlots.size(); i++)
     {
         const XRPayloadBaySlot *pZaxisOriginSlot = zAxisOriginSlots[i];
 

@@ -28,7 +28,7 @@
 #include "XR1PreSteps.h"
 #include "XR1PostSteps.h"
 #include "XR1FuelPostSteps.h"
-#include "XR1AnimationPoststep.h"
+#include "XR1AnimationPostStep.h"
 
 // --------------------------------------------------------------
 // Set vessel class parameters
@@ -105,25 +105,29 @@ void DeltaGliderXR1::clbkSetClassCaps(FILEHANDLE cfg)
     PARTICLESTREAMSPEC contrail = {
         0, 11.0, 6, 150, 0.3, 7.5, 4, 3.0, PARTICLESTREAMSPEC::DIFFUSE,
             PARTICLESTREAMSPEC::LVL_PSQRT, 0, 2,
-            PARTICLESTREAMSPEC::ATM_PLOG, 1e-4, 1
+            PARTICLESTREAMSPEC::ATM_PLOG, 1e-4, 1,
+            nullptr
     };
     // increase level
     PARTICLESTREAMSPEC exhaust_main = {
         0, 3.0, 16, 150, 0.1, 0.2, 16, 1.0, PARTICLESTREAMSPEC::EMISSIVE,
             PARTICLESTREAMSPEC::LVL_SQRT, 0, 1,
-            PARTICLESTREAMSPEC::ATM_PLOG, 1e-5, 0.1
+            PARTICLESTREAMSPEC::ATM_PLOG, 1e-5, 0.1,
+            nullptr
     };
     // increase level
     PARTICLESTREAMSPEC exhaust_hover = {
         0, 2.0, 20, 150, 0.1, 0.15, 16, 1.0, PARTICLESTREAMSPEC::EMISSIVE,
             PARTICLESTREAMSPEC::LVL_SQRT, 0, 1,
-            PARTICLESTREAMSPEC::ATM_PLOG, 1e-5, 0.1
+            PARTICLESTREAMSPEC::ATM_PLOG, 1e-5, 0.1,
+            nullptr
     };
     // increase level and particle lifetime
     PARTICLESTREAMSPEC exhaust_scram = {
         0, 3.0, 25, 150, 0.05, 15.0, 3, 1.0, PARTICLESTREAMSPEC::EMISSIVE,
             PARTICLESTREAMSPEC::LVL_SQRT, 0, 1,
-            PARTICLESTREAMSPEC::ATM_PLOG, 1e-5, 0.1
+            PARTICLESTREAMSPEC::ATM_PLOG, 1e-5, 0.1,
+            nullptr
     };
 
     // handle new configurable ISP
@@ -135,7 +139,7 @@ void DeltaGliderXR1::clbkSetClassCaps(FILEHANDLE cfg)
 
     thg_main = CreateThrusterGroup(th_main, 2, THGROUP_MAIN);
     // increase thruster flame: stock was 12, 1
-    SURFHANDLE mainExhaustTex = oapiRegisterExhaustTexture("dg-xr1\\ExhaustXR1");
+    SURFHANDLE mainExhaustTex = oapiRegisterExhaustTexture("DG-XR1\\ExhaustXR1");
     // Pre-1.9 release: length was 12
     AddXRExhaust(th_main[0], 10, 0.811, mainExhaustTex);
     AddXRExhaust(th_main[1], 10, 0.811, mainExhaustTex);
@@ -353,8 +357,8 @@ void DeltaGliderXR1::clbkSetClassCaps(FILEHANDLE cfg)
         m_pSpotlights[i]->Activate(false);
 
     // load meshes
-    vcmesh_tpl = oapiLoadMeshGlobal("dg-xr1\\deltaglidercockpit-xr1");  // VC mesh
-    exmesh_tpl = oapiLoadMeshGlobal("dg-xr1\\deltaglider-xr1");         // exterior mesh
+    vcmesh_tpl = oapiLoadMeshGlobal("DG-XR1/deltaglidercockpit-xr1");  // VC mesh
+    exmesh_tpl = oapiLoadMeshGlobal("DG-XR1/deltaglider-xr1");         // exterior mesh
     SetMeshVisibilityMode(AddMesh(exmesh_tpl), MESHVIS_EXTERNAL);
     SetMeshVisibilityMode(AddMesh(vcmesh_tpl), MESHVIS_VC);
 
@@ -542,7 +546,7 @@ void DeltaGliderXR1::clbkPostCreationCommonXRCode()
             // can't use const here because of UMmu bug where it uses 'char *' instead of 'const char *'
             CrewMember* pCM = GetXR1Config()->CrewMembers + i;
 
-            // set miscID hash string: "XI0" ..."XIn" equates to : rank="Commander", mesh="dg-xr1\EVAM1"
+            // set miscID hash string: "XI0" ..."XIn" equates to : rank="Commander", mesh="DG-XR1\EVAM1"
             char misc[5];   // size matches UMmu misc field size
             sprintf(misc, "XI%d", i);
 #ifdef MMU

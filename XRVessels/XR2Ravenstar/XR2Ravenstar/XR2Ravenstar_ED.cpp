@@ -27,14 +27,14 @@
 // ==============================================================
 
 #include "XR2Ravenstar.h"
-#include "ScnEditorAPI.h"
-#include "DlgCtrl.h"
+//#include "ScnEditorAPI.h"
+//#include "DlgCtrl.h"
 #include "XR1PayloadDialog.h"
 
 // ==============================================================
 // Scenario editor interface
 // ==============================================================
-
+#if 0
 XR2Ravenstar *GetDG (HWND hDlg)
 {
     // retrieve DG interface from scenario editor
@@ -194,3 +194,4 @@ DLLCLBK void secInit (HWND hEditor, OBJHANDLE vessel)
     EditorFuncSpec efs = { "Payload", XR1PayloadDialog::EditorFunc};
     SendMessage (hEditor, WM_SCNEDITOR, SE_ADDFUNCBUTTON, reinterpret_cast<LPARAM>(&efs));
 }
+#endif

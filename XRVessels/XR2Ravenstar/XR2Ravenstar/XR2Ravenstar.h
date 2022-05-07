@@ -52,7 +52,7 @@ public:
 
     // Mandatory if vessel has a VC
     virtual void UpdateVCStatusIndicators();
-    virtual DWORD MeshTextureIDToTextureIndex(const int meshTextureID, MESHHANDLE &hMesh);  
+    virtual int MeshTextureIDToTextureIndex(const int meshTextureID, MESHHANDLE &hMesh);  
 
     // overridden callback functions
     virtual void clbkSetClassCaps (FILEHANDLE cfg);
@@ -63,13 +63,13 @@ public:
     virtual bool clbkLoadVC(int id);  // NOTE: OVERRIDING THIS IS MANDATORY!
     virtual void clbkLoadStateEx(FILEHANDLE scn, void *vs);
     virtual void clbkSaveState (FILEHANDLE scn);
-    virtual int  clbkConsumeBufferedKey(DWORD key, bool down, char *kstate);
+    virtual int  clbkConsumeBufferedKey(int key, bool down, char *kstate);
     virtual bool clbkLoadGenericCockpit();
-    virtual void clbkADCtrlMode(DWORD mode);
+    virtual void clbkADCtrlMode(int mode);
     virtual bool clbkPanelRedrawEvent(int areaID, int event, SURFHANDLE surf);
 
     // overridden superclass methods
-    virtual void SetXRAnimation(const UINT &anim, const double state) const;
+    virtual void SetXRAnimation(const unsigned int &anim, const double state) const;
     virtual void DefineAnimations();
     virtual void CleanUpAnimations();
     virtual void TweakInternalValue(bool direction);  // used for developement testing only; usually an empty method
@@ -93,7 +93,8 @@ public:
     // payload methods
     void ResetCameraToPayloadBay();
     void CreatePayloadBay();
-    
+   	virtual int DrawPayloadSlots(ImVec4 *colors) override;
+
     // other methods
     void HideActiveVCHUDMesh();
     void ApplyElevatorAreaChanges();
@@ -102,7 +103,7 @@ public:
     bool m_xr2WarningLights[XR2_WARNING_LIGHT_COUNT];
 
     // nosewheel steering animation
-    // NO: UINT m_animNosewheelSteering;       // animation handle
+    // NO: unsigned int m_animNosewheelSteering;       // animation handle
     // no proc necessary for this; follows rudder
 
     // We use these to mimic "limited deflection" for dual-mode AF Ctrl settings.

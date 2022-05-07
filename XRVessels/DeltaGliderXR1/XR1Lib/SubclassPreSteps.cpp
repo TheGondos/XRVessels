@@ -161,7 +161,7 @@ void RotateWheelsPreStep::SetWheelRotVel(const double simdt, const double ground
 // wheelProc = 0 < n < 1 : input/output: wheel animation state
 // rotationFraction = 1.0 for normal speed, 0.5 = half-speed, etc.  (currently not used)
 // wheelCircumference = just what it says...
-void RotateWheelsPreStep::SetXRAnimationForVelocity(const double simdt, const UINT &animationHandle, const double currentRotVel, double &wheelProc, const double rotationFraction, const double wheelCircumference)
+void RotateWheelsPreStep::SetXRAnimationForVelocity(const double simdt, const unsigned int &animationHandle, const double currentRotVel, double &wheelProc, const double rotationFraction, const double wheelCircumference)
 {
     // figure out how many tire revolutions have occured since the last timestep
     const double adjustedTireCircumference = wheelCircumference * 1.6523;     // correct for Orbiter not being 100% accurate in animating the mesh under the ship; i.e., "make the wheels look right when rotating"

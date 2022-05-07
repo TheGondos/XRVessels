@@ -32,7 +32,6 @@
 // Handles upper panel areas
 // ==============================================================
 
-#include "resource.h"
 #include "AreaIDs.h"
 
 #include "DeltaGliderXR1.h"
@@ -318,14 +317,14 @@ ScramTempGaugeArea::ScramTempGaugeArea(InstrumentPanel &parentPanel, const COORD
     XR1Area(parentPanel, panelCoordinates, areaID, meshTextureID)
 {
     // create pens that we need
-    m_pen0 = CreatePen(PS_SOLID, 1, RGB(224,224,224));
-    m_pen1 = CreatePen(PS_SOLID, 3, RGB(164,164,164));
+    m_pen0 = oapiCreatePen(1, 1, 0x00E0E0E0);
+    m_pen1 = oapiCreatePen(1, 3, 0x00A4A4A4);
 }
 
 ScramTempGaugeArea::~ScramTempGaugeArea()
 {
-    DeleteObject(m_pen0);
-    DeleteObject(m_pen1);
+    oapiReleasePen(m_pen0);
+    oapiReleasePen(m_pen1);
 }
 
 
@@ -345,8 +344,8 @@ bool ScramTempGaugeArea::Redraw2D(const int event, const SURFHANDLE surf)
     static const double rad = 19.0;
     int i, j, x0, y0, dx, dy;
     
-    HDC hDC = GetDC(surf);
-    SelectObject(hDC, m_pen0);
+    oapi::Sketchpad *skp = oapiGetSketchpad(surf);
+    skp->SetPen(m_pen0);
     for (j = 0; j < 3; j++) 
     {
         for (i = 0; i < 2; i++)
@@ -358,12 +357,11 @@ bool ScramTempGaugeArea::Redraw2D(const int event, const SURFHANDLE surf)
             // {YYY} resolve this for the XR2
             x0 = (IsVC() ? 20 : 22-j) + i*43;
             y0 = 19+j*46;
-            MoveToEx(hDC, x0, y0, nullptr); 
-            LineTo(hDC, x0+dx, y0-dy);
+            skp->MoveTo(x0, y0); 
+            skp->LineTo(x0+dx, y0-dy);
         }
     }
-    SelectObject(hDC, GetStockObject(BLACK_PEN));
-    ReleaseDC (surf, hDC);
+    oapiReleaseSketchpad(skp);
 
     return true;
 }
@@ -492,8 +490,8 @@ CrewDisplayArea::CrewDisplayArea(InstrumentPanel &parentPanel, const COORD2 pane
 void CrewDisplayArea::Activate()
 {
     Area::Activate();  // invoke superclass method
-    m_font       = CreateFont(14, 0, 0, 0, 600, 0, 0, 0, 0, 0, 0, 0, FF_MODERN, "Microsoft Sans Serif");
-    m_numberFont = CreateFont(12, 0, 0, 0, 600, 0, 0, 0, 0, 0, 0, 0, FF_MODERN, "Microsoft Sans Serif");
+    m_font       = oapiCreateFont(14, true, "Microsoft Sans Serif");
+    m_numberFont = oapiCreateFont(12, true, "Microsoft Sans Serif");
 
     // Note: this is 14 pixels wider than we need so that the subclasses have room for 2-digit crew indexes
     oapiRegisterPanelArea(GetAreaID(), GetRectForSize(194, 32), PANEL_REDRAW_MOUSE | PANEL_REDRAW_USER, PANEL_MOUSE_LBDOWN, PANEL_MAP_BACKGROUND);
@@ -501,29 +499,27 @@ void CrewDisplayArea::Activate()
 
 void CrewDisplayArea::Deactivate()
 {
-    DeleteObject(m_font);
-    DeleteObject(m_numberFont);
+    oapiReleaseFont(m_font);
+    oapiReleaseFont(m_numberFont);
     XR1Area::Deactivate();  // invoke superclass method
 }
 
 bool CrewDisplayArea::Redraw2D(const int event, const SURFHANDLE surf)
 {
     // obtain device context and save existing font
-    HDC hDC = GetDC(surf);
-    HFONT hPrevObject = (HFONT)SelectObject(hDC, m_font); // will render status text first
-    SetBkMode(hDC, TRANSPARENT);
-    SetTextAlign(hDC, TA_LEFT);  // set to LEFT alignment
+    oapi::Sketchpad *skp = oapiGetSketchpad(surf);
+    skp->SetFont(m_font);
+    skp->SetBackgroundMode(oapi::Sketchpad::BkgMode::BK_TRANSPARENT);
+    skp->SetTextAlign(oapi::Sketchpad::TAlign_horizontal::LEFT);
 
     // if NO ONE on board, show a warning in RED
     if (GetXR1().GetCrewMembersCount() == 0)
     {
-        SetTextColor(hDC, CREF(BRIGHT_RED));
+        skp->SetTextColor(CREF(BRIGHT_RED));
         const char *pMsg = "NO CREW ON BOARD!";
-        TextOut(hDC, 11, 9, pMsg, static_cast<int>(strlen(pMsg)));
+        skp->Text(11, 9, pMsg, static_cast<int>(strlen(pMsg)));
 
-        // restore previous font and release device context
-        SelectObject(hDC, hPrevObject);
-        ReleaseDC(surf, hDC);
+        oapiReleaseSketchpad(skp);
         return true; 
     }
 
@@ -571,27 +567,25 @@ bool CrewDisplayArea::Redraw2D(const int event, const SURFHANDLE surf)
     // render crew member's:
     //  name (age) 
     //  rank
-    const int maxNameLineLength = CrewMemberNameLength + 2 + 3;   // includes 2 bytes for age + 3 extra bytes for " ()", excludes terminator
+    const int maxNameLineLength = CrewMemberNameLength + 2 + 3 + 1;   // includes 2 bytes for age + 3 extra bytes for " ()", excludes terminator
     char temp[maxNameLineLength+1]; // allow room for terminator
     const int fontPitch = 14;       // includes space between lines
     const int xCoord = 2;
     int yCoord = 2;
-    SetTextColor(hDC, CREF(OFF_WHITE217));
+    skp->SetTextColor(CREF(OFF_WHITE217));
     sprintf(temp, "%s (%s)", pName, pAge);
-    TextOut(hDC, xCoord, yCoord, temp, min(static_cast<int>(strlen(temp)), maxNameLineLength)); // limit line length
+    skp->Text(xCoord, yCoord, temp, min(static_cast<int>(strlen(temp)), maxNameLineLength)); // limit line length
     
     yCoord += fontPitch;
-    TextOut(hDC, xCoord, yCoord, pRank, static_cast<int>(strlen(pRank)));  
+    skp->Text(xCoord, yCoord, pRank, static_cast<int>(strlen(pRank)));  
         
     // render crew member index (0-n)
-    SelectObject(hDC, m_numberFont);   // switch fonts
-    SetTextColor(hDC, CREF(LIGHT_BLUE));
+    skp->SetFont(m_numberFont);
+    skp->SetTextColor(CREF(LIGHT_BLUE));
     sprintf(temp, "%d", crewMemberIndex);   // reuse existing buffer; size is plenty big enough
-    TextOut(hDC, m_crewMemberIndexX, 18, temp, static_cast<int>(strlen(temp)));
+    skp->Text(m_crewMemberIndexX, 18, temp, static_cast<int>(strlen(temp)));
 
-    // restore previous font and release device context
-    SelectObject(hDC, hPrevObject);
-    ReleaseDC(surf, hDC);
+    oapiReleaseSketchpad(skp);
 
     return true;
 }

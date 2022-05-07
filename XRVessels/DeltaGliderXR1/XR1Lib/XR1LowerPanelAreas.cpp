@@ -27,7 +27,6 @@
 // Handles non-component 2D and 2D/3D shared lower panel areas
 // ==============================================================
 
-#include "resource.h"
 #include "AreaIDs.h"
 
 #include "DeltaGliderXR1.h"
@@ -54,7 +53,7 @@ void DockReleaseButtonArea::Activate()
     else    // 2D panel
     {
         oapiRegisterPanelArea(GetAreaID(), GetRectForSize(40, 53), PANEL_REDRAW_MOUSE, PANEL_MOUSE_LBDOWN | PANEL_MOUSE_LBUP);
-        m_mainSurface = CreateSurface(IDB_SWITCH3);     // HUD mode LED at top-left (2D mode only for now)
+        m_mainSurface = CreateSurface("Bitmaps/DeltaGliderXR1/Switch3.bmp");     // HUD mode LED at top-left (2D mode only for now)
     }
 
     // reset state variables to force a repaint
@@ -143,14 +142,14 @@ void ArtificialHorizonArea::Activate()
         oapiRegisterPanelArea(GetAreaID(), GetRectForSize(96, 96), PANEL_REDRAW_ALWAYS, PANEL_MOUSE_IGNORE);
     }
 
-    m_mainSurface = CreateSurface(IDB_HORIZON);
+    m_mainSurface = CreateSurface("Bitmaps/DeltaGliderXR1/Horizon.bmp");
     // NOTE: cannot use zero here b/c zero means "none" with the D3D9 client (SURF_PREDEF_CK flag is not passed to graphics clients)
     SetSurfaceColorKey(m_mainSurface, 0xFF000000);  // black = transparent
 
     // load brushes, pens, and colors
-    m_brush2 = CreateSolidBrush(RGB(80,80,224));  // blue
-    m_brush3 = CreateSolidBrush(RGB(160,120,64)); // brown
-    m_pen0   = CreatePen(PS_SOLID, 1, RGB(224,224,224));
+    m_brush2 = oapiCreateBrush(oapiGetColour(80,80,224));  // blue
+    m_brush3 = oapiCreateBrush(oapiGetColour(160,120,64)); // brown
+    m_pen0   = oapiCreatePen(1, 1, oapiGetColour(224,224,224));
     m_color2 = oapiGetColour(80,80,224);
     m_color3 = oapiGetColour(160,120,64);
 }
@@ -158,9 +157,9 @@ void ArtificialHorizonArea::Activate()
 // Deactivate this area
 void ArtificialHorizonArea::Deactivate()
 {
-    DeleteObject(m_brush2);
-    DeleteObject(m_brush3);
-    DeleteObject(m_pen0);
+    oapiReleaseBrush(m_brush2);
+    oapiReleaseBrush(m_brush3);
+    oapiReleasePen(m_pen0);
     // do not delete colors
 
     XR1Area::Deactivate();  // let our superclass clean up
@@ -171,7 +170,7 @@ void ArtificialHorizonArea::Deactivate()
 // returns: true if area redrawn, false if not
 bool ArtificialHorizonArea::Redraw2D(const int event, const SURFHANDLE surf)
 {
-    POINT pt[4];
+    oapi::IVECTOR2 pt[4];
     static double prange = RAD*30.0;
     static int size = 48, size2 = size*2;
     static int extent = static_cast<int>(size*prange);
@@ -281,27 +280,29 @@ bool ArtificialHorizonArea::Redraw2D(const int event, const SURFHANDLE surf)
     // NOTE: invoking oapiClearSurface improves performance for GetDC on the D3D9 client 
     oapiClearSurface (surf, bblue ? m_color3 : m_color2);
 
-    HDC hDC = GetDC (surf);
-    SelectObject (hDC, GetStockObject (BLACK_PEN));
+    oapi::Sketchpad *skp = oapiGetSketchpad(surf);
+//FIXME
+//    SelectObject (hDC, GetStockObject (BLACK_PEN));
 
     if (n >= 3)
     {
-        SelectObject (hDC, (bblue ? m_brush2 : m_brush3));
-        Polygon (hDC, pt, n);
-        SelectObject (hDC, m_pen0);
-        MoveToEx (hDC, pt[0].x, pt[0].y, nullptr); LineTo (hDC, pt[1].x, pt[1].y);
+        skp->SetBrush  (bblue ? m_brush2 : m_brush3);
+        skp->Polygon (pt, n);
+        skp->SetPen (m_pen0);
+        skp->MoveTo(pt[0].x, pt[0].y); skp->LineTo (pt[1].x, pt[1].y);
     }
 
     // bank indicator
-    SelectObject (hDC, m_pen0);
-    SelectObject (hDC, GetStockObject (NULL_BRUSH));
+    skp->SetPen (m_pen0);
+//FIXME
+//    SelectObject (hDC, GetStockObject (NULL_BRUSH));
     static double r1 = 40, r2 = 35;
     double sinb1 = sin(bank-0.1), cosb1 = cos(bank-0.1);
     double sinb2 = sin(bank+0.1), cosb2 = cos(bank+0.1);
     pt[0].x = static_cast<int>(r2*sinb1+0.5)+size; pt[0].y = -static_cast<int>(r2*cosb1+0.5)+size;
     pt[1].x = static_cast<int>(r1*sinb+0.5)+size;  pt[1].y = -static_cast<int>(r1*cosb+0.5)+size;
     pt[2].x = static_cast<int>(r2*sinb2+0.5)+size; pt[2].y = -static_cast<int>(r2*cosb2+0.5)+size;
-    Polygon (hDC, pt, 3);
+    skp->Polygon (pt, 3);
 
     // pitch ladder
     static double d = size*(10.0*RAD)/prange;
@@ -318,13 +319,13 @@ bool ArtificialHorizonArea::Redraw2D(const int event, const SURFHANDLE surf)
     {
         if (iphi)
         {
-            MoveToEx (hDC, size+static_cast<int>(xll), size+static_cast<int>(yll), nullptr);
-            LineTo   (hDC, size+static_cast<int>(xlr), size+static_cast<int>(ylr));
+            skp->MoveTo(size+static_cast<int>(xll), size+static_cast<int>(yll));
+            skp->LineTo(size+static_cast<int>(xlr), size+static_cast<int>(ylr));
         }
         xlr -= dsinb, ylr += dcosb;
         xll -= dsinb, yll += dcosb;
     }
-    ReleaseDC (surf, hDC);
+    oapiReleaseSketchpad(skp);
 
     // labels
     lwcosa *= 1.6, lwsina *= 1.6;
@@ -361,7 +362,7 @@ void XFeedKnobArea::Activate()
     Area::Activate();  // invoke superclass method
     oapiRegisterPanelArea(GetAreaID(), GetRectForSize(40, 44), PANEL_REDRAW_MOUSE, PANEL_MOUSE_DOWN);
 
-    m_mainSurface = CreateSurface(IDB_DIAL2);    // rotary dial #2 (different bg color)
+    m_mainSurface = CreateSurface("Bitmaps/DeltaGliderXR1/Dial2.bmp");    // rotary dial #2 (different bg color)
 }
 
 bool XFeedKnobArea::Redraw2D(const int event, const SURFHANDLE surf)
@@ -428,7 +429,7 @@ SystemsDisplayScreen::SystemsDisplayScreen(InstrumentPanel &parentPanel, const C
     m_pTextBox = new TextBox(m_width, m_height, CREF(BRIGHT_GREEN), CREF(BRIGHT_RED), CREF(CWHITE), 7, GetXR1().m_infoWarningTextLineGroup);
 
     // create our font
-    m_mainFont = CreateFont(14, 0, 0, 0, 400, 0, 0, 0, 0, 0, 0, 0, 0, "Arial");
+    m_mainFont = oapiCreateFont(14, true, "Arial");
     m_lineSpacing = 11;     // pixels between lines
 }
 
@@ -438,7 +439,7 @@ SystemsDisplayScreen::~SystemsDisplayScreen()
     delete m_pTextBox;
 
     // clean up the font we allocated
-    DeleteObject(m_mainFont);
+    oapiReleaseFont(m_mainFont);
 }
 
 // Activate this area
@@ -458,11 +459,11 @@ bool SystemsDisplayScreen::Redraw2D(const int event, const SURFHANDLE surf)
 
     // invoke new TextBox handler to draw text
     // Note that our text box will never be null here.
-    HDC hDC = GetDC(surf);
     
-    bool retVal = m_pTextBox->Render(hDC, 0, m_mainFont, m_lineSpacing, (event == PANEL_REDRAW_INIT));  // CWHITE = use transparent background
+    oapi::Sketchpad *skp = oapiGetSketchpad(surf);
+    bool retVal = m_pTextBox->Render(skp, 0, m_mainFont, m_lineSpacing, (event == PANEL_REDRAW_INIT));  // CWHITE = use transparent background
     
-    ReleaseDC(surf, hDC);
+    oapiReleaseSketchpad(skp);
 
     return retVal;
 }

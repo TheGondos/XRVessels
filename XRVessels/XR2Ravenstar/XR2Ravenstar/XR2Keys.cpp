@@ -34,7 +34,7 @@
 // --------------------------------------------------------------
 #define RET_IF_INCAP() if (IsCrewIncapacitatedOrNoPilotOnBoard()) return 1
 
-int XR2Ravenstar::clbkConsumeBufferedKey(DWORD key, bool down, char *kstate)
+int XR2Ravenstar::clbkConsumeBufferedKey(int key, bool down, char *kstate)
 {
     if (Playback()) 
         return 0; // don't allow manual user input during a playback
@@ -53,7 +53,7 @@ int XR2Ravenstar::clbkConsumeBufferedKey(DWORD key, bool down, char *kstate)
                 RET_IF_INCAP();
                 // make / on main keyboard act the same as numeric keypad /
                 // Bits: 0 = elevator, 1 = rudder, 2 = ailerons
-                DWORD mode = GetADCtrlMode();
+                int mode = GetADCtrlMode();
                 if (mode == 0)  // off?
                     mode = 1;   // set to "Pitch" mode (elevators only)
                 else if (mode == 1)  // pitch?

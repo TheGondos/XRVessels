@@ -26,8 +26,7 @@
 // Custom XR2 components.
 // ==============================================================
 
-#include "orbitersdk.h"
-#include "resource.h"
+#include "Orbitersdk.h"
 #include "XR2Ravenstar.h"
 
 #include "XR1MainPanelAreas.h"  

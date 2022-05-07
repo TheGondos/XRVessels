@@ -23,9 +23,8 @@
 // XRVCScriptThread.cpp : Implementation of XRVCScriptThread class.
 //-------------------------------------------------------------------------
 
-#include <windows.h>
-
 #include "XRVCScriptThread.h"
+#include <cassert>
 
 //
 // This class handles script browsing and I/O in a thread so we don't block Orbiter's
@@ -161,7 +160,7 @@ unsigned __stdcall XRVCScriptThread::ScriptThread(void *pParameter)
             {
                 // should never happen since 'Execute Script' button is disabled until we reset our m_hEventExecuteScriptFile event!
                 // Since the main thread is stuck in a loop, we have to use a message box here.
-                _ASSERTE(false);
+                assert(false);
                 MessageBox(pSingleton->m_hwndMainDialog, "Internal error: could not execute script - main thread is busy!", "XRVesselCtrl Script Thread Error", MB_OK | MB_SETFOREGROUND);
                 // fall through and go back to sleep
             }

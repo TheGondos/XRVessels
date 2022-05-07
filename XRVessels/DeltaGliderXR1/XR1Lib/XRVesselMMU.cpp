@@ -373,8 +373,8 @@ void DeltaGliderXR1::StowAllTurbopacks()
     int stowedCount = 0;    // # of turbopacks stowed
 
     // loop through all vessels in the sim and check each vessel's classname and distance
-    const DWORD dwVesselCount = oapiGetVesselCount();
-    for (DWORD i = 0; i < dwVesselCount; i++)
+    const int dwVesselCount = oapiGetVesselCount();
+    for (int i = 0; i < dwVesselCount; i++)
     {
         OBJHANDLE hVessel = oapiGetVesselByIndex(i);
         if (hVessel != nullptr)    // should never happen, but just in case
@@ -465,7 +465,7 @@ int DeltaGliderXR1::GetCrewAgeByName(const char* pName) const
     for (int i = 0; i < MAX_PASSENGERS; i++)
     {
         CrewMember* pcm = GetXR1Config()->CrewMembers + i;
-        if (_stricmp(pcm->name, pName) == 0)
+        if (strcasecmp(pcm->name, pName) == 0)
         {
             age = pcm->age;
             break;
@@ -485,9 +485,9 @@ const char* DeltaGliderXR1::GetCrewMiscIdByName(const char* pName) const
     for (int i = 0; i < MAX_PASSENGERS; i++)
     {
         CrewMember* pcm = GetXR1Config()->CrewMembers + i;
-        if (_stricmp(pcm->name, pName) == 0)
+        if (strcasecmp(pcm->name, pName) == 0)
         {
-            pMiscID = pcm->miscID;  // "XI0", "XI1", etc.
+            pMiscID = pcm->miscID.c_str();  // "XI0", "XI1", etc.
             break;
         }
     }

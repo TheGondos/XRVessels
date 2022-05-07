@@ -28,15 +28,13 @@
 #define ORBITER_MODULE
 
 #include "XR2Ravenstar.h"
-#include "DlgCtrl.h"
-
 #include <stdio.h>
 #include "XR2AreaIDs.h"  
 #include "XR2InstrumentPanels.h"
 #include "XR2Globals.h"
 #include "XRPayload.h"
 #include "XR2PayloadBay.h"
-// TODO: #include "XR2PayloadDialog.h"
+#include "imgui.h"
 
 // ==============================================================
 // API callback interface
@@ -45,19 +43,17 @@
 // --------------------------------------------------------------
 // Module initialisation
 // --------------------------------------------------------------
-DLLCLBK void InitModule (HINSTANCE hModule)
+DLLCLBK void InitModule (oapi::DynamicModule *hModule)
 {
     g_hDLL = hModule;
-    oapiRegisterCustomControls(hModule);
 }
 
 // --------------------------------------------------------------
 // Module cleanup
 // NOTE: this is called even if fast shutdown is enabled.
 // --------------------------------------------------------------
-DLLCLBK void ExitModule (HINSTANCE hModule)
+DLLCLBK void ExitModule (oapi::DynamicModule *hModule)
 {
-    oapiUnregisterCustomControls(hModule);
     XRPayloadClassData::Terminate();     // clean up global cache
 }
 
@@ -171,6 +167,25 @@ XR2Ravenstar::XR2Ravenstar(OBJHANDLE hObj, int fmodel, XR2ConfigFileParser *pCon
 XR2Ravenstar::~XR2Ravenstar()
 {
     // Note: payload bay is cleaned up in our XRVessel base class
+}
+
+int XR2Ravenstar::DrawPayloadSlots(ImVec4 *colors) {
+    const ImVec2 button_sz1(ImVec2(80, 30));
+    const ImVec2 button_sz2(ImVec2(80, 60));
+
+    int ret = 0;
+
+    ImGui::PushStyleColor(ImGuiCol_Border, colors[2]);
+    if(ImGui::Button("3", button_sz1)) ret = 3;
+    ImGui::PushStyleColor(ImGuiCol_Border, colors[1]);
+    if(ImGui::Button("2", button_sz1)) ret = 2;
+    ImGui::PushStyleColor(ImGuiCol_Border, colors[0]);
+    if(ImGui::Button("1", button_sz2)) ret = 1;
+    ImGui::PopStyleColor(3);
+    ImGui::TextUnformatted("Slot 3 Dimensions : 1.45L x 3.45W x 2.12H");
+    ImGui::TextUnformatted("Slot 2 Dimensions : 1.45L x 3.45W x 2.12H");
+    ImGui::TextUnformatted("Slot 1 Dimensions : 2.06L x 3.45W x 2.41H");
+    return ret;
 }
 
 // Create control surfaces for any damageable control surface handles below that are zero (all are zero before vessel initialized).
@@ -366,7 +381,7 @@ bool XR2Ravenstar::PerformEVA(const int mmuCrewMemberIndex)
 // elevator performance is enabled.
 void XR2Ravenstar::ApplyElevatorAreaChanges()
 {
-    const DWORD mode = GetADCtrlMode();
+    const int mode = GetADCtrlMode();
     const XR2ConfigFileParser *parser = GetXR2Config();
     if (parser->EnableAFCtrlPerformanceModifier)
     {
@@ -391,12 +406,12 @@ void XR2Ravenstar::ApplyElevatorAreaChanges()
 // meshTextureID = vessel-specific constant that is translated to a texture index specific to our vessel's .msh file.  meshTextureID 
 // NOTE: meshTextureID=VCPANEL_TEXTURE_NONE = -1 = "no texture" (i.e., "not applicable"); defined in Area.h.
 // hMesh = OUTPUT: will be set to the mesh handle of the mesh associated with meshTextureID.
-DWORD XR2Ravenstar::MeshTextureIDToTextureIndex(const int meshTextureID, MESHHANDLE &hMesh)
+int XR2Ravenstar::MeshTextureIDToTextureIndex(const int meshTextureID, MESHHANDLE &hMesh)
 {
     // sanity check
-    _ASSERTE(meshTextureID > VCPANEL_TEXTURE_NONE);
+    assert(meshTextureID > VCPANEL_TEXTURE_NONE);
 
-    DWORD retVal = 0;
+    int retVal = 0;
 #if 0   // {YYY} implement this method when the VC is implemented
     // same mesh for all VC textures
     hMesh = vcmesh_tpl;  // assign by reference
@@ -416,14 +431,14 @@ DWORD XR2Ravenstar::MeshTextureIDToTextureIndex(const int meshTextureID, MESHHAN
         break;
 
     default:   // should never happen!
-        _ASSERTE(false);
+        assert(false);
         // fall through with retVal 0
         break;
     }
 
      // validate return values
-    _ASSERTE(retVal >= 0);
-    _ASSERTE(hMesh != nullptr);
+    assert(retVal >= 0);
+    assert(hMesh != nullptr);
 #endif
     return retVal;
 }

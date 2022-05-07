@@ -29,8 +29,8 @@
 /* NOTE: This is the class that contains sample code for XRVesselCtrl interface methods. */
 /*****************************************************************************************/
 
-#include <windows.h>
 #include "XRVCClient.h"
+#include <cassert>
 
 // Constructor
 XRVCClient::XRVCClient() : 
@@ -52,8 +52,8 @@ XRVCClient::~XRVCClient()
 bool XRVCClient::UpdateEngineState(const XREngineID engineID, XRVCClient::DataType dataType, XRVCClient::Value &value, void *pValueToSet, CString &statusOut)
 {
     // sanity-check the pointer to be within the XREngineStateWrite part of the EngineStateRead structure
-    _ASSERTE(pValueToSet >= &m_xrEngineState.ThrottleLevel);
-    _ASSERTE(pValueToSet <= &m_xrEngineState.DivergentMode);
+    assert(pValueToSet >= &m_xrEngineState.ThrottleLevel);
+    assert(pValueToSet <= &m_xrEngineState.DivergentMode);
 
     // retrieve the current engine state so we can update it 
     m_pVessel->GetEngineState(engineID, m_xrEngineState);
@@ -65,7 +65,7 @@ bool XRVCClient::UpdateEngineState(const XREngineID engineID, XRVCClient::DataTy
         *static_cast<bool *>(pValueToSet) = value.Bool;
     else  // should never happen!
     {
-        _ASSERTE(false);  
+        assert(false);  
         statusOut.Format("Internal Error: invalid dataType (%d)", dataType);
         return false;
     }
@@ -89,8 +89,8 @@ bool XRVCClient::UpdateEngineState(const XREngineID engineID, XRVCClient::DataTy
 bool XRVCClient::UpdateDamageState(DataType dataType, Value &value, void *pValueToSet, CString &statusOut)
 {
     // sanity-check the pointer to be within the XRSystemStatusWrite part of the XRSystemStatusRead structure
-    _ASSERTE(pValueToSet >= &m_xrSystemStatus.LeftWing);
-    _ASSERTE(pValueToSet <= &m_xrSystemStatus.CrewElevator);
+    assert(pValueToSet >= &m_xrSystemStatus.LeftWing);
+    assert(pValueToSet <= &m_xrSystemStatus.CrewElevator);
 
     // read the damage state
     m_pVessel->GetXRSystemStatus(m_xrSystemStatus);
@@ -102,7 +102,7 @@ bool XRVCClient::UpdateDamageState(DataType dataType, Value &value, void *pValue
         *static_cast<int *>(pValueToSet) = value.Int;
     else  // should never happen!
     {
-        _ASSERTE(false);  
+        assert(false);  
         statusOut.Format("Internal Error: invalid dataType (%d)", dataType);
         return false;
     }
@@ -345,7 +345,7 @@ bool XRVCClient::SetAirspeedHold(const bool on, const double *pTargetAirspeed) c
 //-------------------------------------------------------------------------
 void XRVCClient::RetrieveEngineState(CString &csOut, const XREngineID engineOne, const XREngineID engineTwo, const char *pLabelOne, const char *pLabelTwo) const
 {
-    _ASSERTE(m_pVessel != nullptr);
+    assert(m_pVessel != nullptr);
 
     // we will build two columns here: engineOne engineTwo
     XREngineStateRead state1;
@@ -389,7 +389,7 @@ void XRVCClient::RetrieveEngineState(CString &csOut, const XREngineID engineOne,
 //-------------------------------------------------------------------------
 void XRVCClient::RetrieveStatus(CString &csOut) const
 {
-    _ASSERTE(m_pVessel != nullptr);
+    assert(m_pVessel != nullptr);
 
     XRSystemStatusRead status;
     m_pVessel->GetXRSystemStatus(status);
@@ -470,7 +470,7 @@ void XRVCClient::RetrieveStatus(CString &csOut) const
 //-------------------------------------------------------------------------
 void XRVCClient::RetrieveDoorsState(CString &csOut) const
 {
-    _ASSERTE(m_pVessel != nullptr);
+    assert(m_pVessel != nullptr);
 
     // write out one pair of values: name: val 
     const int nameWidth = 17;     
@@ -514,7 +514,7 @@ void XRVCClient::RetrieveDoorsState(CString &csOut) const
 //-------------------------------------------------------------------------
 void XRVCClient::RetrieveAutopilotsState(CString &csOut) const
 {
-    _ASSERTE(m_pVessel != nullptr);
+    assert(m_pVessel != nullptr);
     
     // write out one pair of values: name: val 
     const int nameWidth = 15;    // leave two spaces separating the two columns instead of just one
@@ -597,7 +597,7 @@ void XRVCClient::RetrieveAutopilotsState(CString &csOut) const
 //-------------------------------------------------------------------------
 void XRVCClient::RetrieveOther(CString &csOut) const
 {
-    _ASSERTE(m_pVessel != nullptr);
+    assert(m_pVessel != nullptr);
        
     // write out one pair of values: name: val 
     const int nameWidth = 26;    
@@ -722,7 +722,7 @@ const char *XRVCClient::GetDoorStateString(const XRDoorState state)
         break;
 
     default:    // should never happen!
-        _ASSERTE(false);    // break into debugger if debug build
+        assert(false);    // break into debugger if debug build
         pRetVal = "ERROR: INVALID STATE";
     }
 
@@ -751,7 +751,7 @@ const char *XRVCClient::GetDamageStateString(const XRDamageState state)
         break;
         
     default:    // should never happen!
-        _ASSERTE(false);    // break into debugger if debug build
+        assert(false);    // break into debugger if debug build
         pRetVal = "ERROR: INVALID STATE";
     }
 
@@ -776,7 +776,7 @@ const char *XRVCClient::GetWarningStateString(const XRWarningState state)
         break;
         
     default:    // should never happen!
-        _ASSERTE(false);    
+        assert(false);    
         pRetVal = "ERROR: INVALID STATE";
     }
 
@@ -805,7 +805,7 @@ const char *XRVCClient::GetAPStateString(const XRAutopilotState state)
         break;
 
     default:    // should never happen!
-        _ASSERTE(false);    
+        assert(false);    
         pRetVal = "ERROR: INVALID STATE";
     }
 
@@ -830,7 +830,7 @@ const char *XRVCClient::GetAttitudeHoldMode(const XRAttitudeHoldMode state)
         break;
 
     default:    // should never happen!
-        _ASSERTE(false);    
+        assert(false);    
         pRetVal = "ERROR: INVALID STATE";
     }
 

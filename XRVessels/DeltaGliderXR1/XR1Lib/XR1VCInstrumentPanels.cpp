@@ -27,8 +27,7 @@
 // Instrument panels for the DG-XR1.
 // ==============================================================
 
-#include "OrbiterSDK.h"
-#include "resource.h"
+#include "Orbitersdk.h"
 #include "AreaIDs.h"
 
 #include "XR1InstrumentPanels.h"

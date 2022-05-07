@@ -30,7 +30,7 @@
 #pragma once
 
 #include "Orbitersdk.h"
-#include "vessel3ext.h"
+#include "Vessel3Ext.h"
 #include "Area.h"
 #include "XR1Areas.h"
 #include "RollingArray.h"
@@ -77,7 +77,7 @@ public:
 
     // Allow our MultiDisplayMode objects to create surfaces for our vessel.
     // We make our base class methods public here.
-    SURFHANDLE CreateSurface(const int resourceID) const { return XR1Area::CreateSurface(resourceID); }
+    SURFHANDLE CreateSurface(const char *resourceID) const { return XR1Area::CreateSurface(resourceID); }
     void DestroySurface(SURFHANDLE *pSurfHandle) { XR1Area::DestroySurface(pSurfHandle); }
     
 protected:
@@ -104,11 +104,11 @@ public:
     VESSEL2 &GetVessel() const { return m_pParentMDA->GetVessel(); }
     DeltaGliderXR1 &GetXR1() const { return m_pParentMDA->GetXR1(); }
     double GetAbsoluteSimTime() const { return GetXR1().GetAbsoluteSimTime(); }  // convenience method
-    SURFHANDLE CreateSurface(const int resourceID) const { return m_pParentMDA->CreateSurface(resourceID); }
+    SURFHANDLE CreateSurface(const char *resourceID) const { return m_pParentMDA->CreateSurface(resourceID); }
     void DestroySurface(SURFHANDLE *pSurfHandle) { m_pParentMDA->DestroySurface(pSurfHandle); }
     const COORD2 &GetScreenSize() const { return m_pParentMDA->GetScreenSize(); }
-    COLORREF GetTempCREF(double tempK, double limitK, DoorStatus doorStatus) const { return m_pParentMDA->GetTempCREF(tempK, limitK, doorStatus); }
-    COLORREF GetValueCREF(double value, double warningLimit, double criticalLimit) const { return m_pParentMDA->GetValueCREF(value, warningLimit, criticalLimit); }
+    uint32_t GetTempCREF(double tempK, double limitK, DoorStatus doorStatus) const { return m_pParentMDA->GetTempCREF(tempK, limitK, doorStatus); }
+    uint32_t GetValueCREF(double value, double warningLimit, double criticalLimit) const { return m_pParentMDA->GetValueCREF(value, warningLimit, criticalLimit); }
 
     void SetParent(MultiDisplayArea *pParentMDA) { m_pParentMDA = pParentMDA; }
     int GetModeNumber() const { return m_modeNumber; }
@@ -164,13 +164,9 @@ protected:
     // Note: as of D3D9 RC23 there is no difference in framerate between sketchpad and GetDC on this 
     // MDA area. In addition, the font control isn't quite as precise under sketchpad (FF_MODERN fonts looks a lot
     // better in the MDA), so I am keeping the GetDC version for now.
-#if 1  // GetDC
-    HFONT m_pKfcFont;
-    HFONT m_pCoolantFont;   // coolant temps only
-#else  // Sketchpad
+
     oapi::Font *m_pKfcFont;
-    oapi::Font *m_pCoolantFont;   // coolant temps only    
-#endif
+    oapi::Font *m_pCoolantFont;   // coolant temps only
 };
 
 //----------------------------------------------------------------------------------
@@ -191,7 +187,7 @@ protected:
     int m_screenIndex;    // 0-n; this is the status screen index
 
     // fonts
-    HFONT m_mainFont;
+    oapi::Font *m_mainFont;
 };
 
 //----------------------------------------------------------------------------------
@@ -234,10 +230,10 @@ protected:
     int m_repeatCount;        // # of repeats this press (hold)
     
     // fonts
-    HFONT m_statusFont;
-    HFONT m_numberFont;
-    HFONT m_buttonFont;    // engage/disengage button
-    HFONT m_aoaPitchFont;
+    oapi::Font *m_statusFont;
+    oapi::Font *m_numberFont;
+    oapi::Font *m_buttonFont;    // engage/disengage button
+    oapi::Font *m_aoaPitchFont;
 };
 
 //----------------------------------------------------------------------------------
@@ -272,9 +268,9 @@ protected:
     int m_repeatCount;             // # of repeats this press (hold)
     
     // fonts
-    HFONT m_statusFont;
-    HFONT m_numberFont;
-    HFONT m_buttonFont;    // engage/disengage button
+    oapi::Font *m_statusFont;
+    oapi::Font *m_numberFont;
+    oapi::Font *m_buttonFont;    // engage/disengage button
 };
 
 //----------------------------------------------------------------------------------
@@ -314,9 +310,9 @@ protected:
     RollingArray *m_pMaxMainAccRollingArray;  // smooths out the jumpy ACC values computed from the Orbiter core's force vectors
     
     // fonts
-    HFONT m_statusFont;
-    HFONT m_numberFont;
-    HFONT m_buttonFont;    // engage/disengage button
+    oapi::Font *m_statusFont;
+    oapi::Font *m_numberFont;
+    oapi::Font *m_buttonFont;    // engage/disengage button
 };
 
 //----------------------------------------------------------------------------------
@@ -376,5 +372,5 @@ protected:
     virtual int GetDoorCount() { return 6; }    // invoked by OnParentAttach
 
     // fonts
-    HFONT m_mainFont;
+    oapi::Font *m_mainFont;
 };

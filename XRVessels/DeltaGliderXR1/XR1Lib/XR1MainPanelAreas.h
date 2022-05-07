@@ -30,9 +30,10 @@
 #pragma once
 
 #include "Orbitersdk.h"
-#include "vessel3ext.h"
+#include "Vessel3Ext.h"
 #include "Area.h"
 #include "XR1Areas.h"
+#include "Bitmaps.h"
 
 //----------------------------------------------------------------------------------
 
@@ -106,14 +107,14 @@ protected:
 class RCSModeArea : public XR1Area
 {
 public:
-    RCSModeArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID, const WORD resourceID = IDB_DIAL1);
+    RCSModeArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID, const char *resourceID = IDB_DIAL1);
     virtual void Activate();
     virtual bool Redraw2D(const int event, const SURFHANDLE surf);
     virtual bool Redraw3D(const int event, const SURFHANDLE surf);
     virtual bool ProcessMouseEvent(const int event, const int mx, const int my);
 
 protected:
-    WORD m_resourceID;
+    const char *m_resourceID;
 };
 
 //----------------------------------------------------------------------------------
@@ -139,7 +140,7 @@ public:
     virtual void clbkPrePostStep(const double simt, const double simdt, const double mjd);
 
 protected:
-    DWORD m_color;
+    uint32_t m_color;
     bool m_isOn;    // is light on?
     bool m_enabled; // is any autopilot except KILLROT on?
 };

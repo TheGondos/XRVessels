@@ -68,11 +68,11 @@ void XR5Vanguard::clbkLoadStateEx(FILEHANDLE scn, void *vs)
         }
         else IF_FOUND("ACTIVE_EVA_PORT") 
         {
-            SSCANF1("%d", &m_activeEVAPort);
+            SSCANF1("%d", (int *)&m_activeEVAPort);
         }
 		else IF_FOUND("CREW_ELEVATOR")
 		{
-			SSCANF2("%d%lf", &crewElevator_status, &crewElevator_proc);
+			SSCANF2("%d%lf", (int *)&crewElevator_status, &crewElevator_proc);
 		}
         else
         {
@@ -97,6 +97,6 @@ void XR5Vanguard::clbkSaveState (FILEHANDLE scn)
 	char cbuf[256];
     oapiWriteScenario_int(scn, "RCS_DOCKING_MODE", m_rcsDockingMode);
     oapiWriteScenario_int(scn, "ACTIVE_EVA_PORT", static_cast<int>(m_activeEVAPort));
-	sprintf(cbuf, "%d %0.4f", crewElevator_status, crewElevator_proc);
+	sprintf(cbuf, "%d %0.4f", (int)crewElevator_status, crewElevator_proc);
 	oapiWriteScenario_string(scn, "CREW_ELEVATOR", cbuf);
 }

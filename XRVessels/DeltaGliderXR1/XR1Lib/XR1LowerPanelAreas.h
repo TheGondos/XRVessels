@@ -30,7 +30,7 @@
 #pragma once
 
 #include "Orbitersdk.h"
-#include "vessel3ext.h"
+#include "Vessel3Ext.h"
 #include "Area.h"
 #include "XR1Areas.h"
 
@@ -85,9 +85,9 @@ public:
 
 protected:
     // additional resources
-    HBRUSH m_brush2, m_brush3;
-    HPEN m_pen0;
-    DWORD m_color2, m_color3;
+    oapi::Brush *m_brush2, *m_brush3;
+    oapi::Pen *m_pen0;
+    uint32_t m_color2, m_color3;
 };
 
 //----------------------------------------------------------------------------------
@@ -112,7 +112,7 @@ public:
     virtual bool Redraw2D(const int event, const SURFHANDLE surf);
 
 protected:
-    HFONT m_mainFont;
+    oapi::Font *m_mainFont;
     int m_lineSpacing;  // pixels between text lines
     bool m_forceRender;
     TextBox *m_pTextBox;

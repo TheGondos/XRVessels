@@ -260,7 +260,7 @@ void DisableControlSurfForAPUPostStep::clbkPrePostStep(const double simt, const 
     if (GetXR1().apu_status != DoorStatus::DOOR_OPEN)
     {
         // APU is still offline; ensure the AF mode == OFF
-        DWORD ctrlMode = GetXR1().GetADCtrlMode();
+        int ctrlMode = GetXR1().GetADCtrlMode();
         if (ctrlMode != 0)
         {
             // warn the user UNLESS the sim just started; necessary because "empty" scenarios default to ADCtrl ON

@@ -44,7 +44,7 @@ public:
     // Mandatory overridden methods
     virtual void SetDamageVisuals();     
     virtual void SetPassengerVisuals();
-    DWORD MeshTextureIDToTextureIndex(const int meshTextureID, MESHHANDLE &hMesh);  // method is empty
+    int MeshTextureIDToTextureIndex(const int meshTextureID, MESHHANDLE &hMesh);  // method is empty
 
     // overloaded callback functions
     virtual void clbkSetClassCaps(FILEHANDLE cfg);
@@ -55,7 +55,7 @@ public:
     virtual void clbkLoadStateEx(FILEHANDLE scn, void *vs);
     virtual void clbkSaveState (FILEHANDLE scn);
     virtual int clbkConsumeDirectKey (char *kstate);
-    virtual int clbkConsumeBufferedKey(DWORD key, bool down, char *kstate);
+    virtual int clbkConsumeBufferedKey(int key, bool down, char *kstate);
     virtual bool clbkPanelRedrawEvent(int areaID, int event, SURFHANDLE surf);
     virtual bool clbkLoadGenericCockpit();
 
@@ -110,13 +110,13 @@ public:
     // WARNING: All code should invoke SetXRAnimation instead of SetXRAnimation!  The reason is that 
     // SetXRAnimation always assumes that the handle is valid, and so SetXRAnimation is a virtual "gateway" 
     // method that allows each subclass to determine whether that animation is valid or not for that vessel.
-    virtual void SetXRAnimation(const UINT &anim, const double state) const;
+    virtual void SetXRAnimation(const unsigned int &anim, const double state) const;
 
     // mesh indicies
-    UINT m_exteriorMeshIndex;
+    unsigned int m_exteriorMeshIndex;
 
     // our custom doors
-    UINT anim_crewElevator;
+    unsigned int anim_crewElevator;
     DoorStatus crewElevator_status;
     double crewElevator_proc;
 
@@ -130,7 +130,7 @@ public:
     double m_hiddenElevatorTrimState;   // fixes nose-up push
 
     // nosewheel steering animation
-    UINT m_animNosewheelSteering;       // animation handle
+    unsigned int m_animNosewheelSteering;       // animation handle
     // no proc necessary for this; follows rudder
 
     //--------------------------------------------------------------

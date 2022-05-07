@@ -29,6 +29,7 @@
 #include "XR5Vanguard.h"
 #include "AreaIDs.h"
 #include "XR5Areas.h"
+#include "Bitmaps.h"
 
 //----------------------------------------------------------------------------------
 

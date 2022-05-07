@@ -71,7 +71,7 @@ public:
 
     // Returns the MEAN of all samples in the buffer
     // Throws fatal error if no samples added yet.
-    T Averager<T>::GetMean()
+    T GetMean()
     {
         if (m_sampleCount == 0)
             throw "Averager.GetMean: no samples in buffer!";
@@ -90,7 +90,7 @@ public:
     // Returns the MEDIAN of all samples in the buffer
     // Throws fatal error if no samples added yet.
     // WARNING: this is relatively expensive with a large sample count.
-    T Averager<T>::GetMedian()
+    T GetMedian()
     {
         if (m_sampleCount == 0)
             throw "Averager.GetAverage: no samples in buffer!";
@@ -132,8 +132,8 @@ void EraseIteratorItemFirstSecond(MAP &map, ITERATOR &it)
     // WARNING: must erase the map entry *before* we free the *contents* of the hashmap object item (first & second).
     // Based on debugging, the hashmap code appears to allocate extra data in the it->first block, because if we free it 
     // *first*, we CTD inside the erase(it) call.
-    const void *pFirst = it->first;     // e.g., string *
-    const void *pSecond = it->second;   // e.g., XRGrappleTargetVessel *
+    auto pFirst = it->first;     // e.g., string *
+    auto pSecond = it->second;   // e.g., XRGrappleTargetVessel *
     map.erase(it);
     delete pFirst;
     delete pSecond;

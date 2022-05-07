@@ -21,11 +21,11 @@
 
 // ==============================================================
 
-#include "resource.h"
 #include "AreaIDs.h"
 
 #include "DeltaGliderXR1.h"
 #include "XR1HUD.h"
+#include <cassert>
 
 // --------------------------------------------------------------
 // Respond to HUD mode change
@@ -133,7 +133,7 @@ bool DeltaGliderXR1::clbkDrawHUD (int mode, const HUDPAINTSPEC *hps, oapi::Sketc
                 {
                     // NOTE: there seems to be no current pen, so I have to use GetTextColor instead.
                     // Retrieve the current HUD color: this is a hack to retrieve the current HUD color setting since there is no "GetTextColor" in the sketchpad API.
-                    DWORD hudColor = skp->SetTextColor(0xFFFFFF);  // color being set doesn't matter here since we reset it anyway
+                    uint32_t hudColor = skp->SetTextColor(0xFFFFFF);  // color being set doesn't matter here since we reset it anyway
                     skp->SetTextColor(hudColor);  
 
                     // create a wider pen based on the video mode resolution
@@ -268,9 +268,9 @@ bool DeltaGliderXR1::clbkDrawHUD (int mode, const HUDPAINTSPEC *hps, oapi::Sketc
             {
                 char str[128];
                 // altitude
-                CString altitudeStr;
+                std::string altitudeStr;
                 FormatDouble(altitude, altitudeStr, 1);  // format with commas
-                sprintf(str, "%s meters", static_cast<const char *>(altitudeStr));   // e.g., "10,292.6 meters"
+                sprintf(str, "%s meters", altitudeStr.c_str());   // e.g., "10,292.6 meters"
                 skp->Text(x, y, str, static_cast<int>(strlen(str)));
                 y += deltaY;  // next line down
 
@@ -297,7 +297,7 @@ bool DeltaGliderXR1::clbkDrawHUD (int mode, const HUDPAINTSPEC *hps, oapi::Sketc
                     const bool baseFound = GetLandingTargetInfo(baseDistance, baseName, sizeof(baseName));
                     if (baseFound)
                     {
-                        CString distanceString;
+                        std::string distanceString;
                         int precision;
                         // show "meters" if we are < 10 km away
                         if (baseDistance < 10e3)
@@ -308,7 +308,7 @@ bool DeltaGliderXR1::clbkDrawHUD (int mode, const HUDPAINTSPEC *hps, oapi::Sketc
                                 precision = 0;
 
                             FormatDouble(baseDistance, distanceString, precision);  // format with commas
-                            sprintf(str, "%s: %s meters", baseName, static_cast<const char *>(distanceString));
+                            sprintf(str, "%s: %s meters", baseName, distanceString.c_str());
                         }
                         else  // >= 10 km
                         {
@@ -320,7 +320,7 @@ bool DeltaGliderXR1::clbkDrawHUD (int mode, const HUDPAINTSPEC *hps, oapi::Sketc
                                 precision = 0;  // "n km"
 
                             FormatDouble((baseDistance / 1000), distanceString, precision);  // format with commas
-                            sprintf(str, "%s: %s km", baseName, static_cast<const char *>(distanceString));
+                            sprintf(str, "%s: %s km", baseName, distanceString.c_str());
                         }
                     }
                     else  // no base found
@@ -514,7 +514,7 @@ void DeltaGliderXR1::RenderDataHUD(const HUDPAINTSPEC *hps, oapi::Sketchpad *skp
 oapi::Font *DeltaGliderXR1::GetNormal2DHUDFont()
 {
     // should not be called for VC modes
-    _ASSERTE(!IsCameraVC());
+    assert(!IsCameraVC());
 
     if (m_pHudNormalFont == nullptr)  // not cached yet?
     {

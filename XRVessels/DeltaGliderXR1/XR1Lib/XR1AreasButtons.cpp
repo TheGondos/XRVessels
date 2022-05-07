@@ -22,6 +22,7 @@
 // must be included BEFORE XR1Areas.h
 #include "DeltaGliderXR1.h"
 #include "XR1Areas.h"
+#include "Bitmaps.h"
 
 //----------------------------------------------------------------------------------
 

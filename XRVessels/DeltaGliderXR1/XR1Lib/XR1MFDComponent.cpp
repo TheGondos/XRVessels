@@ -27,12 +27,12 @@
 // Handles a single MFD for a 2D panel
 // ==============================================================
 
-#include "orbitersdk.h"
-#include "resource.h"
+#include "Orbitersdk.h"
 #include "AreaIDs.h"
 #include "XR1InstrumentPanels.h"
 #include "XR1Areas.h"
 #include "XR1MFDComponent.h"
+#include <cassert>
 
 // Constructor
 // parentPanel = parent instrument panel
@@ -179,12 +179,12 @@ MFDMainButtonsArea::MFDMainButtonsArea(InstrumentPanel &parentPanel, const COORD
     XR1Area(parentPanel, panelCoordinates, areaID, meshTextureID),
     m_mfdID(mfdID), m_buttonSide(buttonSide), m_justActivated(false)
 {
-    m_font = CreateFont(-10, 0, 0, 0, 400, 0, 0, 0, 0, 0, 0, 0, 0, "Arial");
+    m_font = oapiCreateFont(-10, true, "Arial");
 }
 
 MFDMainButtonsArea::~MFDMainButtonsArea()
 {
-    DeleteObject(m_font);   // clean up
+    oapiReleaseFont(m_font);   // clean up
 }
 
 void MFDMainButtonsArea::Activate()
@@ -205,11 +205,11 @@ void MFDMainButtonsArea::Activate()
 
 bool MFDMainButtonsArea::Redraw2D(const int event, const SURFHANDLE surf)
 {
-    HDC hDC = GetDC(surf);
-    HFONT pFont = (HFONT)SelectObject(hDC, m_font);
-    SetTextColor (hDC, RGB(196, 196, 196));
-    SetTextAlign (hDC, TA_CENTER);
-    SetBkMode (hDC, TRANSPARENT);
+    oapi::Sketchpad *skp = oapiGetSketchpad(surf);
+    skp->SetFont(m_font);
+    skp->SetTextColor ( oapiGetColour(196, 196, 196));
+    skp->SetTextAlign(oapi::Sketchpad::TAlign_horizontal::CENTER);
+    skp->SetBackgroundMode(oapi::Sketchpad::BkgMode::BK_TRANSPARENT);
     const char *label;
     // {YYY} resolve this for the XR2 (need Redraw3D method, but it will be nearly identical to this one.  Perhaps create a common method with different VC x & y values passed in?)
     int x = (IsVC() ? 12 : 11);
@@ -222,7 +222,7 @@ bool MFDMainButtonsArea::Redraw2D(const int event, const SURFHANDLE surf)
         // Workaround is via the PostStep which follows this method.
         if ((label = oapiMFDButtonLabel(GetMfdID(), bt + ((GetButtonSide() == BUTTON_SIDE::LEFT) ? 0 : 6))) != nullptr)
         {
-            TextOut (hDC, x, y, label, static_cast<int>(strlen(label)));
+            skp->Text (x, y, label, static_cast<int>(strlen(label)));
             m_justActivated = true;
             // {YYY} resolve this for the XR2
             if (IsVC()) 
@@ -236,8 +236,7 @@ bool MFDMainButtonsArea::Redraw2D(const int event, const SURFHANDLE surf)
         }
     }
 
-    SelectObject (hDC, pFont);
-    ReleaseDC (surf, hDC);
+    oapiReleaseSketchpad(skp);
 
     return true;
  }
@@ -337,7 +336,7 @@ bool VCMFDBottomButtonArea::ProcessVCMouseEvent(const int event, const VECTOR3 &
         break;
 
     default:
-        _ASSERTE(false);  // should never happen!
+        assert(false);  // should never happen!
         return false;
     }
 

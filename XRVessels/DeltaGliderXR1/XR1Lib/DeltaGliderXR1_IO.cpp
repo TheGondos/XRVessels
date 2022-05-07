@@ -56,9 +56,9 @@ void DeltaGliderXR1::clbkLoadStateEx(FILEHANDLE scn, void *vs)
         {
             SSCANF1("%s", skinpath);
             char fname[256];
-            strcpy (fname, "DG-XR1\\Skins\\");
+            strcpy (fname, "DG-XR1/Skins/");
             strcat (fname, skinpath);
-            int n = static_cast<int>(strlen(fname)); fname[n++] = '\\';
+            int n = static_cast<int>(strlen(fname)); fname[n++] = '/';
             strcpy (fname+n, "dgxr1_1.dds");  skin[0] = oapiLoadTexture (fname);
             strcpy (fname+n, "dgxr1_2.dds");  skin[1] = oapiLoadTexture (fname);
         } 

@@ -429,7 +429,7 @@ int DeltaGliderXR1::clbkConsumeDirectKey(char *kstate)
 // --------------------------------------------------------------
 #define RET_IF_INCAP() if (IsCrewIncapacitatedOrNoPilotOnBoard()) return 1
 
-int DeltaGliderXR1::clbkConsumeBufferedKey (DWORD key, bool down, char *kstate)
+int DeltaGliderXR1::clbkConsumeBufferedKey (int key, bool down, char *kstate)
 {
     // defines keycodes allowed during playback; currently we do not need to check for CTRL or ALT flags, so we don't
     // bother to check for those at this time.
@@ -615,10 +615,10 @@ numpad8c_descent:
 
         case OAPI_KEY_SPACE: // open control dialog
             // allow if crew incapacitated here
-            oapiOpenDialogEx (g_hDLL, IDD_CTRL, XR1Ctrl_DlgProc, DLG_CAPTIONCLOSE, this);
+            //oapiOpenDialogEx (g_hDLL, IDD_CTRL, XR1Ctrl_DlgProc, DLG_CAPTIONCLOSE, this);
             return 1;
 
-            typedef INT_PTR(CALLBACK* DLGPROC)(HWND, UINT, WPARAM, LPARAM);
+            //typedef INT_PTR(CALLBACK* DLGPROC)(HWND, UINT, WPARAM, LPARAM);
 
         case OAPI_KEY_A:    // toggle APU on/off
             RET_IF_INCAP();
@@ -836,7 +836,7 @@ numpad8:
             {
                 RET_IF_INCAP();
                 // make / on main keyboard act the same as numeric keypad /
-                DWORD mode = GetADCtrlMode();
+                int mode = GetADCtrlMode();
                 SetADCtrlMode(mode != 0 ? 0 : 7);  // toggle between off and on for all surfaces
                 return 1;
             }

@@ -31,7 +31,7 @@
 #include "XR1PreSteps.h"
 #include "XR1PostSteps.h"
 #include "XR1FuelPostSteps.h"
-#include "XR1AnimationPoststep.h"
+#include "XR1AnimationPostStep.h"
 #include "XR5PreSteps.h"
 #include "XR5PostSteps.h"
 #include "XRPayload.h"
@@ -553,7 +553,7 @@ void XR5Vanguard::clbkSetClassCaps(FILEHANDLE cfg)
         m_pSpotlights[i]->Activate(false);
 
     // load meshes
-    // no VC: vcmesh_tpl = oapiLoadMeshGlobal("dg-xr1\\deltaglidercockpit-xr1");  // VC mesh
+    // no VC: vcmesh_tpl = oapiLoadMeshGlobal("DG-XR1\\deltaglidercockpit-xr1");  // VC mesh
     vcmesh_tpl = nullptr;  // no VC; must set this to null so the superclass won't try to use it
     exmesh_tpl = oapiLoadMeshGlobal("XR5Vanguard\\XR5Vanguard");         // exterior mesh
 

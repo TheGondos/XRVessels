@@ -30,6 +30,7 @@
 #include "XR2ConfigFileParser.h"
 #include "meshres.h"
 #include "XR1PayloadDialog.h"
+#include "Bitmaps.h"
 
 //
 // Version globals
@@ -43,7 +44,7 @@ const char* VERSION = "Version 2.0 Beta-1 [" ARCH_TYPE  " " BUILD_TYPE "], Build
 // file is always written to the Orbiter directory
 const char *XR_LOG_FILE = "XR2Ravenstar.log";
 
-const char *XR_CONFIG_FILE = "Config\\XR2RavenstarPrefs.cfg";
+const char *XR_CONFIG_FILE = "Config/XR2RavenstarPrefs.cfg";
 
 // data hud text strings
 const char *DATA_HUD_VALUES[] =
@@ -128,12 +129,12 @@ const char *DATA_HUD_VALUES[] =
     "CTRL-NUMPAD7", "Attitude Hold: Reset Pitch/AOA",
     "CTRL-NUMPAD1", "Attitude Hold: Reset Both (level)",
     "NUMPAD9",      "Attitude Hold: Toggle AOA/Pitch Hold",
-    "NUMPAD2",      "Attitude Hold: Inc Pitch/AOA 2.5°",
-    "NUMPAD8",      "Attitude Hold: Dec Pitch/AOA 2.5°",
-    "ALT-NUMPAD2",  "Attitude Hold: Inc Pitch/AOA 0.5°",
-    "ALT-NUMPAD8",  "Attitude Hold: Dec Pitch/AOA 0.5°",
-    "NUMPAD4",      "Attitude Hold: Bank Left 5°",
-    "NUMPAD6",      "Attitude Hold: Bank Right 5°",
+    "NUMPAD2",      "Attitude Hold: Inc Pitch/AOA 2.5ï¿½",
+    "NUMPAD8",      "Attitude Hold: Dec Pitch/AOA 2.5ï¿½",
+    "ALT-NUMPAD2",  "Attitude Hold: Inc Pitch/AOA 0.5ï¿½",
+    "ALT-NUMPAD8",  "Attitude Hold: Dec Pitch/AOA 0.5ï¿½",
+    "NUMPAD4",      "Attitude Hold: Bank Left 5ï¿½",
+    "NUMPAD6",      "Attitude Hold: Bank Right 5ï¿½",
 
     "CTRL-NUMPAD8",  "Descent Hold: Increase Rate 2.5 m/s",
     "CTRL-NUMPAD2",  "Descent Hold: Decrease Rate 2.5 m/s",
@@ -536,7 +537,7 @@ const double NEUTRAL_CENTER_OF_LIFT = 0.0;  // in meters  (makes ship stable lan
 //
 // Globals
 //
-HMODULE g_hDLL;  // our DLL handle
+oapi::DynamicModule *g_hDLL;  // our DLL handle
 
 const double MAX_DESCENT_HOLD_RATE = 990;   // in m/s (1.22 and earlier: was 250 m/s)
 const double ADRATE_SMALL = 0.1;
@@ -732,7 +733,7 @@ const double XR1ConfigFileParser::m_apuFuelBurnRate[] =
 };
 
 // docking port coordinates at the FRONT Z EDGE of the port in the center
-const VECTOR3 &DOCKING_PORT_COORD = _V(0, 0.253, 10.55);
+const VECTOR3 DOCKING_PORT_COORD = _V(0, 0.253, 10.55);
 
 // welcome messages
 const char *WELCOME_MSG = "Welcome aboard, Commander!&All systems nominal.";
@@ -768,7 +769,7 @@ const Turbopack TURBOPACKS_ARRAY[] =
 const int TURBOPACKS_ARRAY_SIZE = sizeof(TURBOPACKS_ARRAY) / sizeof(Turbopack);
 
 // vessel-relative coordinates where turbopacks spawn during deployment
-const VECTOR3 &TURBOPACK_SPAWN_COORDINATES = _V(0, 0, 16.0);
+const VECTOR3 TURBOPACK_SPAWN_COORDINATES = _V(0, 0, 16.0);
 
 // maximum distance in meters of turbopacks that will be auto-stowed
 const double STOW_TURBOPACK_DISTANCE = 25;
@@ -783,21 +784,21 @@ const int VC_PANEL_ID_BASE = 4;
 
 // fuel/LOX dump particle stream coordinates
 const double dumpZOffset = -0.10;   // Z axis offset for start of particle streams
-const VECTOR3 &FUEL_DUMP_PARTICLE_STREAM_POS1 = _V(-4.072, 1.424, -9.969 + dumpZOffset);  // port side
-const VECTOR3 &FUEL_DUMP_PARTICLE_STREAM_DIR1 = _V(0,0,-1.0);
-const VECTOR3 &FUEL_DUMP_PARTICLE_STREAM_POS2 = _V( 4.072, 1.424, -9.969 + dumpZOffset);   // starboard side
-const VECTOR3 &FUEL_DUMP_PARTICLE_STREAM_DIR2 = _V(0,0,-1.0);
+const VECTOR3 FUEL_DUMP_PARTICLE_STREAM_POS1 = _V(-4.072, 1.424, -9.969 + dumpZOffset);  // port side
+const VECTOR3 FUEL_DUMP_PARTICLE_STREAM_DIR1 = _V(0,0,-1.0);
+const VECTOR3 FUEL_DUMP_PARTICLE_STREAM_POS2 = _V( 4.072, 1.424, -9.969 + dumpZOffset);   // starboard side
+const VECTOR3 FUEL_DUMP_PARTICLE_STREAM_DIR2 = _V(0,0,-1.0);
 
 // boil-off exhaust particle stream coordinates; not used by the XR1
 const double boilYOffset = -0.10;   // Y axis offset for start of particle streams
-const VECTOR3 &BOIL_OFF_PARTICLE_STREAM_POS1 = _V(-2.853, boilYOffset, -7.423);  // port
-const VECTOR3 &BOIL_OFF_PARTICLE_STREAM_DIR1 = _V(0, -1, 0);
-const VECTOR3 &BOIL_OFF_PARTICLE_STREAM_POS2 = _V( 2.853, boilYOffset, -7.423);  // starboard
-const VECTOR3 &BOIL_OFF_PARTICLE_STREAM_DIR2 = _V(0, -1, 0);
+const VECTOR3 BOIL_OFF_PARTICLE_STREAM_POS1 = _V(-2.853, boilYOffset, -7.423);  // port
+const VECTOR3 BOIL_OFF_PARTICLE_STREAM_DIR1 = _V(0, -1, 0);
+const VECTOR3 BOIL_OFF_PARTICLE_STREAM_POS2 = _V( 2.853, boilYOffset, -7.423);  // starboard
+const VECTOR3 BOIL_OFF_PARTICLE_STREAM_DIR2 = _V(0, -1, 0);
 
 // VC mesh groups for the HUD
-const DWORD PILOT_HUD_MESHGRP = GRP_hudglass_pilot;
-const DWORD COPILOT_HUD_MESHGRP = GRP_hudglass_copilot;
+const int PILOT_HUD_MESHGRP = GRP_hudglass_pilot;
+const int COPILOT_HUD_MESHGRP = GRP_hudglass_copilot;
 
 const double BAY_OPERATING_SPEED = 0.04545;    // 22 seconds
 const double BAY_LIMIT           = 36e3;
@@ -808,8 +809,8 @@ const double BAY_LIMIT           = 36e3;
 // For the XR2 we use *slot 2 and 3* dimensions since they are smaller than slot 1 and must be considered "standard."
 // Note: each slot's Y dimension matches the actual XR2 payload dimension in that slot so that the payloads will set on the floor of the bay.
 //       The actual size of each slot in the bay is actually slightly taller (Y) and wider (X).
-const VECTOR3 &PAYLOAD_SLOT1_DIMENSIONS = _V(3.452, 2.418, 2.060);  // y is to CENTER (highest point)
-const VECTOR3 &PAYLOAD_SLOT_DIMENSIONS  = _V(3.452, 2.128, 1.454);  // Y is to CENTER (highest point)
+const VECTOR3 PAYLOAD_SLOT1_DIMENSIONS = _V(3.452, 2.418, 2.060);  // y is to CENTER (highest point)
+const VECTOR3 PAYLOAD_SLOT_DIMENSIONS  = _V(3.452, 2.128, 1.454);  // Y is to CENTER (highest point)
 
 // front and rear tire circumference; only used for wheel rotation animation
 const double FRONT_TIRE_CIRCUMFERENCE = 0.717 * PI;
@@ -869,20 +870,21 @@ double PAYLOAD_GRAPPLE_MAX_DELTAV = 0.5;
 ////////////////////////////////
 // array of button resource IDs in slot order (1-3)
 const int XR1PayloadDialog::slotCount = PAYLOAD_BAY_SLOT_COUNT_CONSTANT;
+/*
 const int XR1PayloadDialog::slotResourceIDs[PAYLOAD_BAY_SLOT_COUNT_CONSTANT] = 
     { 
         IDC_SLOT1,  IDC_SLOT2,  IDC_SLOT3
-    };
-const int GLOBAL_IDD_PAYLOAD_EDITOR = IDD_EDITOR_PG2;  // from resource.h
+    };*/
+//const int GLOBAL_IDD_PAYLOAD_EDITOR = IDD_EDITOR_PG2;  // from resource.h
 
 // resource ID globals used by common areas
-const int RES_IDB_FUEL_GAUGE = IDB_FUEL_GAUGE;
-const int RES_IDB_FUEL_GAUGE_DARK = IDB_FUEL_GAUGE_DARK;
+const char *RES_IDB_FUEL_GAUGE = IDB_FUEL_GAUGE;
+const char *RES_IDB_FUEL_GAUGE_DARK = IDB_FUEL_GAUGE_DARK;
 
-const int RES_IDB_LOX_GAUGE = IDB_LOX_GAUGE;
-const int RES_IDB_LOX_GAUGE_DARK = IDB_LOX_GAUGE_DARK;
+const char *RES_IDB_LOX_GAUGE = IDB_LOX_GAUGE;
+const char *RES_IDB_LOX_GAUGE_DARK = IDB_LOX_GAUGE_DARK;
 
-const int RES_IDB_COOLANT_GAUGE = IDB_COOLANT_GAUGE;
+const char *RES_IDB_COOLANT_GAUGE = IDB_COOLANT_GAUGE;
 
 // number of spotlights defined
 const int SPOTLIGHT_COUNT = 2;

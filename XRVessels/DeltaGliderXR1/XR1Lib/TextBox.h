@@ -29,13 +29,11 @@
 
 #pragma once
 
-#define _CRT_SECURE_NO_DEPRECATE
-#include "windows.h"
-
 #include "XR1Colors.h"
 
 #include <string>
 #include <vector>
+#include "Orbitersdk.h"
 
 using namespace std;
 
@@ -102,20 +100,20 @@ protected:
 class TextBox
 {
 public:
-    TextBox(int width, int height, COLORREF normalTextColor, COLORREF highlightTextColor, COLORREF bgColor, int screenLineCount, const TextLineGroup &textLineGroup);
+    TextBox(int width, int height, uint32_t normalTextColor, uint32_t highlightTextColor, uint32_t bgColor, int screenLineCount, const TextLineGroup &textLineGroup);
     int GetWidth() const { return m_width; }
     int GetHeight() const { return m_height; }
-    COLORREF GetBackgroundColor() const { return m_bgColor; }
-    COLORREF GetNormalColor() const     { return m_normalTextColor; }
-    COLORREF GetHighlightColor() const  { return m_highlightTextColor; }
+    uint32_t GetBackgroundColor() const { return m_bgColor; }
+    uint32_t GetNormalColor() const     { return m_normalTextColor; }
+    uint32_t GetHighlightColor() const  { return m_highlightTextColor; }
     int GetScreenLineCount() const      { return m_screenLineCount; }
     const TextLineGroup &GetTextLineGroup() const { return m_textLineGroup; }
     
-    virtual bool Render(HDC hDC, int topY, HFONT font, int lineSpacing, bool forceRender, int startingLineNumber = -1);
+    virtual bool Render(oapi::Sketchpad *skp, int topY, oapi::Font *font, int lineSpacing, bool forceRender, int startingLineNumber = -1);
     
 protected:
     int m_width, m_height;
-    COLORREF m_normalTextColor, m_highlightTextColor, m_bgColor;
+    uint32_t m_normalTextColor, m_highlightTextColor, m_bgColor;
     int m_screenLineCount;  // # of text lines on screen
     int m_lastRenderedAddLinesCount;  
 

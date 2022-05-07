@@ -26,7 +26,8 @@
 //    mgr.ReadRegistryDWORD("X", &xOut);
 
 #include "RegKeyManager.h"
-
+#include <cassert>
+#if 0
 // Constructor
 RegKeyManager::RegKeyManager() :
     m_hKey(nullptr), m_bInitialized(false), m_hOwnerWindow(0), m_pSubkeyPath(nullptr)
@@ -48,8 +49,8 @@ RegKeyManager::~RegKeyManager()
 // Should only be called once.
 bool RegKeyManager::Initialize(const HKEY hRootKey, const TCHAR *pSubkeyPath, const HWND hOwnerWindow)
 {
-    _ASSERTE(pSubkeyPath);
-    _ASSERTE(!m_bInitialized);
+    assert(pSubkeyPath);
+    assert(!m_bInitialized);
 
     m_hOwnerWindow = hOwnerWindow;
     m_bInitialized = (RegCreateKeyEx(hRootKey, pSubkeyPath, 0, nullptr, 0, KEY_ALL_ACCESS, nullptr, &m_hKey, nullptr) == ERROR_SUCCESS);
@@ -62,7 +63,7 @@ bool RegKeyManager::Initialize(const HKEY hRootKey, const TCHAR *pSubkeyPath, co
 // Writes a registry string value; returns false if error occurs
 bool RegKeyManager::WriteRegistryString(const TCHAR *pValueName, const TCHAR *pValue) const
 {
-    _ASSERTE(m_bInitialized);
+    assert(m_bInitialized);
 
     // length includes the trailing zero byte
     bool bSuccess = (RegSetValueEx(m_hKey, pValueName, 0, REG_SZ, reinterpret_cast<const BYTE *>(pValue), static_cast<DWORD>((_tcslen(pValue) + 1) * sizeof(TCHAR))) == ERROR_SUCCESS);
@@ -74,7 +75,7 @@ bool RegKeyManager::WriteRegistryString(const TCHAR *pValueName, const TCHAR *pV
 // Returns false if error occurs
 bool RegKeyManager::ReadRegistryString(const TCHAR *pValueName, CString &valueOut) const
 {
-    _ASSERTE(m_bInitialized);
+    assert(m_bInitialized);
 
     DWORD dwType;
 	DWORD dwSize = 0;
@@ -102,7 +103,7 @@ bool RegKeyManager::ReadRegistryString(const TCHAR *pValueName, CString &valueOu
 // Returns false if error occurs
 bool RegKeyManager::WriteRegistryBlob(const TCHAR *pValueName, const DATA_BLOB &blob) const
 {
-    _ASSERTE(m_bInitialized);
+    assert(m_bInitialized);
 
     // length includes the trailing zero byte
     bool bSuccess = (RegSetValueEx(m_hKey, pValueName, 0, REG_BINARY, blob.pbData, blob.cbData) == ERROR_SUCCESS);
@@ -115,7 +116,7 @@ bool RegKeyManager::WriteRegistryBlob(const TCHAR *pValueName, const DATA_BLOB &
 // Returns false if error occurs.
 bool RegKeyManager::ReadRegistryBlob(const TCHAR *pValueName, DATA_BLOB &blobOut) const
 {
-    _ASSERTE(m_bInitialized);
+    assert(m_bInitialized);
 
     DWORD dwType;
 	bool bSuccess = false;
@@ -142,7 +143,7 @@ bool RegKeyManager::ReadRegistryBlob(const TCHAR *pValueName, DATA_BLOB &blobOut
 // Returns false if error occurs
 bool RegKeyManager::WriteRegistryDWORD(const TCHAR *pValueName, const DWORD dwValue) const
 {
-    _ASSERTE(m_bInitialized);
+    assert(m_bInitialized);
 
     // length includes the trailing zero byte
     bool bSuccess = (RegSetValueEx(m_hKey, pValueName, 0, REG_DWORD, reinterpret_cast<const BYTE *>(&dwValue), sizeof(DWORD)) == ERROR_SUCCESS);
@@ -154,7 +155,7 @@ bool RegKeyManager::WriteRegistryDWORD(const TCHAR *pValueName, const DWORD dwVa
 // Returns false if error occurs
 bool RegKeyManager::ReadRegistryDWORD(const TCHAR *pValueName, DWORD &valueOut) const
 {
-    _ASSERTE(m_bInitialized);
+    assert(m_bInitialized);
 
     DWORD dwType;
     DWORD dwSize = sizeof(DWORD);
@@ -169,7 +170,7 @@ bool RegKeyManager::ReadRegistryDWORD(const TCHAR *pValueName, DWORD &valueOut) 
 // Returns false if error occurs
 bool RegKeyManager::WriteRegistryQWORD(const TCHAR *pValueName, const ULONGLONG qwValue) const
 {
-    _ASSERTE(m_bInitialized);
+    assert(m_bInitialized);
 
     // length includes the trailing zero byte
     bool bSuccess = (RegSetValueEx(m_hKey, pValueName, 0, REG_QWORD, reinterpret_cast<const BYTE *>(&qwValue), sizeof(ULONGLONG)) == ERROR_SUCCESS);
@@ -181,7 +182,7 @@ bool RegKeyManager::WriteRegistryQWORD(const TCHAR *pValueName, const ULONGLONG 
 // Returns false if error occurs
 bool RegKeyManager::ReadRegistryQWORD(const TCHAR *pValueName, ULONGLONG &valueOut) const
 {
-    _ASSERTE(m_bInitialized);
+    assert(m_bInitialized);
 
     DWORD dwType;
     DWORD dwSize = sizeof(ULONGLONG);
@@ -203,3 +204,4 @@ LONG RegKeyManager::DeleteRegistryValue(const TCHAR *pValueName) const
     return RegDeleteValue(m_hKey, pValueName);
 }
 
+#endif

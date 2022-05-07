@@ -30,6 +30,7 @@
 #include "XR1PostSteps.h"
 #include "AreaIDs.h"
 #include "XRPayloadBay.h"   // not used by the XR1
+#include <cassert>
 
 //---------------------------------------------------------------------------
 
@@ -265,44 +266,43 @@ void SetSlopePostStep::clbkPrePostStep(const double simt, const double simdt, co
     }
     else  // ship is airborne, so slope is valid
     {
-        if (!m_isNextUpdateTimeValid)
-            goto reset;  // enable slope calculation
-    }
+        if (m_isNextUpdateTimeValid) {
 
-    // check if the sim date was moved *backward*: m_nextUpdateTime should never normally be > 0.10 second from current simt
-    if (m_isNextUpdateTimeValid && (m_nextUpdateTime - simt) > 1.0)  // 0.10 would work, but 1.0 is fine (allow for changes to m_refreshRate sometime w/o having to change this, too)
-        goto reset;     // reset for for 1/10th second from now with new data
+            // check if the sim date was moved *backward*: m_nextUpdateTime should never normally be > 0.10 second from current simt
+            if (!(m_isNextUpdateTimeValid && (m_nextUpdateTime - simt) > 1.0)) { // 0.10 would work, but 1.0 is fine (allow for changes to m_refreshRate sometime w/o having to change this, too)
+                     // reset for for 1/10th second from now with new data
 
-    // NOTE: we don't want to add a sample every frame here because it would make the number of samples
-    // over time vary, which would make accuracy (and lag) dependent on the framerate.  So we sync at 60 fps instead (see m_refreshRate value).
-    if (m_isNextUpdateTimeValid && (simt >= m_nextUpdateTime))
-    {
-		const double groundspeed = GetVessel().GetGroundspeed();
+                // NOTE: we don't want to add a sample every frame here because it would make the number of samples
+                // over time vary, which would make accuracy (and lag) dependent on the framerate.  So we sync at 60 fps instead (see m_refreshRate value).
+                if (m_isNextUpdateTimeValid && (simt >= m_nextUpdateTime))
+                {
+                    const double groundspeed = GetVessel().GetGroundspeed();
 
-        const double timeDeltaSinceLastUpdate = simt - m_lastUpdateTime;
-        m_pAltitudeDeltaRollingArray->AddSample(altitude - m_lastUpdateAltitude);       // altitude delta for this timestep
-		m_pDistanceRollingArray->AddSample(groundspeed * timeDeltaSinceLastUpdate);   // distance traveled for this timestep
+                    const double timeDeltaSinceLastUpdate = simt - m_lastUpdateTime;
+                    m_pAltitudeDeltaRollingArray->AddSample(altitude - m_lastUpdateAltitude);       // altitude delta for this timestep
+                    m_pDistanceRollingArray->AddSample(groundspeed * timeDeltaSinceLastUpdate);   // distance traveled for this timestep
 
-        // NOTE: the total sample size is very small until the data builds up, so the slope may be pretty far out for 
-        // the first few frames, but that's OK.
+                    // NOTE: the total sample size is very small until the data builds up, so the slope may be pretty far out for 
+                    // the first few frames, but that's OK.
 
-        // update slope variables
-        // compute triangle's 'a' leg (total altitude delta over for the last N timesteps)
-        const double a = m_pAltitudeDeltaRollingArray->GetSum();
+                    // update slope variables
+                    // compute triangle's 'a' leg (total altitude delta over for the last N timesteps)
+                    const double a = m_pAltitudeDeltaRollingArray->GetSum();
 
-        // compute triangle's hypotenuse (distance traveled along velocity vector over the last N timesteps)
-        const double c = m_pDistanceRollingArray->GetSum();  // total distance traveled over the last N frames
+                    // compute triangle's hypotenuse (distance traveled along velocity vector over the last N timesteps)
+                    const double c = m_pDistanceRollingArray->GetSum();  // total distance traveled over the last N frames
 
-        // compute the triangle's 'b' leg (ground distance traveled)
-        // b = sqrt( c^2 - a^2 )
-        const double b = sqrt((c*c) - (a*a));
+                    // compute the triangle's 'b' leg (ground distance traveled)
+                    // b = sqrt( c^2 - a^2 )
+                    const double b = sqrt((c*c) - (a*a));
 
-        // how we have the 'a' and 'b' legs; compute the slope angle
-        // A = arctan(a / b)
-        GetXR1().m_slope = atan(a / b);     // slope in radians
-        // DEBUG: sprintf(oapiDebugString(), "a=%0.4lf, b=%0.4lf, c=%0.4lf, slope=%lf, velocity=%lf, timeDeltaSinceLastUpdate=%lf", a, b, c, GetXR1().m_slope * DEG, airspeed, timeDeltaSinceLastUpdate);
-
-reset:
+                    // how we have the 'a' and 'b' legs; compute the slope angle
+                    // A = arctan(a / b)
+                    GetXR1().m_slope = atan(a / b);     // slope in radians
+                    // DEBUG: sprintf(oapiDebugString(), "a=%0.4lf, b=%0.4lf, c=%0.4lf, slope=%lf, velocity=%lf, timeDeltaSinceLastUpdate=%lf", a, b, c, GetXR1().m_slope * DEG, airspeed, timeDeltaSinceLastUpdate);
+                }
+            }
+        }
         // reset for next sample
         m_nextUpdateTime        = simt + m_refreshRate;
         m_lastUpdateTime        = simt;
@@ -1129,7 +1129,7 @@ void OneShotInitializationPostStep::clbkPrePostStep(const double simt, const dou
 
     // NOTE: since we only reach here on startup and startup always starts at simt=0, we don't need to worry about
     // simt ever being negative here (because of the m_done check above).
-    _ASSERTE(simt >= 0);
+    assert(simt >= 0);
 
     // wait 0.5 second before initializing
     if (simt < 0.5)

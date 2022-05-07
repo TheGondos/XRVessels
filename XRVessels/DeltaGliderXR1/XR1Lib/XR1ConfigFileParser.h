@@ -29,14 +29,11 @@
 
 #pragma once
 
-#define _CRT_SECURE_NO_DEPRECATE
-#include "windows.h"
 #include <vector>
 #include "VesselConfigFileParser.h"
 #include "SecondaryHUDData.h"
 #include "XR1Globals.h"
-
-using namespace std;
+#include <cstring>
 
 // convert RGB value to BGR, a Windows' COLORREF
 #define CREF3(r,g,b) ((b << 16) | (g << 8) | r)
@@ -102,7 +99,7 @@ public:
     int mass;               // mass in kg
     char rank[CrewMemberRankLength+1];  // stored as MiscID in UMmu
     char mesh[CrewMemberMeshLength+1];
-    CString miscID;         // "XI0", "XI1", etc.
+    std::string miscID;         // "XI0", "XI1", etc.
 };
 
 #define PARSE_CHEATCODE_DOUBLE(name, variable)     \
@@ -125,7 +122,7 @@ public:
             processed = true;                      \
         }
 
-typedef vector<const Cheatcode *>::iterator CheatcodeConstIterator;
+typedef std::vector<const Cheatcode *>::iterator CheatcodeConstIterator;
 
 // main parser class; this is also a base class for other XR vessels
 class XR1ConfigFileParser : public VesselConfigFileParser
@@ -158,9 +155,9 @@ public:
     bool EnableAFStatusCallouts;
     bool EnableWarningCallouts;
 
-    COLORREF TertiaryHUDNormalColor;
-    COLORREF TertiaryHUDWarningColor;
-    COLORREF TertiaryHUDBackgroundColor;
+    uint32_t TertiaryHUDNormalColor;
+    uint32_t TertiaryHUDWarningColor;
+    uint32_t TertiaryHUDBackgroundColor;
     SecondaryHUDMode SecondaryHUD[5];
     double DistanceToBaseOnHUDAltitudeThreshold;
     double MDAUpdateInterval;
@@ -219,7 +216,7 @@ public:
 
     // LOX tank capacity @ 100% capacity; based on GetLOXConsumptionFraction()
     // (prevent 0 mass when consumption set to 0)
-    double GetMaxLoxMass() const { return max(10.0, (m_loxLoadoutArray[LOXLoadout] * GetLOXConsumptionFraction())); }
+    double GetMaxLoxMass() const { return std::max(10.0, (m_loxLoadoutArray[LOXLoadout] * GetLOXConsumptionFraction())); }
 
     // Consumption fraction from 0...1
     double GetLOXConsumptionFraction() const 
@@ -277,6 +274,6 @@ protected:
     static const double m_scramMaxDMF[];         // max fuel flow for a single SCRAM engine
     static const double m_apuFuelBurnRate[];     // kg/minute
 
-    vector<const Cheatcode *> m_cheatcodeVector; // list of all parsed Cheatcode objects; may be empty
+    std::vector<const Cheatcode *> m_cheatcodeVector; // list of all parsed Cheatcode objects; may be empty
 };
 

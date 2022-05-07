@@ -46,24 +46,28 @@ VesselConfigFileParser::~VesselConfigFileParser()
 //               Applied *after* the default file is read. 
 //
 // Returns: true on success, false if I/O error occurs or if default preference file does not exist
+#include <sys/stat.h>
 bool VesselConfigFileParser::ParseVesselConfig(const char *pVesselName)
 {
     SetLogPrefix(pVesselName);
-    
-    m_csOverrideFilename.Format("Config\\%s.xrcfg", pVesselName);  // e.g., "Config\XR5-01.xrcfg"
-    const BOOL overrideFileExists = PathFileExists(m_csOverrideFilename);
+    m_csOverrideFilename = std::string("Config/") + pVesselName + ".xrcfg";
+    struct stat s;
+    const bool overrideFileExists = (stat(m_csOverrideFilename.c_str(), &s) == 0);
 
-    if (overrideFileExists)
-        m_csConfigFilenames.Format("%s + %s", GetDefaultFilename(), GetOverrideFilename());
-    else
-    {
-        m_csConfigFilenames.Format("%s (no override found [%s])", GetDefaultFilename(), GetOverrideFilename());
-        m_csOverrideFilename.Empty();  // empty the filename to indicate it does not exist
+    if (overrideFileExists) {
+        char cbuf[256];
+        sprintf(cbuf, "%s + %s", GetDefaultFilename(), GetOverrideFilename());
+        m_csConfigFilenames = cbuf;
+    } else {
+        char cbuf[256];
+        sprintf(cbuf, "%s (no override found [%s])", GetDefaultFilename(), GetOverrideFilename());
+        m_csConfigFilenames = cbuf;
+        m_csOverrideFilename="";  // empty the filename to indicate it does not exist
     }
 
     // log the filenames
-    CString csTemp;
-    csTemp.Format("Using configuration file(s): %s", GetConfigFilenames());
+    char csTemp[256];
+    sprintf(csTemp, "Using configuration file(s): %s", GetConfigFilenames());
     WriteLog(csTemp);
 
     // parse the default config file first

@@ -116,7 +116,8 @@ void DeltaGliderXR1::ShowHatchDecompression()
     static PARTICLESTREAMSPEC airvent = {
         0, 1.0, 15, 0.5, 0.3, 2, 0.3, 1.0, PARTICLESTREAMSPEC::EMISSIVE,
         PARTICLESTREAMSPEC::LVL_LIN, 0.1, 0.1,
-        PARTICLESTREAMSPEC::ATM_FLAT, 0.1, 0.1
+        PARTICLESTREAMSPEC::ATM_FLAT, 0.1, 0.1,
+        nullptr
     };
     static VECTOR3 pos = { 0,2,4 };
     static VECTOR3 dir = { 0,1,0 };

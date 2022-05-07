@@ -29,7 +29,7 @@
 
 #pragma once
 
-#include "orbitersdk.h"
+#include "Orbitersdk.h"
 #include "XR1Component.h"
 
 class MFDComponent : public XR1Component
@@ -56,7 +56,7 @@ protected:
 
     int m_mfdID;
     bool m_rebootMFD;  // true if systems failure occurred; reboot when systems restored
-    DWORD m_meshGroup;
+    int m_meshGroup;
 };
 
 class MFDBottomButtonsArea : public XR1Area
@@ -90,7 +90,7 @@ protected:
     virtual void clbkPrePostStep(const double simt, const double simdt, const double mjd);
     bool m_justActivated;      // true if area was activated the previous frame
 
-    HFONT m_font;
+    oapi::Font *m_font;
     int m_mfdID;
     BUTTON_SIDE m_buttonSide;
 };

@@ -29,6 +29,7 @@
 #include "DeltaGliderXR1.h"
 #include "XRPayloadBay.h"
 #include "XRPayloadBaySlot.h"
+#include <cassert>
 
 // utility macros
 #define LOWER_LIMIT(x, lim)  if (x < lim) x = lim
@@ -58,6 +59,7 @@ bool DeltaGliderXR1::SetEngineState(XREngineID id, const XREngineStateWrite &sta
     {
     case XREngineID::XRE_RetroLeft:
         idx = 0;
+        //fallthrough
     case XREngineID::XRE_RetroRight:
         {
             // check for unsupported options
@@ -80,6 +82,7 @@ bool DeltaGliderXR1::SetEngineState(XREngineID id, const XREngineStateWrite &sta
 
     case XREngineID::XRE_MainLeft:
         idx = 0;
+        //fallthrough
     case XREngineID::XRE_MainRight:
         {
             // custom balance is not supported
@@ -109,6 +112,7 @@ bool DeltaGliderXR1::SetEngineState(XREngineID id, const XREngineStateWrite &sta
 
     case XREngineID::XRE_HoverFore:
         idx = 0;
+        //fallthrough
     case XREngineID::XRE_HoverAft:
         {
             // gimbaling/auto/divergent not supported
@@ -143,6 +147,7 @@ bool DeltaGliderXR1::SetEngineState(XREngineID id, const XREngineStateWrite &sta
 
     case XREngineID::XRE_ScramLeft:
         idx = 0;
+        //fallthrough
     case XREngineID::XRE_ScramRight:
         {
             // check for unsupported options
@@ -187,6 +192,7 @@ bool DeltaGliderXR1::GetEngineState(XREngineID id, XREngineStateRead &state) con
     {
     case XREngineID::XRE_RetroLeft:
         idx = 0;
+        //fallthrough
     case XREngineID::XRE_RetroRight:
         {
             const THRUSTER_HANDLE th = th_retro[idx];
@@ -214,6 +220,7 @@ bool DeltaGliderXR1::GetEngineState(XREngineID id, XREngineStateRead &state) con
 
     case XREngineID::XRE_MainLeft:
         idx = 0;
+        //fallthrough
     case XREngineID::XRE_MainRight:
         {
             const THRUSTER_HANDLE th = th_main[idx];
@@ -244,6 +251,7 @@ bool DeltaGliderXR1::GetEngineState(XREngineID id, XREngineStateRead &state) con
 
     case XREngineID::XRE_HoverFore:
         idx = 0;
+        //fallthrough
     case XREngineID::XRE_HoverAft:
         {
             const THRUSTER_HANDLE th = th_hover[idx];
@@ -271,6 +279,7 @@ bool DeltaGliderXR1::GetEngineState(XREngineID id, XREngineStateRead &state) con
 
     case XREngineID::XRE_ScramLeft:
         idx = 0;
+        //fallthrough
     case XREngineID::XRE_ScramRight:
         {
             const THRUSTER_HANDLE th = th_scram[idx];
@@ -483,11 +492,11 @@ bool DeltaGliderXR1::SetXRSystemStatus(const XRSystemStatusWrite &status)
     ClearAllXRDamage();
 
     // Now apply the new status one item at a time
-#define SET_DMG_INT(statusField, XREnum)  { double val = status.##statusField; LIMITS(val, 0, 1.0); SetDamageStatus(XREnum, val); }
+#define SET_DMG_INT(statusField, XREnum)  { double val = status. statusField; LIMITS(val, 0, 1.0); SetDamageStatus(XREnum, val); }
 #define SET_DMG_ENUM(statusField, XREnum)                       \
      {                                                          \
         double val;                                             \
-        XRDamageState state = status.##statusField;             \
+        XRDamageState state = status. statusField;             \
         if (state == XRDamageState::XRDMG_online) val = 1.0;    \
         else val = 0.0;  /* unsupported or offline */           \
         SetDamageStatus(XREnum, val);                           \
@@ -885,6 +894,7 @@ XRDoorState DeltaGliderXR1::ToXRDoorState(DoorStatus status)
     case DoorStatus::DOOR_OPENING:
         retVal = XRDoorState::XRDS_Opening;
         break;
+    default: break;
     }
 
     return retVal;
@@ -916,6 +926,7 @@ DoorStatus DeltaGliderXR1::ToDoorStatus(XRDoorState state)
     case XRDoorState::XRDS_Opening:
         retVal = DoorStatus::DOOR_OPENING;
         break;
+    default: break;
     }
 
     return retVal;
@@ -1013,15 +1024,15 @@ int DeltaGliderXR1::GetStatusScreenText(char *pLinesOut, const int maxLinesToRet
     const int lineCount = m_infoWarningTextLineGroup.GetLineCount();
     const int linesToRetrieve = min(maxLinesToRetrieve, lineCount);
     const int startingLineIndex = lineCount - linesToRetrieve;
-    _ASSERTE(startingLineIndex >= 0);
+    assert(startingLineIndex >= 0);
 
     *pLinesOut = 0;  // empty contents
 
     // NOTE: lines are stored from OLD -> NEW, so we always copy the newest 'linesToRetrieve' lines in the vector
     for (int i=startingLineIndex; i < (startingLineIndex + linesToRetrieve); i++)
     {
-        _ASSERTE(i >= 0);
-        _ASSERTE(i < INFO_WARNING_BUFFER_LINES);
+        assert(i >= 0);
+        assert(i < INFO_WARNING_BUFFER_LINES);
         TextLine textLine = m_infoWarningTextLineGroup.GetLine(i);
         
         // retrieve each line's string object and copy it to pLinesOut by value and terminating each with \r\n
@@ -1090,7 +1101,7 @@ bool DeltaGliderXR1::GetPayloadSlotData(const int slotNumber, XRPayloadSlotData 
         return false;
 
     const XRPayloadBaySlot *pSlot = m_pPayloadBay->GetSlot(slotNumber);
-    _ASSERTE(pSlot);
+    assert(pSlot);
     
     // populate the XRPayloadSlotData to be returned to the caller
     slotDataOut.hCargoModuleVessel = pSlot->GetChild();  // may be nullptr
@@ -1117,7 +1128,7 @@ bool DeltaGliderXR1::CanAttachPayload(const OBJHANDLE hPayloadVessel, const int 
         return false;
 
     const XRPayloadBaySlot *pSlot = m_pPayloadBay->GetSlot(slotNumber);
-    _ASSERTE(pSlot);
+    assert(pSlot);
 
     // retrieve the vessel for the supplied payload vessel handle
     VESSEL *pPayloadVessel = oapiGetVesselInterface(hPayloadVessel);

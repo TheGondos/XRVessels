@@ -37,6 +37,7 @@
 #include "XR3PayloadBay.h"
 
 #include "meshres.h"
+#include <cassert>
 
 // ==============================================================
 // API callback interface
@@ -45,7 +46,7 @@
 // --------------------------------------------------------------
 // Module initialisation
 // --------------------------------------------------------------
-DLLCLBK void InitModule (HINSTANCE hModule)
+DLLCLBK void InitModule (DynamicModule *hModule)
 {
     g_hDLL = hModule;
     oapiRegisterCustomControls(hModule);
@@ -54,7 +55,7 @@ DLLCLBK void InitModule (HINSTANCE hModule)
 // --------------------------------------------------------------
 // Module cleanup
 // --------------------------------------------------------------
-DLLCLBK void ExitModule (HINSTANCE hModule)
+DLLCLBK void ExitModule (DynamicModule *hModule)
 {
     oapiUnregisterCustomControls(hModule);
     XRPayloadClassData::Terminate();     // clean up global cache
@@ -210,7 +211,7 @@ void XR3Phoenix::ReinitializeDamageableControlSurfaces()
 // Message callback function for control dialog box
 // ==============================================================
 
-INT_PTR CALLBACK XR3Ctrl_DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK XR3Ctrl_DlgProc (HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM lParam)
 {
     XR3Phoenix *dg = (uMsg == WM_INITDIALOG ? reinterpret_cast<XR3Phoenix *>(lParam) : reinterpret_cast<XR3Phoenix *>(oapiGetDialogContext(hWnd)));
     // pointer to vessel instance was passed as dialog context
@@ -596,7 +597,7 @@ void XR3Phoenix::SetGearParameters(double state)
     TriggerRedrawArea(AID_GEARINDICATOR);
 
     // PERFORMANCE ENHANCEMENT: hide the gear if it is fully retracted; otherwise, render it
-    static const UINT gearMeshGroups[] = 
+    static const unsigned int gearMeshGroups[] = 
     { 
         GRP_nose_oleo_piston, GRP_nose_axle_piston, GRP_nose_axle_cylinder, GRP_nose_axle, GRP_nose_oleo_piston, GRP_nose_gear_wheel_right, GRP_nose_gear_wheel_left,
         GRP_axle_left, GRP_axle_right, GRP_gear_main_oleo_cylinder_right, GRP_axle_piston_left, GRP_axle_cylinder_left, GRP_axle_cylinder_right, GRP_axle_piston_right, GRP_oleo_piston_right,
@@ -957,10 +958,10 @@ void XR3Phoenix::ApplySkin()
 // meshTextureID = vessel-specific constant that is translated to a texture index specific to our vessel's .msh file.  meshTextureID 
 // NOTE: meshTextureID=VCPANEL_TEXTURE_NONE = -1 = "no texture" (i.e., "not applicable"); defined in Area.h.
 // hMesh = OUTPUT: will be set to the mesh handle of the mesh associated with meshTextureID.
-DWORD XR3Phoenix::MeshTextureIDToTextureIndex(const int meshTextureID, MESHHANDLE &hMesh)
+int XR3Phoenix::MeshTextureIDToTextureIndex(const int meshTextureID, MESHHANDLE &hMesh)
 {
-    _ASSERTE(false);  // should never reach here!
+    assert(false);  // should never reach here!
 
     hMesh = nullptr;      
-    return MAXDWORD;   // bogus
+    return INT_MAX;   // bogus
 }

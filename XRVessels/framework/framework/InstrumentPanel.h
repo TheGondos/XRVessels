@@ -27,14 +27,14 @@
 #pragma once
 
 #include "Orbitersdk.h"
-#include "vessel3ext.h"
+#include "Vessel3Ext.h"
 #include "Component.h"
 #include "AreaGroup.h"
 
 class InstrumentPanel : public AreaGroup
 {
 public:
-    InstrumentPanel(VESSEL3_EXT &vessel, const int panelID, const int vcPanelID = -1, const WORD panelResourceID = -1, const bool force3DRedrawTo2D = false);
+    InstrumentPanel(VESSEL3_EXT &vessel, const int panelID, const int vcPanelID = -1, const char *panelResourceID = nullptr, const bool force3DRedrawTo2D = false);
     virtual ~InstrumentPanel();
 
     VESSEL3_EXT &GetVessel() const { return m_vessel; }
@@ -51,7 +51,7 @@ public:
     void TriggerRedrawArea(Area *pArea);
 
     // returns resource ID of this panel in our DLL; e.g., IDB_PANEL1_1280
-    WORD GetPanelResourceID() const
+    const char *GetPanelResourceID() const
     {
         return m_panelResourceID;   // -1 = NONE
     }
@@ -72,12 +72,12 @@ protected:
     VESSEL3_EXT &m_vessel;
     int m_panelID;      // globally unique panel ID; also serves as Orbiter 2D panel ID
     int m_vcPanelID;    // Orbiter VC panel ID, or < 0 if this is a 2D panel
-    HBITMAP m_hBmp;     // 2D bitmap resource, if any
+    SURFHANDLE m_hBmp;     // 2D bitmap resource, if any
     bool m_isActive;    // true if panel is activated, false if deactivated
     const bool m_force3DRedrawTo2D;  // if true, all area redraw calls in 3D (virtual cockpit) mode will invoke Redraw2D instead of Redraw3D
 
 private:
     // data
-    WORD m_panelResourceID; // resource ID of this panel in our DLL; e.g., IDB_PANEL1_1280
+    const char *m_panelResourceID; // resource ID of this panel in our DLL; e.g., IDB_PANEL1_1280
     vector<Component *> m_componentVector;    // list of all components on the panel
 };

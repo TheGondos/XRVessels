@@ -21,9 +21,8 @@
 
 // ==============================================================
 
-#include "resource.h"
-
 #include "XR1PostSteps.h"
+#include <cassert>
 
 //---------------------------------------------------------------------------
 
@@ -98,10 +97,10 @@ void SetHullTempsPostStep::AddHeat(const double simdt)
             double heatConductionPower = ((atmPressure - minHeatConductionPressure) / (maxHeatConductionPressure - minHeatConductionPressure));  // from 0.0 to 1.0 (higher number = more heat dropped due to conduction)
             if (heatConductionPower > 1.0)
                 heatConductionPower = 1.0;   // never add extra heat if atmPressure > maxHeatConductionPressure
-            _ASSERTE(heatConductionPower >= 0.0);
+            assert(heatConductionPower >= 0.0);
 
             heatConductionFraction = 1.0 - (maxHeatConductionFraction * heatConductionPower);
-            // cannot use due to tiny rounding error at boundary: _ASSERTE(heatConductionFraction >= minHeatConductionFraction);
+            // cannot use due to tiny rounding error at boundary: assert(heatConductionFraction >= minHeatConductionFraction);
 
             // DEBUG: sprintf(oapiDebugString(), "heatConductionFraction = %lf, heatConductionPower = %lf, normal degreesK = %lf, adjusted degreesK = %lf", heatConductionFraction, heatConductionPower, degreesK, (degreesK * heatConductionFraction));
         }
@@ -275,7 +274,7 @@ void SetHullTempsPostStep::UpdateHullHeatingMesh(const double simdt)
     // transparent meshes in the sim, including the Sun!  This makes the sun disappear.
     const bool bHeatingMeshVisible = (GetXR1().m_noseconeTemp >= minVisibilityTemp);
     GetXR1().SetMeshGroupVisible(GetXR1().heatingmesh, GetHeatingMeshGroupIndex(), bHeatingMeshVisible);  // show or hide the group
-    oapiSetMeshProperty(GetXR1().heatingmesh, MESHPROPERTY_MODULATEMATALPHA, (DWORD)bHeatingMeshVisible); // use material alpha w/texture alpha
+    oapiSetMeshProperty(GetXR1().heatingmesh, MESHPROPERTY_MODULATEMATALPHA, (int)bHeatingMeshVisible); // use material alpha w/texture alpha
 
     if (bHeatingMeshVisible)
     {

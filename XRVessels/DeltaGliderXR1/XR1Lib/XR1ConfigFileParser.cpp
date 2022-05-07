@@ -102,7 +102,7 @@ XR1ConfigFileParser::XR1ConfigFileParser() :
         pCrewMember->mass = 68;
         strcpy(pCrewMember->rank, "Civilian");
         strcpy(pCrewMember->mesh, DEFAULT_CREW_MESH);
-        pCrewMember->miscID.Format("XI%d", i);      // "XI0", "XI1", etc.
+        pCrewMember->miscID = std::string("XI") + std::to_string(i);
     }
 
     // write the XR1 version to the log to aid in debugging
@@ -136,7 +136,7 @@ bool XR1ConfigFileParser::ParseLine(const char *pSection, const char *pPropertyN
     {
         if (PNAME_MATCHES("2DPanelWidth"))
         {
-            SSCANF1("%d", &TwoDPanelWidth);
+            SSCANF1("%d", (int *)&TwoDPanelWidth);
             VALIDATE_INT(reinterpret_cast<int *>(&TwoDPanelWidth), 0, 3, 0);  // OK to cast enum * to int * here
         }
     }
@@ -545,7 +545,7 @@ bool XR1ConfigFileParser::ParseLine(const char *pSection, const char *pPropertyN
             char sideChar = pPropertyName[4];
             if (sideChar == 'L')
                 sideIndex = 0;
-            else if (sideChar = 'R')
+            else if (sideChar == 'R')
                 sideIndex = 1;
             else
                 goto invalid_name;
@@ -716,13 +716,13 @@ bool XR1ConfigFileParser::ParseFuelTanks(const char *pValue, bool *pConfigArray)
         const char *pArg = val[i];
 
         // these are case-insensitive values
-        if (_stricmp(pArg, "main") == 0)
+        if (strcasecmp(pArg, "main") == 0)
             pConfigArray[TANK_MAIN] = true;
-        else if (_stricmp(pArg, "scram") == 0)
+        else if (strcasecmp(pArg, "scram") == 0)
             pConfigArray[TANK_SCRAM] = true;
-        else if (_stricmp(pArg, "apu") == 0)
+        else if (strcasecmp(pArg, "apu") == 0)
             pConfigArray[TANK_APU] = true;
-        else if (_stricmp(pArg, "lox") == 0)
+        else if (strcasecmp(pArg, "lox") == 0)
             pConfigArray[TANK_LOX] = true;
         else    // invalid tank ID
         {

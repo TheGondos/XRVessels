@@ -28,7 +28,7 @@
 
 #pragma once
 
-#include "orbitersdk.h"
+#include "Orbitersdk.h"
 #include "XR1Areas.h"
 #include "XR1UpperPanelAreas.h"
 #include "XR1MultiDisplayArea.h"

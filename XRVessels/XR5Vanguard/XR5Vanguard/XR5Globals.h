@@ -32,7 +32,7 @@
 #include "XR1Globals.h"   
 
 // size of a mesh group array
-#define SizeOfGrp(grp) (sizeof(grp) / sizeof(UINT))
+#define SizeOfGrp(grp) (sizeof(grp) / sizeof(unsigned int))
 
 // unique panel IDs; standard panels are 0,1,2 and are defined in xr1globals.h
 #define PANEL_OVERHEAD  3   // Orbiter 2D panel ID
@@ -64,7 +64,7 @@ extern const double ELEVATOR_OPERATING_SPEED;
 
 extern const double BAY_LIMIT;
 extern const double ELEVATOR_LIMIT;
-extern const VECTOR3 &DOCKING_PORT_COORD;
+extern const VECTOR3 DOCKING_PORT_COORD;
 
 // new damage enum values we need from the XR1's DamageItem enum
 // WARNING: if you add or remove values here, update the D_END global as well!
@@ -75,5 +75,5 @@ extern const DamageItem D_END;
 // ==============================================================
 // Global callback prototypes 
 
-INT_PTR CALLBACK XR5Ctrl_DlgProc(HWND, UINT, WPARAM, LPARAM);
+//INT_PTR CALLBACK XR5Ctrl_DlgProc(HWND, UINT, WPARAM, LPARAM);
 

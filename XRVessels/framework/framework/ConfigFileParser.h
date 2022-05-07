@@ -1,37 +1,17 @@
-/**
-  XR Vessel add-ons for OpenOrbiter Space Flight Simulator
-  Copyright (C) 2006-2021 Douglas Beachy
-
-  This program is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  any later version.
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-  Email: mailto:doug.beachy@outlook.com
-  Web: https://www.alteaaerospace.com
-**/
-
 // ==============================================================
+// From the XR Vessel Framework
+//
+// Copyright (c) 2006-2021 Douglas Beachy
+// Licensed under the MIT License
+//
 // ConfigFileParser.h
 // Base class to parse a configuration file.
 // ==============================================================
 
 #pragma once
 
-#define _CRT_SECURE_NO_DEPRECATE
-
-#include <Windows.h>
 #include <stdio.h>
 
-#include <atlstr.h>		// for CString
 #include <fstream>      // for ifstream
 
 const int MAX_LINE_LENGTH = 1024;
@@ -44,13 +24,13 @@ public:
     ConfigFileParser(const char *pDefaultFilename, const char *pLogFilename);
     virtual ~ConfigFileParser();
     
-    virtual const CString &GetLogPrefix() const { return m_logPrefix; }
+    virtual const std::string &GetLogPrefix() const { return m_logPrefix; }
 
     virtual bool ParseFile(const char *pFilename = nullptr);  // main parse method; if null, parses the default filename (GetDefaultFilename())
     bool ParseFailed() const { return m_parseFailed; };
-    const char *GetDefaultFilename() const { return m_csDefaultFilename; }   // e.g,. "Foo\Bar.cfg"
-    const char *GetOverrideFilename() const { return m_csOverrideFilename; } // e.g,. "Config\XR2-foobar1.xrcfg"; may be empty
-    const char *GetConfigFilenames() const { return m_csConfigFilenames; };  // cosmetic string: "Config\XR2RavenstarPrefs.cfg + Config\XR2-foobar.xrcfg"
+    const char *GetDefaultFilename() const { return m_csDefaultFilename.c_str(); }   // e.g,. "Foo\Bar.cfg"
+    const char *GetOverrideFilename() const { return m_csOverrideFilename.c_str(); } // e.g,. "Config\XR2-foobar1.xrcfg"; may be empty
+    const char *GetConfigFilenames() const { return m_csConfigFilenames.c_str(); };  // cosmetic string: "Config\XR2RavenstarPrefs.cfg + Config\XR2-foobar.xrcfg"
     
     // returns filename currently being parsed
     const char *GetCurrentFilename(const bool bParsingOverrideFile) const
@@ -94,15 +74,15 @@ protected:
 
     bool m_parseFailed;     // true if parse failed, false if it succeeded
     FILE *m_pLogFile;
-    CString m_csDefaultFilename;          // e.g,. "Config\XR2RavenstarPrefs.cfg"
+    std::string m_csDefaultFilename;          // e.g,. "Config\XR2RavenstarPrefs.cfg"
     char m_buffer[MAX_LINE_LENGTH];
     char m_section[256];                  // value between brackets in [SECTION]; changes as each new section is encountered
     char m_parsedName[MAX_NAME_LENGTH];   // left of '='
     char m_parsedValue[MAX_VALUE_LENGTH]; // right of '='
 
-    CString m_csOverrideFilename;   // e.g,. "Config\XR2-foobar1.xrcfg"; may be empty
-    CString m_csConfigFilenames;    // cosmetic string: "Config\XR2RavenstarPrefs.cfg + Config\XR2-foobar.xrcfg"
+    std::string m_csOverrideFilename;   // e.g,. "Config\XR2-foobar1.xrcfg"; may be empty
+    std::string m_csConfigFilenames;    // cosmetic string: "Config\XR2RavenstarPrefs.cfg + Config\XR2-foobar.xrcfg"
 
 private:
-    CString m_logPrefix;
+    std::string m_logPrefix;
 };

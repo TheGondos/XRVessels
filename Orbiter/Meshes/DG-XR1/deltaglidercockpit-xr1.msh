@@ -24995,21 +24995,21 @@ MATERIAL HUD_glass
 0.851 0.859 0.784 1 100
 0.375 0.75 0.375 0.05
 TEXTURES 18
-dg-xr1\dgxr1_4.dds
-dg-xr1\dgxr1_2.dds
-dg-xr1\dgxr1_3.dds
-dg-xr1\psngr2.dds
-dg-xr1\psngr1.dds
-dg-xr1\psngr3.dds
-dg-xr1\psngr4.dds
-dg-xr1\dgxrpilot1.dds
-dg-xr1\dgxr1ip_01.dds
-dg-xr1\dgxr1ip_04.dds
-dg-xr1\dgxr1ip_02.dds
-dg-xr1\dgxr1ip_03.dds
-dg-xr1\dgxr1ip_05.dds
-dg-xr1\dgxr1ip_06.dds D
-dg-xr1\dgxr1_vc2.dds
-dg-xr1\dgxr1_vc1.dds D
-dg-xr1\dgxr1_1.dds
-dg-xr1\dgxr1_vc3.dds D
+DG-XR1\dgxr1_4.dds
+DG-XR1\dgxr1_2.dds
+DG-XR1\dgxr1_3.dds
+DG-XR1\psngr2.dds
+DG-XR1\psngr1.dds
+DG-XR1\psngr3.dds
+DG-XR1\psngr4.dds
+DG-XR1\dgxrpilot1.dds
+DG-XR1\dgxr1ip_01.dds
+DG-XR1\dgxr1ip_04.dds
+DG-XR1\dgxr1ip_02.dds
+DG-XR1\dgxr1ip_03.dds
+DG-XR1\dgxr1ip_05.dds
+DG-XR1\dgxr1ip_06.dds D
+DG-XR1\dgxr1_vc2.dds
+DG-XR1\dgxr1_vc1.dds D
+DG-XR1\dgxr1_1.dds
+DG-XR1\dgxr1_vc3.dds D

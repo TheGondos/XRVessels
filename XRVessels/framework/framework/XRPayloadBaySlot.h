@@ -27,11 +27,9 @@
 #pragma once
 
 #include "XRPayloadBay.h"
-#include "vessel3ext.h"
+#include "Vessel3Ext.h"
 #include <unordered_map>
 #include <vector>
-
-using namespace stdext;
 
 class XRPayloadBaySlot;
 

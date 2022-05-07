@@ -24,9 +24,9 @@
 // for a given node in our parser tree.
 //-------------------------------------------------------------------------
 
-#include <windows.h>
 #include <limits>
 #include "ParserTreeNode.h"
+#include <cassert>
 
 // so numeric_limits<T> min, max will compile
 #undef min
@@ -85,7 +85,7 @@ ParserTreeNode::~ParserTreeNode()
 // Add a child node to this node
 void ParserTreeNode::AddChild(ParserTreeNode *pChildNode)
 {
-    _ASSERTE(pChildNode != nullptr); 
+    assert(pChildNode != nullptr); 
     
     pChildNode->SetParentNode(this);   // we are the parent
     m_children.push_back(pChildNode);
@@ -142,9 +142,9 @@ bool ParserTreeNode::AutoComplete(CString &csCommand, AUTOCOMPLETION_STATE *pACS
 // Returns # of nodes auto-completed (may be zero)
 int ParserTreeNode::AutoComplete(vector<CString> &argv, const int startingIndex, AUTOCOMPLETION_STATE *pACState, const bool direction) const
 {
-    _ASSERTE(startingIndex >= 0);
-    _ASSERTE(startingIndex < static_cast<int>(argv.size()));
-    _ASSERTE(pACState != nullptr);
+    assert(startingIndex >= 0);
+    assert(startingIndex < static_cast<int>(argv.size()));
+    assert(pACState != nullptr);
 
     int autocompletedTokens = 0;
 
@@ -228,7 +228,7 @@ bool ParserTreeNode::Parse(const char *pCommand, CString &statusOut) const
 // Returns true on success, false on error
 bool ParserTreeNode::Parse(vector<CString> &argv, const int startingIndex, CString &statusOut) const
 {
-    _ASSERTE(startingIndex >= 0);
+    assert(startingIndex >= 0);
     // do not validate argv against startingIndex here: may be beyond end of argv if this is a leaf node that takes no arguments
 
     statusOut.Empty();
@@ -237,7 +237,7 @@ bool ParserTreeNode::Parse(vector<CString> &argv, const int startingIndex, CStri
     // if this is a leaf node, invoke the leafHandler execute the action for this node
     if (m_pLeafHandler != nullptr)
     {
-        _ASSERTE(m_children.size() == 0);  // leaf nodes must not have any children
+        assert(m_children.size() == 0);  // leaf nodes must not have any children
         // build vector of remaining arguments
         vector<CString> remainingArgv;
         for (int i=startingIndex; i < static_cast<int>(argv.size()); i++)
@@ -308,13 +308,13 @@ int ParserTreeNode::GetAvailableArgumentsForCommand(const char *pCommand, vector
 // Returns the level for which the arguments in argsOut pertain.
 int ParserTreeNode::GetAvailableArgumentsForCommand(vector<CString> &argv, const int startingIndex, vector<CString> &argsOut) const
 {
-    _ASSERTE(startingIndex >= 0);
+    assert(startingIndex >= 0);
     int retVal;
 
     // if this is a leaf node, we have reached the end of the chain, so show the leaf handler's help text
     if (m_pLeafHandler != nullptr)
     {
-        _ASSERTE(m_children.size() == 0);  // leaf nodes must not have any children
+        assert(m_children.size() == 0);  // leaf nodes must not have any children
         CString csHelp;
         m_pLeafHandler->GetArgumentHelp(this, csHelp);
         argsOut.push_back("[" + csHelp + "]");  // e.g., "[<double> (range -1.0 - 1.0)]"
@@ -345,7 +345,7 @@ int ParserTreeNode::GetAvailableArgumentsForCommand(vector<CString> &argv, const
             for (unsigned int i=0; i < m_children.size(); i++)
             {
                 const ParserTreeNode *pChild = m_children[i];
-                _ASSERTE(pChild != nullptr);
+                assert(pChild != nullptr);
                 CString nodeText = *m_children[i]->GetNodeText();
                 
                 // enclose a given group of commands in brackets for clarity
@@ -367,7 +367,7 @@ int ParserTreeNode::GetAvailableArgumentsForCommand(vector<CString> &argv, const
             retVal = startingIndex;
         }
    } 
-    _ASSERTE(argsOut.size() > 0);
+    assert(argsOut.size() > 0);
     return retVal;
 }
 
@@ -426,7 +426,7 @@ ParserTreeNode *ParserTreeNode::FindChildForToken(const CString &csToken, AUTOCO
         tokenCandidateIndex = pActiveACState->tokenCandidateIndex; 
     }
     
-    _ASSERTE(significantCharacters <= csToken.GetLength());
+    assert(significantCharacters <= csToken.GetLength());
 
     // step through each of our child nodes and build a list of all case-insensitive matches
     vector<ParserTreeNode *> matchingNodes;
@@ -445,8 +445,8 @@ ParserTreeNode *ParserTreeNode::FindChildForToken(const CString &csToken, AUTOCO
     
     if (matchingNodeCount > 0)
     {
-        _ASSERTE(tokenCandidateIndex >= 0);
-        _ASSERTE(tokenCandidateIndex < matchingNodeCount);
+        assert(tokenCandidateIndex >= 0);
+        assert(tokenCandidateIndex < matchingNodeCount);
 
         if (pActiveACState == nullptr)   // not stepping through multiple tokens?
         {
@@ -508,7 +508,7 @@ const char *ParserTreeNode::AutocompleteToken(const CString &csToken, AUTOCOMPLE
         tokenCandidateIndex = pActiveACState->tokenCandidateIndex; 
     }
     
-    _ASSERTE(significantCharacters <= csToken.GetLength());
+    assert(significantCharacters <= csToken.GetLength());
 
     // step through each of our valid tokens and build a list of all case-insensitive matches
     vector<const char *> matchingTokens;   
@@ -527,8 +527,8 @@ const char *ParserTreeNode::AutocompleteToken(const CString &csToken, AUTOCOMPLE
 
     if (matchingTokenCount > 0)
     {
-        _ASSERTE(tokenCandidateIndex >= 0);
-        _ASSERTE(tokenCandidateIndex < matchingTokenCount);
+        assert(tokenCandidateIndex >= 0);
+        assert(tokenCandidateIndex < matchingTokenCount);
 
         if (pActiveACState == nullptr)   // not stepping through multiple tokens?
         {
@@ -673,7 +673,7 @@ bool ParserTreeNode::LeafHandler::ParseValidatedInt(const char *pStr, int &intOu
 // Returns true if value parsed successfully, or false if value could not be parsed (invalid string).
 bool ParserTreeNode::LeafHandler::ParseDouble(const char *pStr, double &dblOut)
 {
-    _ASSERTE(pStr != nullptr);
+    assert(pStr != nullptr);
 
     // we use sscanf_s instead of atof here because it has error handling
     return (sscanf_s(pStr, "%lf", &dblOut) == 1);
@@ -685,7 +685,7 @@ bool ParserTreeNode::LeafHandler::ParseDouble(const char *pStr, double &dblOut)
 // Returns true if value parsed successfully, or false if value could not be parsed (invalid string).
 bool ParserTreeNode::LeafHandler::ParseBool(const char *pStr, bool &boolOut)
 {
-    _ASSERTE(pStr != nullptr);
+    assert(pStr != nullptr);
 
     bool success = false;
     if (!_stricmp(pStr, "true") || !_stricmp(pStr, "on"))
@@ -707,7 +707,7 @@ bool ParserTreeNode::LeafHandler::ParseBool(const char *pStr, bool &boolOut)
 // Returns true if value parsed successfully, or false if value could not be parsed (invalid string)
 bool ParserTreeNode::LeafHandler::ParseInt(const char *pStr, int &intOut)
 {
-    _ASSERTE(pStr != nullptr);
+    assert(pStr != nullptr);
 
     // we use sscanf_s instead of atof here because it has error handling
     return (sscanf_s(pStr, "%d", &intOut) == 1);

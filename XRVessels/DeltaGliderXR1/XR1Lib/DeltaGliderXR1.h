@@ -29,25 +29,23 @@
 
 #pragma once
 
-#include "orbitersdk.h"
+#include "Orbitersdk.h"
 #include "XR1Ramjet.h"
-#include "resource.h"
 #include "InstrumentPanel.h"
 #include "XRSound.h"
 #include "XR1ConfigFileParser.h"
 #include "TextBox.h"
 #include "XR1Globals.h"
+#include "imgui.h"
 
 #ifdef MMU
 #include "UMmuSDK.h"
 #endif
 
-#include <atlstr.h>
-
 // Forward references
 class MultiDisplayArea;
 class XRPayloadBay;
-
+class XR1PayloadDialog;
 #ifdef MMU
 // Hack to work around UMMu bugs with none of its methods using const.
 #define CONST_UMMU(xr1ptr) (const_cast<DeltaGliderXR1 *>(xr1ptr)->UMmu)
@@ -72,11 +70,11 @@ public:
 
     // Safely fill a screen area: if width or height == 0, do NOT render anything
     // Otherwise, oapiColourFill will render the entire area.
-    static void SafeColorFill(SURFHANDLE tgt, DWORD fillcolor, int tgtx = 0, int tgty = 0, int width = 0, int height = 0);
+    static void SafeColorFill(SURFHANDLE tgt, uint32_t fillcolor, int tgtx = 0, int tgty = 0, int width = 0, int height = 0);
 
     // Safely blit a screen area: if width or height == 0, do not render anything.
     // Otherwise, Orbiter may throw an assertion failure in Orbiter.exe debug builds because the DirectX blit call fails
-    static void SafeBlt(SURFHANDLE tgt, SURFHANDLE src, int tgtx, int tgty, int srcx, int srcy, int width, int height, DWORD ck = SURF_NO_CK);
+    static void SafeBlt(SURFHANDLE tgt, SURFHANDLE src, int tgtx, int tgty, int srcx, int srcy, int width, int height, uint32_t ck = SURF_NO_CK);
 
     // gimbal switch definitions
     enum class GIMBAL_SWITCH { LEFT, RIGHT, BOTH };
@@ -90,7 +88,7 @@ public:
     // EVEN IF YOU JUST MAKE THEM EMPTY, BECAUSE THE BASE CLASS RENDERS XR1-SPECIFIC VISUALS.
     virtual void SetDamageVisuals();     
     virtual void SetPassengerVisuals();  
-    virtual DWORD MeshTextureIDToTextureIndex(const int meshTextureID, MESHHANDLE &hMesh);
+    virtual int MeshTextureIDToTextureIndex(const int meshTextureID, MESHHANDLE &hMesh);
 
     // these methods are virtual so then can be overwritten by XR vessel subclasses
 	virtual void UpdateVCMesh();  
@@ -133,12 +131,12 @@ public:
     virtual void clbkRenderHUD(int mode, const HUDPAINTSPEC *hps, SURFHANDLE hDefaultTex);
 
 	virtual void clbkRCSMode(int mode);
-	virtual void clbkADCtrlMode(DWORD mode);
+	virtual void clbkADCtrlMode(int mode);
 	virtual void clbkHUDMode(int mode);
 	virtual void clbkMFDMode(int mfd, int mode);
 	virtual void clbkNavMode(int mode, bool active);
 	virtual int  clbkConsumeDirectKey(char *kstate);
-	virtual int  clbkConsumeBufferedKey(DWORD key, bool down, char *kstate);
+	virtual int  clbkConsumeBufferedKey(int key, bool down, char *kstate);
 	virtual bool clbkLoadGenericCockpit();
     virtual void clbkFocusChanged(bool getfocus, OBJHANDLE hNewVessel, OBJHANDLE hOldVessel);
 
@@ -146,7 +144,7 @@ public:
     virtual void clbkDockEvent(int dock, OBJHANDLE mate);
     
     virtual bool clbkLoadVC(int id);
-    virtual void UpdateCtrlDialog (DeltaGliderXR1 *dg, HWND hWnd = nullptr);
+   // virtual void UpdateCtrlDialog (DeltaGliderXR1 *dg, HWND hWnd = nullptr);
 
     // remaining callback methods are implemented by our base class, VESSEL3_EXT
 
@@ -265,47 +263,47 @@ public:
     // WARNING: All code should invoke SetXRAnimation instead of SetXRAnimation!  The reason is that 
     // SetXRAnimation always assumes that the handle is valid, and so SetXRAnimation is a virtual "gate" 
     // method that allows each subclass to determine whether that animation is valid or not for that vessel.
-    virtual void SetXRAnimation(const UINT &anim, const double state) const;
+    virtual void SetXRAnimation(const unsigned int &anim, const double state) const;
 
-	UINT anim_gear;         // handle for landing gear animation
-	UINT anim_rcover;       // handle for retro cover animation
-    UINT anim_hoverdoor;    // handle for hover doors animation
-    UINT anim_scramdoor;    // handle for scram doors animation
-	UINT anim_nose;         // handle for nose cone animation
-	UINT anim_ladder;       // handle for front escape ladder animation
-	UINT anim_olock;        // handle for outer airlock animation
-	UINT anim_ilock;        // handle for inner airlock animation
-	UINT anim_hatch;        // handle for top hatch animation
-	UINT anim_radiator;     // handle for radiator animation
-	UINT anim_rudder;       // handle for rudder animation
-	UINT anim_elevator;     // handle for elevator animation
-	UINT anim_elevatortrim; // handle for elevator trim animation
-	UINT anim_laileron;     // handle for left aileron animation
-	UINT anim_raileron;     // handle for right aileron animation
-	UINT anim_brake;        // handle for airbrake animation
+	unsigned int anim_gear;         // handle for landing gear animation
+	unsigned int anim_rcover;       // handle for retro cover animation
+    unsigned int anim_hoverdoor;    // handle for hover doors animation
+    unsigned int anim_scramdoor;    // handle for scram doors animation
+	unsigned int anim_nose;         // handle for nose cone animation
+	unsigned int anim_ladder;       // handle for front escape ladder animation
+	unsigned int anim_olock;        // handle for outer airlock animation
+	unsigned int anim_ilock;        // handle for inner airlock animation
+	unsigned int anim_hatch;        // handle for top hatch animation
+	unsigned int anim_radiator;     // handle for radiator animation
+	unsigned int anim_rudder;       // handle for rudder animation
+	unsigned int anim_elevator;     // handle for elevator animation
+	unsigned int anim_elevatortrim; // handle for elevator trim animation
+	unsigned int anim_laileron;     // handle for left aileron animation
+	unsigned int anim_raileron;     // handle for right aileron animation
+	unsigned int anim_brake;        // handle for airbrake animation
     
     // new animation handles for consumables hatches; these are driven by the code in XRVessel, but they are not used by the XR1.
-    UINT anim_fuelhatch;
-    UINT anim_loxhatch;
+    unsigned int anim_fuelhatch;
+    unsigned int anim_loxhatch;
 
-	UINT anim_mainthrottle[2];  // VC main/retro throttle levers (left and right)
-	UINT anim_hoverthrottle;    // VC hover throttle
-	UINT anim_scramthrottle[2]; // VC scram throttle levers (left and right)
-	UINT anim_gearlever;        // VC gear lever
-	UINT anim_nconelever;       // VC nose cone lever
-	UINT anim_pmaingimbal[2];   // VC main engine pitch gimbal switch (left and right engine)
-	UINT anim_ymaingimbal[2];   // VC main engine yaw gimbal switch (left and right engine)
-	UINT anim_scramgimbal[2];   // VC scram engine pitch gimbal switch (left and right engine)
-	UINT anim_hbalance;         // VC hover balance switch
-	UINT anim_hudintens;        // VC HUD intensity switch
-	UINT anim_rcsdial;          // VC RCS dial animation
-	UINT anim_afdial;           // VC AF dial animation
-	UINT anim_olockswitch;      // VC outer airlock switch animation
-	UINT anim_ilockswitch;      // VC inner airlock switch animation
-	UINT anim_retroswitch;      // VC retro cover switch animation
-	UINT anim_ladderswitch;     // VC ladder switch animation
-	UINT anim_hatchswitch;      // VC hatch switch animation
-	UINT anim_radiatorswitch;   // VC radiator switch animation
+	unsigned int anim_mainthrottle[2];  // VC main/retro throttle levers (left and right)
+	unsigned int anim_hoverthrottle;    // VC hover throttle
+	unsigned int anim_scramthrottle[2]; // VC scram throttle levers (left and right)
+	unsigned int anim_gearlever;        // VC gear lever
+	unsigned int anim_nconelever;       // VC nose cone lever
+	unsigned int anim_pmaingimbal[2];   // VC main engine pitch gimbal switch (left and right engine)
+	unsigned int anim_ymaingimbal[2];   // VC main engine yaw gimbal switch (left and right engine)
+	unsigned int anim_scramgimbal[2];   // VC scram engine pitch gimbal switch (left and right engine)
+	unsigned int anim_hbalance;         // VC hover balance switch
+	unsigned int anim_hudintens;        // VC HUD intensity switch
+	unsigned int anim_rcsdial;          // VC RCS dial animation
+	unsigned int anim_afdial;           // VC AF dial animation
+	unsigned int anim_olockswitch;      // VC outer airlock switch animation
+	unsigned int anim_ilockswitch;      // VC inner airlock switch animation
+	unsigned int anim_retroswitch;      // VC retro cover switch animation
+	unsigned int anim_ladderswitch;     // VC ladder switch animation
+	unsigned int anim_hatchswitch;      // VC hatch switch animation
+	unsigned int anim_radiatorswitch;   // VC radiator switch animation
 
     // Note: exmesh_tpl is now in VESSEL3_EXT base class
     MESHHANDLE vcmesh_tpl;      // this is a *template*, so it's a MESHHANDLE, not a DEVMESHHANDLE
@@ -806,7 +804,7 @@ public:
     void DoCrash(const char *pMsg, double touchdownVerticalSpeed);
     void DoGearCollapse(const char *pMsg, double touchdownVerticalSpeed, bool setGearAnimState);
     void FailGear(bool setGearAnimState);
-    void FailDoor(double &doorProc, UINT anim);
+    void FailDoor(double &doorProc, unsigned int anim);
     bool CheckHydraulicPressure(bool playWarning, bool playErrorBeep);
     void CloseFuelHatch(bool playSound);
     void CloseLoxHatch(bool playSound);
@@ -815,7 +813,7 @@ public:
     void NeutralAllControlSurfaces();
     void DecompressCabin();
     bool VerifyManualCOGShiftAvailable();
-    DWORD GetLowerPanelMoveoutFlag() { return (GetXR1Config()->Lower2DPanelVerticalScrollingEnabled ? PANEL_MOVEOUT_TOP : 0); }  // convenience method
+    int GetLowerPanelMoveoutFlag() { return (GetXR1Config()->Lower2DPanelVerticalScrollingEnabled ? PANEL_MOVEOUT_TOP : 0); }  // convenience method
     void ResetMET();
     void SetCrossfeedMode(const XFEED_MODE mode, const char *pMsg);
     void SetFuelDumpState(bool &fuelDumpInProgress, const bool isDumping, const char *pFuelLabel);
@@ -900,7 +898,7 @@ public:
         return retVal;
     }
 
-    static void FormatDouble(const double val, CString &out, const int decimalPlaces);
+    static void FormatDouble(const double val, std::string &out, const int decimalPlaces);
     void TriggerNavButtonRedraw();
     void FatalError(const char *pMsg);   // show error message box and terminate
     double GetThrusterFlowRate(const THRUSTER_HANDLE th) const;
@@ -939,7 +937,7 @@ public:
     // such as low O2 levels.
     char m_crashMessage[MAX_MESSAGE_LENGTH];
 
-    char m_lastWavLoaded[MAX_PATH]; // last sound file loaded
+    char m_lastWavLoaded[280]; // last sound file loaded
     char m_hudWarningText[MAX_MESSAGE_LENGTH];  // displayed on the HUD 
 
     // warning font for critical HUD messages
@@ -1030,6 +1028,7 @@ public:
     virtual double GetPayloadGrappleRangeLimit() const { return (IsLanded() ? PAYLOAD_GRAPPLE_RANGE_LANDED : PAYLOAD_GRAPPLE_RANGE_ORBIT); }
     virtual void ClearGrappleTarget(bool playBeep);
     virtual double GetPayloadMass() const;
+	virtual int DrawPayloadSlots(ImVec4 *colors) { printf("DrawPayloadSlots should overridden if payload available\n"); assert(false); exit(EXIT_FAILURE); }
     void TogglePayloadEditor();
     // No way to do this: bool TrackGrappleTarget(bool showMessage);
     
@@ -1038,9 +1037,10 @@ public:
     XRPayloadBay *m_pPayloadBay;
     double m_nextPayloadScreensRefresh[3];  // simt of next refresh for our three screens
     vector<const XRGrappleTargetVessel *> m_xrGrappleTargetVesselsInDisplayRange;   // list of XRGrappleTargetVessel objects; may be empty
-    static HWND s_hPayloadEditorDialog;     // if non-zero, contains the window handle of the payload editor dialog; this is GLOBAL across all Ravenstar vessels since the dialog is a singleton
+    static std::unique_ptr<XR1PayloadDialog> s_hPayloadEditorDialog;
+    
     // subclass bay doors, if any; these are not referenced by our class here
-    UINT anim_bay;
+    unsigned int anim_bay;
     DoorStatus bay_status;
     double bay_proc;
     int m_requestSwitchToTwoDPanelNumber;
@@ -1057,12 +1057,12 @@ public:
     int m_selectedSlot;        // 1 to slot_count, or 0 if NO slot selected
 
     // wheel rotation animation; used only by subclasses!
-    UINT m_animFrontTireRotation;
-    UINT m_animRearTireRotation;
+    unsigned int m_animFrontTireRotation;
+    unsigned int m_animRearTireRotation;
 
     // gear compression animation; only used by subclasses!
-    UINT m_animNoseGearCompression;     // animation handle
-    UINT m_animRearGearCompression;     // both rear struts always compress as a pair 
+    unsigned int m_animNoseGearCompression;     // animation handle
+    unsigned int m_animRearGearCompression;     // both rear struts always compress as a pair 
     double m_noseGearProc, m_rearGearProc;  // set by GearCompressionPrestep; 1.0 = fully uncompressed, 0 = fully compressed
 
 protected:
@@ -1094,7 +1094,7 @@ protected:
 
 	double max_rocketfuel, max_scramfuel;        // max capacity for rocket and scramjet fuel
 	SURFHANDLE skin[3];                          // custom skin textures, if applicable
-	char skinpath[MAX_PATH];                     // skin directory, if applicable
+	char skinpath[280];                     // skin directory, if applicable
 
     virtual void ReinitializeDamageableControlSurfaces();  // creates control surfaces for any handles below that are zero
 	CTRLSURFHANDLE hLeftAileron, hRightAileron, hElevator, hElevatorTrim;         // control surface handles

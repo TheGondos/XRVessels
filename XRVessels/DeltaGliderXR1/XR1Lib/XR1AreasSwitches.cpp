@@ -22,6 +22,7 @@
 // must be included BEFORE XR1Areas.h
 #include "DeltaGliderXR1.h"
 #include "XR1Areas.h"
+#include "Bitmaps.h"
 
 //-------------------------------------------------------------------------
 
@@ -67,7 +68,7 @@ bool VerticalCenteringRockerSwitchArea::Redraw2D(const int event, const SURFHAND
 {
     int srcX;
 
-    if (m_isDual == FALSE)
+    if (m_isDual == false)
     {
         // single switch
         const POSITION lastPos = m_lastSwitchPosition[0];
@@ -138,7 +139,7 @@ bool VerticalCenteringRockerSwitchArea::ProcessMouseEvent(const int event, const
     // true if switch is pressed in any direction
     bool isPressed = ((event & (PANEL_MOUSE_LBDOWN | PANEL_MOUSE_LBPRESSED)) != 0);
 
-    if (m_isDual == FALSE)
+    if (m_isDual == false)
     {
         if (isPressed)
         {
@@ -186,7 +187,7 @@ bool VerticalCenteringRockerSwitchArea::ProcessVCMouseEvent(const int event, con
     // true if switch is pressed in any direction
     bool isPressed = ((event & (PANEL_MOUSE_LBDOWN | PANEL_MOUSE_LBPRESSED)) != 0);
 
-    if (m_isDual == FALSE)
+    if (m_isDual == false)
     {
         if (isPressed)
         {
@@ -295,7 +296,7 @@ bool HorizontalCenteringRockerSwitchArea::Redraw2D(const int event, const SURFHA
 {
     int srcY;
 
-    if (m_isDual == FALSE)
+    if (m_isDual == false)
     {
         // single switch
         const POSITION lastPos = m_lastSwitchPosition[static_cast<int>(POSITION::LEFT)];
@@ -365,7 +366,7 @@ bool HorizontalCenteringRockerSwitchArea::ProcessMouseEvent(const int event, con
 
     // true if switch is pressed in any direction
     bool isPressed = ((event & (PANEL_MOUSE_LBDOWN | PANEL_MOUSE_LBPRESSED)) != 0);
-    if (m_isDual == FALSE)
+    if (m_isDual == false)
     {
         if (isPressed)
         {
@@ -413,7 +414,7 @@ bool HorizontalCenteringRockerSwitchArea::ProcessVCMouseEvent(const int event, c
     // true if switch is pressed in any direction
     bool isPressed = ((event & (PANEL_MOUSE_LBDOWN | PANEL_MOUSE_LBPRESSED)) != 0);
 
-    if (m_isDual == FALSE)
+    if (m_isDual == false)
     {
         if (isPressed)
         {
@@ -538,7 +539,7 @@ bool ToggleSwitchArea::ProcessMouseEvent(const int event, const int mx, const in
 
 //----------------------------------------------------------------------------------
 
-SupplyHatchToggleSwitchArea::SupplyHatchToggleSwitchArea(InstrumentPanel& parentPanel, const COORD2 panelCoordinates, const int areaID, const int indicatorAreaID, DoorStatus& doorStatus, const char* pHatchName, const UINT& animHandle) :
+SupplyHatchToggleSwitchArea::SupplyHatchToggleSwitchArea(InstrumentPanel& parentPanel, const COORD2 panelCoordinates, const int areaID, const int indicatorAreaID, DoorStatus& doorStatus, const char* pHatchName, const unsigned int& animHandle) :
     ToggleSwitchArea(parentPanel, panelCoordinates, areaID, indicatorAreaID),
     m_doorStatus(doorStatus), m_animHandle(animHandle)
 {

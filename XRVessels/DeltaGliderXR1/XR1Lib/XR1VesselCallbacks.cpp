@@ -30,6 +30,7 @@
 #include "AreaIDs.h"
 #include "XR1PayloadDialog.h"
 #include "XR1HUD.h"
+#include <cassert>
 
 // ==============================================================
 // Overloaded callback functions
@@ -72,7 +73,7 @@ void DeltaGliderXR1::clbkRCSMode(int mode)
 // Respond to control surface mode change
 // --------------------------------------------------------------
 // mode: 0=disabled, 1=pitch, 7=on
-void DeltaGliderXR1::clbkADCtrlMode(DWORD mode)
+void DeltaGliderXR1::clbkADCtrlMode(int mode)
 {
     TriggerRedrawArea(AID_AFCTRLMODE);
 
@@ -162,6 +163,7 @@ void DeltaGliderXR1::clbkFocusChanged(bool getfocus, OBJHANDLE hNewVessel, OBJHA
     // are we losing focus?
     if (getfocus == false)
     {
+        /*
         // close the payload editor if it is open: otherwise a stale dialog will remain open
         if (s_hPayloadEditorDialog != 0)
         {
@@ -169,7 +171,7 @@ void DeltaGliderXR1::clbkFocusChanged(bool getfocus, OBJHANDLE hNewVessel, OBJHA
             // do not beep here; this is automatic
             ::SendMessage(s_hPayloadEditorDialog, WM_TERMINATE, 0, reinterpret_cast<LPARAM>(this));
             s_hPayloadEditorDialog = 0;
-        }
+        }*/
     }
 
     // propagate up
@@ -266,7 +268,7 @@ bool DeltaGliderXR1::clbkPanelRedrawEvent(const int areaID, const int event, SUR
                     // no refresh uptime in the map yet for this area, so let's add one with a refresh uptime of now (for immediate update)
                     // Note: pr.first = new map entry, pr.second = insertion status: true if inserted successfully, false if already in map (should never happen here!)
                     pair<HASHMAP_UINT_DOUBLE::iterator, bool> pr = m_nextRedrawAlwaysRefreshMap.insert(uint_double_Pair(areaID, uptime));
-                    _ASSERTE(pr.second);  // the above insert should always succeed
+                    assert(pr.second);  // the above insert should always succeed
                     pNextAreaRefresh = &((pr.first)->second);  // points into uptime of map entry
                 }
 
@@ -294,135 +296,135 @@ bool DeltaGliderXR1::clbkPanelRedrawEvent(const int areaID, const int event, SUR
 // --------------------------------------------------------------
 bool DeltaGliderXR1::clbkPlaybackEvent(double simt, double event_t, const char* event_type, const char* event)
 {
-    if (!_stricmp(event_type, "GEAR"))
+    if (!strcasecmp(event_type, "GEAR"))
     {
-        ActivateLandingGear(!_stricmp(event, "UP") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
+        ActivateLandingGear(!strcasecmp(event, "UP") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
         return true;
     }
-    else if (!_stricmp(event_type, "NOSECONE"))
+    else if (!strcasecmp(event_type, "NOSECONE"))
     {
-        ActivateNoseCone(!_stricmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
+        ActivateNoseCone(!strcasecmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
         return true;
     }
-    else if (!_stricmp(event_type, "RCOVER"))
+    else if (!strcasecmp(event_type, "RCOVER"))
     {
-        ActivateRCover(!_stricmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
+        ActivateRCover(!strcasecmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
         return true;
     }
-    else if (!_stricmp(event_type, "RADIATOR"))
+    else if (!strcasecmp(event_type, "RADIATOR"))
     {
-        ActivateRadiator(!_stricmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
+        ActivateRadiator(!strcasecmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
         return true;
     }
-    else if (!_stricmp(event_type, "AIRBRAKE"))
+    else if (!strcasecmp(event_type, "AIRBRAKE"))
     {
-        ActivateAirbrake(!_stricmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
+        ActivateAirbrake(!strcasecmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
         return true;
     }
-    else if (!_stricmp(event_type, "HATCH"))
+    else if (!strcasecmp(event_type, "HATCH"))
     {
-        ActivateHatch(!_stricmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
+        ActivateHatch(!strcasecmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
         return true;
     }
-    else if (!_stricmp(event_type, "OLOCK"))
+    else if (!strcasecmp(event_type, "OLOCK"))
     {
-        ActivateOuterAirlock(!_stricmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
+        ActivateOuterAirlock(!strcasecmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
         return true;
     }
-    else if (!_stricmp(event_type, "ILOCK"))
+    else if (!strcasecmp(event_type, "ILOCK"))
     {
-        ActivateInnerAirlock(!_stricmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
+        ActivateInnerAirlock(!strcasecmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
         return true;
     }
-    else if (!_stricmp(event_type, "LADDER"))
+    else if (!strcasecmp(event_type, "LADDER"))
     {
-        ActivateLadder(!_stricmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
+        ActivateLadder(!strcasecmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
         return true;
     }
-    else if (!_stricmp(event_type, "APU"))
+    else if (!strcasecmp(event_type, "APU"))
     {
-        ActivateAPU(!_stricmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
+        ActivateAPU(!strcasecmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
         return true;
     }
-    else if (!_stricmp(event_type, "HOVERDOORS"))
+    else if (!strcasecmp(event_type, "HOVERDOORS"))
     {
-        ActivateHoverDoors(!_stricmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
+        ActivateHoverDoors(!strcasecmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
         return true;
     }
-    else if (!_stricmp(event_type, "SCRAMDOORS"))
+    else if (!strcasecmp(event_type, "SCRAMDOORS"))
     {
-        ActivateScramDoors(!_stricmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
+        ActivateScramDoors(!strcasecmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
         return true;
     }
-    else if (!_stricmp(event_type, "BAYDOORS"))
+    else if (!strcasecmp(event_type, "BAYDOORS"))
     {
-        ActivateBayDoors(!_stricmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
+        ActivateBayDoors(!strcasecmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING);
         return true;
     }
-    else if (!_stricmp(event_type, "CHAMBER"))
+    else if (!strcasecmp(event_type, "CHAMBER"))
     {
-        ActivateChamber((!_stricmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING), true);  // OK to force here, although it shouldn't be necessary
+        ActivateChamber((!strcasecmp(event, "CLOSE") ? DoorStatus::DOOR_CLOSING : DoorStatus::DOOR_OPENING), true);  // OK to force here, although it shouldn't be necessary
         return true;
     }
     // new for the XR1-1.9 release group
-    else if (!_stricmp(event_type, "NAVLIGHT"))
+    else if (!strcasecmp(event_type, "NAVLIGHT"))
     {
-        SetNavlight(!_stricmp(event, "ON"));  // true = light on
+        SetNavlight(!strcasecmp(event, "ON"));  // true = light on
         return true;
     }
-    else if (!_stricmp(event_type, "BEACONLIGHT"))
+    else if (!strcasecmp(event_type, "BEACONLIGHT"))
     {
-        SetBeacon(!_stricmp(event, "ON"));  // true = light on
+        SetBeacon(!strcasecmp(event, "ON"));  // true = light on
         return true;
     }
-    else if (!_stricmp(event_type, "STROBELIGHT"))
+    else if (!strcasecmp(event_type, "STROBELIGHT"))
     {
-        SetStrobe(!_stricmp(event, "ON"));  // true = light on
+        SetStrobe(!strcasecmp(event, "ON"));  // true = light on
         return true;
     }
-    else if (!_stricmp(event_type, "RESETMET"))
+    else if (!strcasecmp(event_type, "RESETMET"))
     {
         ResetMET();   // event not used for this
         return true;
     }
-    else if (!_stricmp(event_type, "XFEED"))
+    else if (!strcasecmp(event_type, "XFEED"))
     {
         XFEED_MODE mode;
-        if (!_stricmp(event, "MAIN"))
+        if (!strcasecmp(event, "MAIN"))
             mode = XFEED_MODE::XF_MAIN;
-        else if (!_stricmp(event, "RCS"))
+        else if (!strcasecmp(event, "RCS"))
             mode = XFEED_MODE::XF_RCS;
-        else if (!_stricmp(event, "OFF"))
+        else if (!strcasecmp(event, "OFF"))
             mode = XFEED_MODE::XF_OFF;
         else  // invalid mode, so ignore it
         {
-            _ASSERTE(false);
+            assert(false);
             return false;
         }
         SetCrossfeedMode(mode, nullptr);   // no optional message for this
         return true;
     }
-    else if (!_stricmp(event_type, "MAINDUMP"))
+    else if (!strcasecmp(event_type, "MAINDUMP"))
     {
         m_mainFuelDumpInProgress = (!strcmp(event, "ON"));
         return true;
     }
-    else if (!_stricmp(event_type, "RCSDUMP"))
+    else if (!strcasecmp(event_type, "RCSDUMP"))
     {
         m_rcsFuelDumpInProgress = (!strcmp(event, "ON"));
         return true;
     }
-    else if (!_stricmp(event_type, "SCRAMDUMP"))
+    else if (!strcasecmp(event_type, "SCRAMDUMP"))
     {
         m_scramFuelDumpInProgress = (!strcmp(event, "ON"));
         return true;
     }
-    else if (!_stricmp(event_type, "APUDUMP"))
+    else if (!strcasecmp(event_type, "APUDUMP"))
     {
         m_apuFuelDumpInProgress = (!strcmp(event, "ON"));
         return true;
     }
-    else if (!_stricmp(event_type, "LOXDUMP"))
+    else if (!strcasecmp(event_type, "LOXDUMP"))
     {
         m_loxDumpInProgress = (!strcmp(event, "ON"));
         return true;

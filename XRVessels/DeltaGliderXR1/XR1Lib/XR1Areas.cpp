@@ -28,7 +28,6 @@
 // must be included BEFORE XR1Areas.h
 #include "DeltaGliderXR1.h"
 #include "XR1Areas.h"
-#include "resource.h"
 
 //
 // Constructor
@@ -50,7 +49,7 @@ XR1Area::~XR1Area()
 // doorStatus = ptr to status enum: DoorStatus::DOOR_OPEN, DoorStatus::DOOR_CLOSED, DoorStatus::DOOR_OPENING, DoorStatus::DOOR_CLOSING 
 // surfaceIDB = resource ID of source surface
 // pAnimationState = ptr to animation state (0...1).  May be null.
-DoorIndicatorArea::DoorIndicatorArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID, const int meshTextureID, const DoorStatus *pDoorStatus, const int surfaceIDB, const double *pAnimationState) :
+DoorIndicatorArea::DoorIndicatorArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID, const int meshTextureID, const DoorStatus *pDoorStatus, const char *surfaceIDB, const double *pAnimationState) :
     XR1Area(parentPanel, panelCoordinates, areaID, meshTextureID),
     m_pDoorStatus(pDoorStatus), m_surfaceIDB(surfaceIDB), m_isTransitVisible(true), m_transitIndex(-1), m_pAnimationState(pAnimationState), m_transitColor(0) // black transit color for now
 {
@@ -168,7 +167,7 @@ void DoorIndicatorArea::clbkPrePostStep(const double simt, const double simdt, c
     else    // door not in transit
     {
         /* Do not render bars if door fully open or closed; it is cleaner that way.
-        DWORD oldTransitColor = m_transitColor;
+        int oldTransitColor = m_transitColor;
         m_transitColor = BRIGHT_GREEN;
         
         // since we don't know which animation state corresponds to which option (open/closed), just "round" the current transit index to one edge
@@ -188,7 +187,7 @@ void DoorIndicatorArea::clbkPrePostStep(const double simt, const double simdt, c
 
 // utility method to retrieve a Windows COLORREF for a given temperature
 // This is used by both the temperature MDM and the pop-up HUD, so it is defined here in the base class.
-COLORREF XR1Area::GetTempCREF(const double tempK, double limitK, const DoorStatus doorStatus) const
+uint32_t XR1Area::GetTempCREF(const double tempK, double limitK, const DoorStatus doorStatus) const
 {
     if (doorStatus != DoorStatus::DOOR_CLOSED)
         limitK = GetXR1().m_hullTemperatureLimits.doorOpen;  // we have a door open; lower the limit
@@ -196,7 +195,7 @@ COLORREF XR1Area::GetTempCREF(const double tempK, double limitK, const DoorStatu
     double warningTemp  = limitK * GetXR1().m_hullTemperatureLimits.warningFrac;
     double criticalTemp = limitK * GetXR1().m_hullTemperatureLimits.criticalFrac;
 
-    COLORREF retVal;
+    uint32_t retVal;
     if (tempK >= limitK)
         retVal = CREF(BRIGHT_WHITE);
     else if (tempK >= criticalTemp)
@@ -210,9 +209,9 @@ COLORREF XR1Area::GetTempCREF(const double tempK, double limitK, const DoorStatu
 }
 
 // utility method to retrieve a Windows COLORREF for a given value
-COLORREF XR1Area::GetValueCREF(double value, double warningLimit, double criticalLimit) const
+uint32_t XR1Area::GetValueCREF(double value, double warningLimit, double criticalLimit) const
 {
-    COLORREF retVal;
+    uint32_t retVal;
     if (value >= criticalLimit)
         retVal = CREF(BRIGHT_RED);
     else if (value >= warningLimit)

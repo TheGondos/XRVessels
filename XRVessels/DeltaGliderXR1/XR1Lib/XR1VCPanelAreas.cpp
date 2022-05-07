@@ -27,7 +27,6 @@
 // Handles non-component main panel areas
 // ==============================================================
 
-#include "resource.h"
 #include "AreaIDs.h"
 
 #include "DeltaGliderXR1.h"

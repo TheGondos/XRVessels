@@ -28,6 +28,7 @@
 #include "XRPayloadBaySlot.h"
 #include "VesselAPI.h"
 #include <vector>
+#include <cassert>
 
 // Constructor
 XRPayloadBay::XRPayloadBay(VESSEL &parentVessel) :
@@ -52,9 +53,9 @@ XRPayloadBay::~XRPayloadBay()
 // pSlot will be freed when this object is freed: the caller should allocate it with 'new'.  May not be null.
 void XRPayloadBay::AddSlot(XRPayloadBaySlot *pSlot)
 {
-    _ASSERTE(pSlot != nullptr);
-    _ASSERTE(pSlot->GetSlotNumber() > 0);
-    _ASSERTE(m_allSlotsMap.find(pSlot->GetSlotNumber()) == m_allSlotsMap.end());  // assert that the slot was not already added
+    assert(pSlot != nullptr);
+    assert(pSlot->GetSlotNumber() > 0);
+    assert(m_allSlotsMap.find(pSlot->GetSlotNumber()) == m_allSlotsMap.end());  // assert that the slot was not already added
 
     // add to our master map
     typedef pair<int, XRPayloadBaySlot *> Int_XRPayloadBaySlot_Pair;
@@ -103,8 +104,8 @@ XRPayloadBaySlot *XRPayloadBay::GetSlotForGrid(const int level, const int gridX,
 //          if the payload will not fit in the requested slot.
 bool XRPayloadBay::AttachChild(OBJHANDLE childObjHandle, const int slotNumber)
 {
-    _ASSERTE(childObjHandle != nullptr);
-    _ASSERTE(slotNumber > 0);
+    assert(childObjHandle != nullptr);
+    assert(slotNumber > 0);
 
     // verify that the handle is still valid
     if (oapiIsVessel(childObjHandle) == false)
@@ -114,7 +115,7 @@ bool XRPayloadBay::AttachChild(OBJHANDLE childObjHandle, const int slotNumber)
     XRPayloadBaySlot *pPrimarySlot = GetSlot(slotNumber);
     if (pPrimarySlot == nullptr)
     {
-        _ASSERTE(pPrimarySlot != nullptr);   // fail under debugger
+        assert(pPrimarySlot != nullptr);   // fail under debugger
         return false;   // invalid slot number passed in from caller!
     }
 
@@ -131,12 +132,12 @@ bool XRPayloadBay::AttachChild(OBJHANDLE childObjHandle, const int slotNumber)
 // Returns: true on success, false if the child refused to be detached or if no child is in the specified slot
 bool XRPayloadBay::DetachChild(const int slotNumber, const double deltaV)
 {
-    _ASSERTE(slotNumber > 0);
+    assert(slotNumber > 0);
 
     XRPayloadBaySlot *pPrimarySlot = GetSlot(slotNumber);
     if (pPrimarySlot == nullptr)
     {
-        _ASSERTE(pPrimarySlot != nullptr);   // fail under debugger
+        assert(pPrimarySlot != nullptr);   // fail under debugger
         return false;   // invalid slot number passed in from caller!
     }
 
@@ -150,7 +151,7 @@ bool XRPayloadBay::DetachChild(const int slotNumber, const double deltaV)
 // Returns: true on success, false if the child refused to be detached or if no child is in the specified slot
 bool XRPayloadBay::DetachChildLanded(const int slotNumber)
 {
-    _ASSERTE(slotNumber > 0);
+    assert(slotNumber > 0);
 
     bool retVal = false;
 
@@ -296,7 +297,7 @@ void XRPayloadBay::PerformFinalInitialization(ATTACHMENTHANDLE dummyAttachmentPo
 
     // initialize/reset fuel tank size to fix "#IND00" from appearing in saved scenario files
     VESSEL *pDummyVessel = oapiGetVesselInterface(hDummy);
-    _ASSERTE(pDummyVessel != nullptr);
+    assert(pDummyVessel != nullptr);
     PROPELLANT_HANDLE ph = pDummyVessel->GetPropellantHandleByIndex(0);  // Orbiter only creates one tank by default
     if (ph != nullptr)   // should always succeed, but not an error if it does not
     {
@@ -335,7 +336,7 @@ void XRPayloadBay::RefreshSlotStates()
             pSlot->GetRequiredNeighborSlotsForCandidateVessel(*pChild, reinterpret_cast<vector<const XRPayloadBaySlot *> &>(vOut));  // ignore return code for 'clearsHull' status: it does not matter here
 
             // disable all occupied neighbor slots; the primary slot remains ENABLED
-            for (UINT i=0; i < vOut.size(); i++)
+            for (size_t i=0; i < vOut.size(); i++)
             {
                 XRPayloadBaySlot *pNeighborSlot = vOut[i];
                 pNeighborSlot->SetEnabled(false);
@@ -348,7 +349,7 @@ void XRPayloadBay::RefreshSlotStates()
 // Returns: true on success, false if vessel could not be instantiated or attached in the specified slot
 bool XRPayloadBay::CreateAndAttachPayloadVessel(const char *pClassname, const int slotNumber)
 {
-    _ASSERTE(slotNumber > 0);
+    assert(slotNumber > 0);
 
     const XRPayloadClassData &pcd = XRPayloadClassData::GetXRPayloadClassDataForClassname(pClassname);
 
@@ -428,14 +429,14 @@ bool XRPayloadBay::DeleteAttachedPayloadVessel(const int slotNumber)
 // WARNING: will return nullptr if child was deleted since it was attached, or if no payload is in this slot.
 VESSEL *XRPayloadBay::GetChild(const int slotNumber) const
 {
-    _ASSERTE(slotNumber > 0);
+    assert(slotNumber > 0);
     return GetSlot(slotNumber)->GetChild();  // we want to crash here anyway if the slot number is invalid
 }
 
 // Convenience method to return whether the given slot is enabled
 bool XRPayloadBay::IsSlotEnabled(int slotNumber) const
 { 
-    _ASSERTE(slotNumber > 0);
+    assert(slotNumber > 0);
     return GetSlot(slotNumber)->IsEnabled();   // we want to crash here anyway if the slot number is invalid
 }  
 
@@ -554,7 +555,7 @@ double XRPayloadBay::GetPropellantMaxMass(const PROP_TYPE propType) const
             // e.g., RCS: a resource that has no corresponding bay tank, so fall through with zero
         }  
         else  // invalid enum (should never happen)
-            _ASSERTE(false);  // break into debugger if debug build, else fall through with zero
+            assert(false);  // break into debugger if debug build, else fall through with zero
     }
     
     return retVal;
@@ -629,8 +630,8 @@ const XRPayloadBay::SlotsDrainedFilled &XRPayloadBay::AdjustPropellantMass(const
 
         // if quantity drained == all remaining fuel in slotanything was drained or added but deltaRemaining != 0, the tank either just filled up or emptied!
         const double currentSlotQty = prevSlotQty + qtyDrained;
-        _ASSERTE(currentSlotQty >= 0);           // should never over-drain tanks!
-        _ASSERTE(currentSlotQty <= maxSlotQty);  // should never over-fill tanks!
+        assert(currentSlotQty >= 0);           // should never over-drain tanks!
+        assert(currentSlotQty <= maxSlotQty);  // should never over-fill tanks!
 
         if ((currentSlotQty == maxSlotQty) && (prevSlotQty < maxSlotQty))
             m_slotsDrainedFilled.filledList.push_back(slotNumber);  // tank just filled

@@ -120,7 +120,7 @@ DeltaGliderXR1::DeltaGliderXR1 (OBJHANDLE hObj, int fmodel, XR1ConfigFileParser 
         m_hoverEngineIntegrity[i] = 1.0;    // default to no damage
 
     // SPECIAL CASE: track RCS damage separately
-    for (int i=0; i < sizeof(m_rcsIntegrityArray) / sizeof(double); i++)
+    for (size_t i=0; i < sizeof(m_rcsIntegrityArray) / sizeof(double); i++)
         m_rcsIntegrityArray[i] = 1.0;       // default to no damage
 
     // new vars for the XR1
@@ -132,7 +132,7 @@ DeltaGliderXR1::DeltaGliderXR1 (OBJHANDLE hObj, int fmodel, XR1ConfigFileParser 
     *m_hudWarningText = 0;
 
     // always initalize these variables
-    m_pXRSoundPath = "XRSound\\Default";        // installed by XRSound
+    m_pXRSoundPath = "XRSound/Default";        // installed by XRSound
 
     // these animation handles are not used by the XR1
     anim_fuelhatch = 0;
@@ -235,7 +235,7 @@ DeltaGliderXR1::~DeltaGliderXR1 ()
     // possible that this vessel is being destroyed with the dialog open and the sim is still running,
     // but that is relatively unlikely and even if it happens, all that would happen is that toggling
     // the dialog again would send a OPEN command the first time instead of a close.
-    s_hPayloadEditorDialog = 0;
+    //s_hPayloadEditorDialog = 0;
 
     delete m_pFuelDumpParticleStreamSpec;
     delete m_pBoilOffExhaustParticleStreamSpec;

@@ -45,7 +45,7 @@ const COORD2 &GrapplePayloadArea::s_screenSize   =  _COORD2(210, 145);   // scre
 // isOn = reference to status variable: true = light on, false = light off
 // idb* = resource IDs
 DeployPayloadArea::DeployPayloadArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID,
-                                     const int idbDeployPayloadOrbit, const int idbDeployPayloadLanded) :
+                                     const char *idbDeployPayloadOrbit, const char *idbDeployPayloadLanded) :
     XR1Area(parentPanel, panelCoordinates, areaID),
     m_hSurfaceForOrbit(nullptr), m_hSurfaceForLanded(nullptr), m_hFont(0),
     m_mouseHoldTargetSimt(-1), m_lastAction(RATE_ACTION::ACT_NONE), m_repeatCount(0),
@@ -82,7 +82,7 @@ void DeployPayloadArea::Activate()
     m_hSurfaceForOrbit  = CreateSurface(m_idbDeployPayloadOrbit);
     m_hSurfaceForLanded = CreateSurface(m_idbDeployPayloadLanded);
     
-    m_hFont = CreateFont(12, 0, 0, 0, 600, 0, 0, 0, 0, 0, 0, 0, FF_MODERN, "Microsoft Sans Serif");
+    m_hFont = oapiCreateFont(12, true, "Microsoft Sans Serif");
 }
  
 void DeployPayloadArea::Deactivate()
@@ -90,7 +90,7 @@ void DeployPayloadArea::Deactivate()
     DestroySurface(&m_hSurfaceForOrbit);
     DestroySurface(&m_hSurfaceForLanded);
 
-    DeleteObject(m_hFont);
+    oapiReleaseFont(m_hFont);
     XR1Area::Deactivate();  // invoke superclass method
 }
 
@@ -119,12 +119,12 @@ bool DeployPayloadArea::Redraw2D(const int event, const SURFHANDLE surf)
     const XRPayloadClassData *pChildVesselPCD = ((pChildVessel != nullptr) ? &XRPayloadClassData::GetXRPayloadClassDataForClassname(pChildVessel->GetClassName()) : nullptr);
 
     // obtain device context and save existing font
-    HDC hDC = GetDC(surf);
-    HFONT hPrevObject = (HFONT)SelectObject(hDC, m_hFont);
+    oapi::Sketchpad *skp = oapiGetSketchpad(surf);
+    skp->SetFont(m_hFont);
 
-    SetBkMode(hDC, TRANSPARENT);
-    SetTextColor(hDC, CREF(LIGHT_YELLOW));  // use CREF macro to convert to Windows' Blue, Green, Red COLORREF
-    SetTextAlign(hDC, TA_LEFT);
+    skp->SetBackgroundMode(oapi::Sketchpad::BkgMode::BK_TRANSPARENT);
+    skp->SetTextColor(CREF(LIGHT_YELLOW));  // use CREF macro to convert to Windows' Blue, Green, Red COLORREF
+    skp->SetTextAlign(oapi::Sketchpad::TAlign_horizontal::LEFT);
 
     int textY = 2;
     const int pitch = 12;
@@ -133,31 +133,31 @@ bool DeployPayloadArea::Redraw2D(const int event, const SURFHANDLE surf)
     {
         // Note: pChildVesselPCD is never null here
         // DESC
-        TextOut(hDC, 39, textY, pChildVesselPCD->GetDescription(), static_cast<int>(strlen(pChildVesselPCD->GetDescription())));  // length may exceed displayable area; this is OK
+        skp->Text(39, textY, pChildVesselPCD->GetDescription(), static_cast<int>(strlen(pChildVesselPCD->GetDescription())));  // length may exceed displayable area; this is OK
 
         // MASS
         textY += pitch;
         sprintf(msg, "%.2f kg", pChildVessel->GetMass());
-        TextOut(hDC, 39, textY, msg, static_cast<int>(strlen(msg)));
+        skp->Text(39, textY, msg, static_cast<int>(strlen(msg)));
 
         // DIMENSIONS
         textY += pitch;
         VECTOR3 dim = pChildVesselPCD->GetDimensions();
         sprintf(msg, "%.2f L x %.2f W x %.2f H", dim.z, dim.x, dim.y); 
-        TextOut(hDC, 74, textY, msg, static_cast<int>(strlen(msg)));
+        skp->Text(74, textY, msg, static_cast<int>(strlen(msg)));
 
         // MODULE NAME
         textY += pitch;
         const char *pName = pChildVessel->GetName();
-        SetTextColor(hDC, CREF(CYAN));  // so user can find it instantly
-        TextOut(hDC, 85, textY, pName, static_cast<int>(strlen(pName)));
-        SetTextColor(hDC, CREF(LIGHT_YELLOW));  // restore default color
+        skp->SetTextColor(CREF(CYAN));  // so user can find it instantly
+        skp->Text(85, textY, pName, static_cast<int>(strlen(pName)));
+        skp->SetTextColor(CREF(LIGHT_YELLOW));  // restore default color
 
         // SLOTS OCCUPIED
         textY += pitch;
         VECTOR3 slots = pChildVesselPCD->GetSlotsOccupied();  
         sprintf(msg, "%.1f L x %.1f W x %.1f H", slots.z, slots.x, slots.y); 
-        TextOut(hDC, 98, textY, msg, static_cast<int>(strlen(msg)));
+        skp->Text(98, textY, msg, static_cast<int>(strlen(msg)));
     }
     else
         textY += (4 * pitch);
@@ -166,8 +166,8 @@ bool DeployPayloadArea::Redraw2D(const int event, const SURFHANDLE surf)
     textY += pitch;
     if (pChildVessel != nullptr)
     {
-        SetTextColor(hDC, MEDIUM_GREEN);
-        _itoa(GetXR1().m_selectedSlot, msg, 10);
+        skp->SetTextColor(MEDIUM_GREEN);
+        sprintf(msg, "%d", GetXR1().m_selectedSlot);
     }
     else
     {
@@ -181,12 +181,12 @@ bool DeployPayloadArea::Redraw2D(const int event, const SURFHANDLE surf)
         else   // slot selected but empty
         {
             sprintf(msg, "%d (EMPTY)", GetXR1().m_selectedSlot);
-            strcpy(msg, msg);
-            SetTextColor(hDC, CREF(LIGHT_RED));  // use CREF macro to convert to Windows' Blue, Green, Red COLORREF
+            //strcpy(msg, msg);
+            skp->SetTextColor(CREF(LIGHT_RED));  // use CREF macro to convert to Windows' Blue, Green, Red COLORREF
         }
     }
-    TextOut(hDC, 118, textY, msg, static_cast<int>(strlen(msg)));
-    SetTextColor(hDC, LIGHT_YELLOW);     // restore default color
+    skp->Text(118, textY, msg, static_cast<int>(strlen(msg)));
+    skp->SetTextColor(LIGHT_YELLOW);     // restore default color
 
     if (GetXR1().IsLanded())
     {
@@ -196,20 +196,18 @@ bool DeployPayloadArea::Redraw2D(const int event, const SURFHANDLE surf)
             // DEPLOY TO
             VECTOR3 c = pPayloadBay->GetLandedDeployToCoords(GetXR1().m_selectedSlot);
             sprintf(msg, "X: %.1f, Y: %.1f, Z: %.1f", c.x, c.y, c.z);
-            TextOut(hDC, 69, 92, msg, static_cast<int>(strlen(msg)));
+            skp->Text(69, 92, msg, static_cast<int>(strlen(msg)));
         }
     }
     else    // in orbit; always allow Delta-V to be set regardless of whether cargo is selected.
     {
         sprintf(msg, "%+.1f", GetXR1().m_deployDeltaV);
-        SetTextColor(hDC, CREF(LIGHT_BLUE));  // use CREF macro to convert to Windows' Blue, Green, Red COLORREF
-        SetTextAlign(hDC, TA_RIGHT);
-        TextOut(hDC, 87, 96, msg, static_cast<int>(strlen(msg)));
+        skp->SetTextColor(CREF(LIGHT_BLUE));  // use CREF macro to convert to Windows' Blue, Green, Red COLORREF
+        skp->SetTextAlign(oapi::Sketchpad::TAlign_horizontal::RIGHT);
+        skp->Text(87, 96, msg, static_cast<int>(strlen(msg)));
     }
 
-    // restore previous font and release device context
-    SelectObject(hDC, hPrevObject);
-    ReleaseDC(surf, hDC);
+    oapiReleaseSketchpad(skp);
 
     return true;
 }
@@ -396,7 +394,7 @@ bool DeployPayloadArea::ProcessMouseEvent(const int event, const int mx, const i
 
 // isOn = reference to status variable: true = light on, false = light off
 // idbPayloadThumbnailNone = resource ID
-PayloadThumbnailArea::PayloadThumbnailArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID, const int idbPayloadThumbnailNone) :
+PayloadThumbnailArea::PayloadThumbnailArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID, const char *idbPayloadThumbnailNone) :
     XR1Area(parentPanel, panelCoordinates, areaID),
     m_hNoneSurface(nullptr), m_idbPayloadThumbnailNone(idbPayloadThumbnailNone)
 {
@@ -461,7 +459,7 @@ bool PayloadThumbnailArea::Redraw2D(const int event, const SURFHANDLE surf)
     {
         if (pChildVesselPCD != nullptr)
         {
-            const HBITMAP hThumb = pChildVesselPCD->GetThumbnailBitmapHandle();  // may be null, but normally should not be
+            const SURFHANDLE hThumb = pChildVesselPCD->GetThumbnailBitmapHandle();  // may be null, but normally should not be
             if (hThumb == nullptr)
             {
                 // render a black screen so the user knows his thumbnail path is invalid
@@ -472,15 +470,9 @@ bool PayloadThumbnailArea::Redraw2D(const int event, const SURFHANDLE surf)
             {
                 // WARNING: we cannot use SafeBlt to blit a bitmap here!  We must use the BitBlt Win32 call instead.
                 // obtain device context and save existing object
-                HDC hDC = GetDC(surf);
-                
-                HDC hMemDC = CreateCompatibleDC(hDC);   // create an in-memory DC
-                SelectObject(hMemDC, hThumb);  // select the bitmap image into the in-memory DC
-                BitBlt(hDC, 0, 0, s_screenSize.x, s_screenSize.y, hMemDC, 0, 0, SRCCOPY);  // copy new bitmap to the screen
-                DeleteDC(hMemDC);       // clean up
-
-                // release device context
-                ReleaseDC(surf, hDC);
+//FIXME
+                oapiBlt (surf, hThumb, 0, 0, 0, 0, s_screenSize.x, s_screenSize.y);
+//                BitBlt(hDC, 0, 0, s_screenSize.x, s_screenSize.y, hMemDC, 0, 0, SRCCOPY);  // copy new bitmap to the screen
             }
         }
         else  // Blit the "none" screen
@@ -500,7 +492,7 @@ bool PayloadThumbnailArea::Redraw2D(const int event, const SURFHANDLE surf)
 //=========================================================================
 
 // isOn = reference to status variable: true = light on, false = light off
-GrapplePayloadArea::GrapplePayloadArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID, const int idbGrapplePayload) :
+GrapplePayloadArea::GrapplePayloadArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID, const char *idbGrapplePayload) :
     XR1Area(parentPanel, panelCoordinates, areaID),
     m_hSurface(nullptr), m_hFont(0), 
     m_idbGrapplePayload(idbGrapplePayload)
@@ -524,14 +516,14 @@ void GrapplePayloadArea::Activate()
 
     m_hSurface = CreateSurface(m_idbGrapplePayload);
     
-    m_hFont = CreateFont(12, 0, 0, 0, 600, 0, 0, 0, 0, 0, 0, 0, FF_MODERN, "Microsoft Sans Serif");
+    m_hFont = oapiCreateFont(12, true, "Microsoft Sans Serif");
 }
  
 void GrapplePayloadArea::Deactivate()
 {
     DestroySurface(&m_hSurface);
 
-    DeleteObject(m_hFont);
+    oapiReleaseFont(m_hFont);
     XR1Area::Deactivate();  // invoke superclass method
 }
 
@@ -556,12 +548,13 @@ bool GrapplePayloadArea::Redraw2D(const int event, const SURFHANDLE surf)
     const XRGrappleTargetVessel *pGrappleTargetVessel = GetXR1().GetGrappleTargetVessel(GetXR1().m_grappleTargetVesselName);  // pulls cached object w/updated distance, delta-V, etc. (this logic is in the framework classes)
 
     // obtain device context and save existing font
-    HDC hDC = GetDC(surf);
-    HFONT hPrevObject = (HFONT)SelectObject(hDC, m_hFont);
 
-    SetBkMode(hDC, TRANSPARENT);
-    SetTextColor(hDC, CREF(LIGHT_YELLOW));  // use CREF macro to convert to Windows' Blue, Green, Red COLORREF
-    SetTextAlign(hDC, TA_LEFT);
+    oapi::Sketchpad *skp = oapiGetSketchpad(surf);
+    skp->SetFont(m_hFont);
+
+    skp->SetBackgroundMode(oapi::Sketchpad::BkgMode::BK_TRANSPARENT);
+    skp->SetTextColor(CREF(LIGHT_YELLOW));  // use CREF macro to convert to Windows' Blue, Green, Red COLORREF
+    skp->SetTextAlign(oapi::Sketchpad::TAlign_horizontal::LEFT);
 
     int textY = 0;
     const int pitch = 12;
@@ -577,12 +570,12 @@ bool GrapplePayloadArea::Redraw2D(const int event, const SURFHANDLE surf)
         const XRPayloadClassData &grappleTargetPCD = pGrappleTargetVessel->GetTargetPCD();  // will never be null
 
         // DESC
-        TextOut(hDC, 39, textY, grappleTargetPCD.GetDescription(), static_cast<int>(strlen(grappleTargetPCD.GetDescription())));  // length may exceed displayable area; this is OK
+        skp->Text(39, textY, grappleTargetPCD.GetDescription(), static_cast<int>(strlen(grappleTargetPCD.GetDescription())));  // length may exceed displayable area; this is OK
 
         // MASS
         textY += pitch;
         sprintf(msg, "%.2f kg", pTargetVessel->GetMass());
-        TextOut(hDC, 39, textY, msg, static_cast<int>(strlen(msg)));
+        skp->Text(39, textY, msg, static_cast<int>(strlen(msg)));
 
         // DISTANCE
         textY += pitch;
@@ -590,7 +583,7 @@ bool GrapplePayloadArea::Redraw2D(const int event, const SURFHANDLE surf)
         const double grappleRangeLimit = GetXR1().GetPayloadGrappleRangeLimit();
         sprintf(msg, "%.1f m", distance);
         // render color depending on whether the target is in grapple range 
-        DWORD dwColor;
+        uint32_t dwColor;
         if (distance > grappleRangeLimit)
             dwColor = LIGHT_RED;     // out-of-range
         else if (distance >= (grappleRangeLimit * .80))
@@ -598,9 +591,9 @@ bool GrapplePayloadArea::Redraw2D(const int event, const SURFHANDLE surf)
         else
             dwColor = MEDIUM_GREEN;
         
-        SetTextColor(hDC, CREF(dwColor));
-        TextOut(hDC, 61, textY, msg, static_cast<int>(strlen(msg)));
-        SetTextColor(hDC, CREF(LIGHT_YELLOW));  // restore default color
+        skp->SetTextColor(CREF(dwColor));
+        skp->Text(61, textY, msg, static_cast<int>(strlen(msg)));
+        skp->SetTextColor(CREF(LIGHT_YELLOW));  // restore default color
 
         // DELTA-V
         textY += pitch;
@@ -614,28 +607,28 @@ bool GrapplePayloadArea::Redraw2D(const int event, const SURFHANDLE surf)
         else
             dwColor = MEDIUM_GREEN;
         
-        SetTextColor(hDC, CREF(dwColor));  // restore default color
-        TextOut(hDC, 53, textY, msg, static_cast<int>(strlen(msg)));
-        SetTextColor(hDC, CREF(LIGHT_YELLOW));  // restore default color
+        skp->SetTextColor(CREF(dwColor));  // restore default color
+        skp->Text(53, textY, msg, static_cast<int>(strlen(msg)));
+        skp->SetTextColor(CREF(LIGHT_YELLOW));  // restore default color
 
         // DIMENSIONS
         textY += pitch;
         VECTOR3 dim = grappleTargetPCD.GetDimensions();
         sprintf(msg, "%.2f L x %.2f W x %.2f H", dim.z, dim.x, dim.y); 
-        TextOut(hDC, 74, textY, msg, static_cast<int>(strlen(msg)));
+        skp->Text(74, textY, msg, static_cast<int>(strlen(msg)));
 
         // MODULE NAME
         textY += pitch;
         const char *pName = pTargetVessel->GetName();
-        SetTextColor(hDC, CREF(CYAN));  // so user can find it instantly
-        TextOut(hDC, 85, textY, pName, static_cast<int>(strlen(pName)));
-        SetTextColor(hDC, CREF(LIGHT_YELLOW));  // restore default color
+        skp->SetTextColor(CREF(CYAN));  // so user can find it instantly
+        skp->Text(85, textY, pName, static_cast<int>(strlen(pName)));
+        skp->SetTextColor(CREF(LIGHT_YELLOW));  // restore default color
 
         // SLOTS OCCUPIED
         textY += pitch;
         VECTOR3 slots = grappleTargetPCD.GetSlotsOccupied();  
         sprintf(msg, "%.1f L x %.1f W x %.1f H", slots.z, slots.x, slots.y); 
-        TextOut(hDC, 98, textY, msg, static_cast<int>(strlen(msg)));
+        skp->Text(98, textY, msg, static_cast<int>(strlen(msg)));
     }
     else
         textY += (6 * pitch);
@@ -663,17 +656,17 @@ bool GrapplePayloadArea::Redraw2D(const int event, const SURFHANDLE surf)
             if (pSlot->IsOccupied())
             {
                 sprintf(msg, "%d (OCCUPIED)", selectedSlot);
-                SetTextColor(hDC, CREF(LIGHT_RED));  // use CREF macro to convert to Windows' Blue, Green, Red COLORREF
+                skp->SetTextColor(CREF(LIGHT_RED));  // use CREF macro to convert to Windows' Blue, Green, Red COLORREF
             }
             else if (wouldFit == false)
             {
                 sprintf(msg, "%d (NO ROOM)", selectedSlot);
-                SetTextColor(hDC, CREF(LIGHT_RED));  // use CREF macro to convert to Windows' Blue, Green, Red COLORREF
+                skp->SetTextColor(CREF(LIGHT_RED));  // use CREF macro to convert to Windows' Blue, Green, Red COLORREF
             }
             else
             {
                 // slot is OK; render in green
-                SetTextColor(hDC, CREF(MEDIUM_GREEN));  // use CREF macro to convert to Windows' Blue, Green, Red COLORREF
+                skp->SetTextColor(CREF(MEDIUM_GREEN));  // use CREF macro to convert to Windows' Blue, Green, Red COLORREF
                 sprintf(msg, "%d (OK)", selectedSlot);
             }
         }
@@ -700,12 +693,12 @@ bool GrapplePayloadArea::Redraw2D(const int event, const SURFHANDLE surf)
     
     // render the 'selected bay slot' value
     textY += pitch;
-    TextOut(hDC, 118, textY, msg, static_cast<int>(strlen(msg)));
-    SetTextColor(hDC, CREF(LIGHT_YELLOW));  // revert to default color
+    skp->Text(118, textY, msg, static_cast<int>(strlen(msg)));
+    skp->SetTextColor(CREF(LIGHT_YELLOW));  // revert to default color
 
     // RANGE
     sprintf(msg, "%.0f m", range);    // e.g., "500 m"
-    TextOut(hDC, 84, 98, msg, static_cast<int>(strlen(msg)));
+    skp->Text(84, 98, msg, static_cast<int>(strlen(msg)));
 
     // target X of Y
     const int totalVesselsInRange = static_cast<int>(GetXR1().m_xrGrappleTargetVesselsInDisplayRange.size());
@@ -735,15 +728,14 @@ bool GrapplePayloadArea::Redraw2D(const int event, const SURFHANDLE surf)
         }
 
         // render in green
-        SetTextColor(hDC, CREF(MEDIUM_GREEN));  // use CREF macro to convert to Windows' Blue, Green, Red COLORREF
+        skp->SetTextColor(CREF(MEDIUM_GREEN));  // use CREF macro to convert to Windows' Blue, Green, Red COLORREF
         sprintf(msg, "%d of %d in range", index+1, totalVesselsInRange);
     }
 
-    TextOut(hDC, 52, 128, msg, static_cast<int>(strlen(msg)));
+    skp->Text(52, 128, msg, static_cast<int>(strlen(msg)));
 
     // restore previous font and release device context
-    SelectObject(hDC, hPrevObject);
-    ReleaseDC(surf, hDC);
+    oapiReleaseSketchpad(skp);
 
     return true;
 }

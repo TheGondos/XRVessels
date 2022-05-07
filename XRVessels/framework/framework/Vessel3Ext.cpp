@@ -25,14 +25,13 @@
 // Defines and extended VESSEL3 class for use with the new XR cockpit framework.
 // ==============================================================
 
-#pragma once
-
 #include "Orbitersdk.h"
-#include "vessel3ext.h"
+#include "Vessel3Ext.h"
 #include "XRTemplates.h"
 
 #include "InstrumentPanel.h"
 #include "PrePostStep.h"
+#include <cassert>
 
 // constructor
 VESSEL3_EXT::VESSEL3_EXT(OBJHANDLE vessel, int fmodel) :
@@ -41,7 +40,7 @@ VESSEL3_EXT::VESSEL3_EXT(OBJHANDLE vessel, int fmodel) :
 	m_videoWindowWidth(0), m_videoWindowHeight(0), m_lastVideoWindowWidth(-1), m_last2DPanelWidth(0),
     m_absoluteSimTime(0), m_pConfig(nullptr)
 {
-	m_regKeyManager.Initialize(HKEY_CURRENT_USER, XR_GLOBAL_SETTINGS_REG_KEY, nullptr);   // should always succeed
+	//m_regKeyManager.Initialize(HKEY_CURRENT_USER, XR_GLOBAL_SETTINGS_REG_KEY, nullptr);   // should always succeed
 }
 
 // destructor
@@ -85,9 +84,9 @@ void VESSEL3_EXT::AddInstrumentPanel(InstrumentPanel *pPanel, const int panelWid
     // sanity check
 #ifdef _DEBUG
     if (panelID >= GetVCPanelIDBase()) // is this a VC panel?
-        _ASSERTE(panelWidth == 0);
+        assert(panelWidth == 0);
     else  // this is a 2D panel
-        _ASSERTE(panelWidth > 0);
+        assert(panelWidth > 0);
 #endif
 
     // compute the panel hash
@@ -126,7 +125,7 @@ InstrumentPanel *VESSEL3_EXT::GetInstrumentPanel(const int panelNumber)
     if (it != m_panelMap.end())
         retVal = it->second;     // found a matching panel
     
-    _ASSERTE(retVal != nullptr);
+    assert(retVal != nullptr);
     return retVal;
 }
 
@@ -155,7 +154,7 @@ bool VESSEL3_EXT::TriggerRedrawArea(const int areaID)
 // Note: this is called BEFORE clbkLoadPanel; this is sort of a hack to get the video mode width, but it's the only way to do it
 // short of implementing bitmap-independent panels.
 // TODO: look into use oapiGetViewportSize() instead of this.
-bool VESSEL3_EXT::clbkLoadPanel2D(int panelID, PANELHANDLE hPanel, DWORD viewW, DWORD viewH)
+bool VESSEL3_EXT::clbkLoadPanel2D(int panelID, PANELHANDLE hPanel, int viewW, int viewH)
 {
 	static bool s_isFirstRun = true;
 
@@ -264,7 +263,7 @@ int VESSEL3_EXT::Get2DPanelWidth()
         }
     }
 
-    _ASSERTE(m_last2DPanelWidth > 0);  // make sure we set the value
+    assert(m_last2DPanelWidth > 0);  // make sure we set the value
 
     return m_last2DPanelWidth;  // this is the active 2D panel width
 }
@@ -521,7 +520,7 @@ int VESSEL3_EXT::GetVideoWindowWidth()
 // Returns the distance to another vessel in meters
 double VESSEL3_EXT::GetDistanceToVessel(const VESSEL &targetVessel) const
 {
-    const VECTOR3 &zero = _V(0,0,0);
+    const VECTOR3 zero = _V(0,0,0);
 
     VECTOR3 targetGlobalCoords;
     targetVessel.Local2Global(zero, targetGlobalCoords);
@@ -676,17 +675,20 @@ void VESSEL3_EXT::GetStatusSafe(const VESSEL &vessel, VESSELSTATUS2 &status, con
 
 // Returns true if the user's actual day is a match, or false if not.  This is useful for easter eggs.
 // month=1-12, day=1-31
-bool VESSEL3_EXT::IsToday(WORD wMonth, WORD wDay)  
+bool VESSEL3_EXT::IsToday(int wMonth, int wDay)  
 {
+    return false;
+    /*
     SYSTEMTIME st;
     GetLocalTime(&st);
 
     return ((wMonth == st.wMonth) && (wDay == st.wDay));
+    */
 }
 
 // Set a mesh group visible or invisible
 // Note: dwMeshGroup is 0-based
-void VESSEL3_EXT::SetMeshGroupVisible(DEVMESHHANDLE hMesh, DWORD dwMeshGroup, bool isVisible)
+void VESSEL3_EXT::SetMeshGroupVisible(DEVMESHHANDLE hMesh, int dwMeshGroup, bool isVisible)
 {
     // Note: for details on mesh group flags, refer to page 7 of 3DModel.pdf.
     /*
@@ -717,12 +719,12 @@ void VESSEL3_EXT::SetMeshGroupVisible(DEVMESHHANDLE hMesh, DWORD dwMeshGroup, bo
 // Returns the # of fuel tanks in the vessel
 int VESSEL3_EXT::ResetAllFuelLevels(VESSEL *pVessel, const double levelFrac)
 {
-    _ASSERTE(pVessel != nullptr);
-    _ASSERTE(levelFrac >= 0);
-    _ASSERTE(levelFrac <= 1.0);
+    assert(pVessel != nullptr);
+    assert(levelFrac >= 0);
+    assert(levelFrac <= 1.0);
 
-    DWORD dwPropCount = pVessel->GetPropellantCount();
-    for (DWORD i = 0; i < dwPropCount; i++)
+    int dwPropCount = pVessel->GetPropellantCount();
+    for (int i = 0; i < dwPropCount; i++)
     {
         PROPELLANT_HANDLE ph = pVessel->GetPropellantHandleByIndex(i);
         const double maxPropMass = pVessel->GetPropellantMaxMass(ph);
@@ -763,9 +765,9 @@ bool VESSEL3_EXT::GetLandingTargetInfo(double &distanceOut, char * const pBaseNa
 // Note: level may be outside range of 0..1; this is not an error, but it will be limited to between 0 and 1.
 float VESSEL3_EXT::ComputeVariableVolume(const double minVolume, const double maxVolume, double level)
 {
-    _ASSERTE(minVolume >= 0);
-    _ASSERTE(maxVolume <= 1.0);
-    _ASSERTE(minVolume <= maxVolume);
+    assert(minVolume >= 0);
+    assert(maxVolume <= 1.0);
+    assert(minVolume <= maxVolume);
 
     if (level < 0)
         level = 0;

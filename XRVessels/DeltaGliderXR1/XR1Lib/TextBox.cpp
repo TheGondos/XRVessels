@@ -33,7 +33,7 @@
 // base class for all TextBox objects
 // screenLineCount = # of text lines on the screen
 // bgColor: CWHITE = use transparent background
-TextBox::TextBox(int width, int height, COLORREF normalTextColor, COLORREF highlightTextColor, COLORREF bgColor, int screenLineCount, const TextLineGroup &textLineGroup) :
+TextBox::TextBox(int width, int height, uint32_t normalTextColor, uint32_t highlightTextColor, uint32_t bgColor, int screenLineCount, const TextLineGroup &textLineGroup) :
     m_width(width), m_height(height), m_normalTextColor(normalTextColor), m_highlightTextColor(highlightTextColor), 
     m_bgColor(bgColor), m_screenLineCount(screenLineCount), m_textLineGroup(textLineGroup),
     m_lastRenderedAddLinesCount(0)
@@ -45,7 +45,7 @@ TextBox::TextBox(int width, int height, COLORREF normalTextColor, COLORREF highl
 // lineSpacing = # of pixels between screen lines
 // startingLineNumber = starting line # in buffer, 1-based; if <= 0, renders full screen starting from bottom
 // Returns: true if text re-rendered, false if text is unchanged since last render
-bool TextBox::Render(HDC hDC, int topY, HFONT font, int lineSpacing, bool forceRender, int startingLineNumber)
+bool TextBox::Render(oapi::Sketchpad *skp, int topY, oapi::Font *font, int lineSpacing, bool forceRender, int startingLineNumber)
 {
     bool retVal = false;        // assume NOT re-rendered
 
@@ -57,18 +57,18 @@ bool TextBox::Render(HDC hDC, int topY, HFONT font, int lineSpacing, bool forceR
         // text has changed; must re-render this box
         retVal = true;        
 
-        HFONT prevFont = (HFONT)SelectObject(hDC, font);   // save previous font and select new font
+        oapi::Font *prevFont = skp->SetFont(font);
         if (m_bgColor == CWHITE)
         {
-            SetBkMode(hDC, TRANSPARENT);
+            skp->SetBackgroundMode(oapi::Sketchpad::BK_TRANSPARENT);
         }
         else
         {
-            SetBkMode(hDC, OPAQUE);
-            SetBkColor(hDC, m_bgColor);
+            skp->SetBackgroundMode(oapi::Sketchpad::BK_OPAQUE);
+            skp->SetBackgroundColor(m_bgColor);
         }
 
-        SetTextAlign(hDC, TA_LEFT);
+        skp->SetTextAlign(oapi::Sketchpad::LEFT);
 
         int cy = topY + 1;  // top spacing
         int cx = 3;         // left side spacing
@@ -97,15 +97,15 @@ bool TextBox::Render(HDC hDC, int topY, HFONT font, int lineSpacing, bool forceR
             const TextLine &line = m_textLineGroup.GetLine(i);
             const char *pText = line.text.c_str();
 
-            SetTextColor(hDC, (line.color == TEXTCOLOR::Normal ? m_normalTextColor : m_highlightTextColor));
-            TextOut(hDC, cx, cy, pText, static_cast<int>(line.text.length()));
+            skp->SetTextColor((line.color == TEXTCOLOR::Normal ? m_normalTextColor : m_highlightTextColor));
+            skp->Text(cx, cy, pText, static_cast<int>(line.text.length()));
 
             // drop to next line
             cy += lineSpacing;
         }
 
         // restore previous font
-        SelectObject(hDC, prevFont);
+        skp->SetFont(prevFont);
     }
 
     return retVal;

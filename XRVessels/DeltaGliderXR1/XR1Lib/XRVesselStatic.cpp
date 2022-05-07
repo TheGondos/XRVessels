@@ -24,10 +24,11 @@
 // ==============================================================
 
 #include "DeltaGliderXR1.h"
+#include <cassert>
 
 // Safely fill a screen area: if width or height == 0, do not render anything
 // Otherwise, oapiColourFill will (by design) render the entire area.
-void DeltaGliderXR1::SafeColorFill(SURFHANDLE tgt, DWORD fillcolor, int tgtx, int tgty, int width, int height)
+void DeltaGliderXR1::SafeColorFill(SURFHANDLE tgt, uint32_t fillcolor, int tgtx, int tgty, int width, int height)
 {
     if ((width > 0) && (height > 0))
         oapiColourFill(tgt, fillcolor, tgtx, tgty, width, height);
@@ -35,7 +36,7 @@ void DeltaGliderXR1::SafeColorFill(SURFHANDLE tgt, DWORD fillcolor, int tgtx, in
 
 // Safely blit a screen area: if width or height == 0, do not render anything.
 // Otherwise, Orbiter may throw an assertion failure in Orbiter.exe debug builds because the DirectX blit call fails
-void DeltaGliderXR1::SafeBlt(SURFHANDLE tgt, SURFHANDLE src, int tgtx, int tgty, int srcx, int srcy, int width, int height, DWORD ck)
+void DeltaGliderXR1::SafeBlt(SURFHANDLE tgt, SURFHANDLE src, int tgtx, int tgty, int srcx, int srcy, int width, int height, uint32_t ck)
 {
     if ((width > 0) && (height > 0))
         oapiBlt(tgt, src, tgtx, tgty, srcx, srcy, width, height, ck);
@@ -44,7 +45,7 @@ void DeltaGliderXR1::SafeBlt(SURFHANDLE tgt, SURFHANDLE src, int tgtx, int tgty,
 // ==============================================================
 // Message callback function for control dialog box
 // ==============================================================
-
+/*
 INT_PTR CALLBACK XR1Ctrl_DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     DeltaGliderXR1* dg = (uMsg == WM_INITDIALOG ? reinterpret_cast<DeltaGliderXR1*>(lParam) : reinterpret_cast<DeltaGliderXR1*>(oapiGetDialogContext(hWnd)));
@@ -124,7 +125,7 @@ INT_PTR CALLBACK XR1Ctrl_DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
     }
     return oapiDefDialogProc(hWnd, uMsg, wParam, lParam);
 }
-
+*/
 
 // ==============================================================
 // Airfoil coefficient functions
@@ -177,7 +178,8 @@ void DeltaGliderXR1::HLiftCoeff(VESSEL* v, double beta, double M, double Re, voi
 }
 
 // static data
-HWND DeltaGliderXR1::s_hPayloadEditorDialog = 0;
+#include "XR1PayloadDialog.h"
+std::unique_ptr<XR1PayloadDialog> DeltaGliderXR1::s_hPayloadEditorDialog;
 
 // --------------------------------------------------------------
 // Convert spaces to a character that Orbiter can save
@@ -205,18 +207,23 @@ void DeltaGliderXR1::DecodeSpaces(char* pStr)
 
 // Format a double with commas to a given number of decimal places
 // e.g., "10,292.7"
-void DeltaGliderXR1::FormatDouble(const double val, CString& out, const int decimalPlaces)
+void DeltaGliderXR1::FormatDouble(const double val, std::string& out, const int decimalPlaces)
 {
-    CString format;
-    _ASSERTE(decimalPlaces >= 0);
-    format.Format("%%.%dlf", decimalPlaces);  // e.g., "%.2lf"
-
-    out.Format(format, val);   // "10292.7"
+    std::string format;
+    assert(decimalPlaces >= 0);
+    char cbuf[64];
+    sprintf(cbuf, "%%.%dlf", decimalPlaces);
+    format = cbuf;
+    sprintf(cbuf, format.c_str(), val);   // "10292.7"
+    out = cbuf;
 
     // now add in the commas; do not use a comma at three places for under 10,000
+    //FIXME
+    /*
     int lowThreshold = ((val < 10000) ? 1 : 0);  //
     for (int index = out.Find('.') - 3; index > lowThreshold; index -= 3)
         out.Insert(index, ',');
+    */
 }
 
 // static worker method that returns a pointer to a static exhaust spec

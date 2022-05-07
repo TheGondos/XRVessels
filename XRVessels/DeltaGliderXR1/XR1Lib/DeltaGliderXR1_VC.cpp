@@ -81,7 +81,7 @@ void DeltaGliderXR1::UpdateVCStatusIndicators()
 	double d;
 
 	static NTVERTEX vtx[16];
-	static WORD vidx[16] = {0,1,4,5,20,21,8,9,24,25,16,17,12,13,28,29};
+	static uint16_t vidx[16] = {0,1,4,5,20,21,8,9,24,25,16,17,12,13,28,29};
 	GROUPEDITSPEC ges;
 	ges.flags = GRPEDIT_VTXTEXU;
 	ges.nVtx = 16;

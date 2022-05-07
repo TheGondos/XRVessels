@@ -21,10 +21,9 @@
 
 // ==============================================================
 
-#include "resource.h"
-
 #include "DeltaGliderXR1.h"
 #include "XR1MultiDisplayArea.h"
+#include "Bitmaps.h"
 
 // This class handles all systems status screens, using the delta from MDMID_SYSTEMS_STATUS1 to determine which screen we are
 // Constructor
@@ -37,19 +36,19 @@ SystemsStatusMultiDisplayMode::SystemsStatusMultiDisplayMode(int modeNumber) :
 
 void SystemsStatusMultiDisplayMode::Activate()
 {
-    static const int resourceIDs[] = { IDB_SYSTEMS_STATUS1_MULTI_DISPLAY, IDB_SYSTEMS_STATUS2_MULTI_DISPLAY,
+    static const char *resourceIDs[] = { IDB_SYSTEMS_STATUS1_MULTI_DISPLAY, IDB_SYSTEMS_STATUS2_MULTI_DISPLAY,
                                        IDB_SYSTEMS_STATUS3_MULTI_DISPLAY, IDB_SYSTEMS_STATUS4_MULTI_DISPLAY,
                                        IDB_SYSTEMS_STATUS5_MULTI_DISPLAY };
 
     m_backgroundSurface = CreateSurface(resourceIDs[m_screenIndex]);
-    m_mainFont = CreateFont(14, 0, 0, 0, 400, 0, 0, 0, 0, 0, 0, 0, FF_MODERN, "Microsoft Sans Serif");
+    m_mainFont = oapiCreateFont(14, true, "Microsoft Sans Serif");
     m_fontPitch = 11;
 }
 
 void SystemsStatusMultiDisplayMode::Deactivate()
 {
     DestroySurface(&m_backgroundSurface);
-    DeleteObject(m_mainFont);
+    oapiReleaseFont(m_mainFont);
 }
 
 bool SystemsStatusMultiDisplayMode::Redraw2D(const int event, const SURFHANDLE surf)
@@ -59,11 +58,11 @@ bool SystemsStatusMultiDisplayMode::Redraw2D(const int event, const SURFHANDLE s
     DeltaGliderXR1::SafeBlt(surf, m_backgroundSurface, 0, 0, 0, 0, screenSize.x, screenSize.y);
 
     // obtain device context and save existing font
-    HDC hDC = m_pParentMDA->GetDC(surf);
-    HFONT hPrevObject = (HFONT)SelectObject(hDC, m_mainFont);
+    oapi::Sketchpad *skp = oapiGetSketchpad(surf);
+    skp->SetFont(m_mainFont);
 
-    SetBkMode(hDC, TRANSPARENT);
-    SetTextAlign(hDC, TA_LEFT);
+    skp->SetBackgroundMode(oapi::Sketchpad::BK_TRANSPARENT);
+    skp->SetTextAlign(oapi::Sketchpad::LEFT);
 
     // set starting coordinates 
     int x = 5;
@@ -72,7 +71,7 @@ bool SystemsStatusMultiDisplayMode::Redraw2D(const int event, const SURFHANDLE s
 
     static const int linesPerScreen = 7;
     DamageItem start = static_cast<DamageItem>(static_cast<int>(DamageItem::LeftWing) + (m_screenIndex * linesPerScreen));
-    char temp[64];
+    char temp[70];
     for (int i = 0; i < linesPerScreen; i++)
     {
         DamageItem damageItem = static_cast<DamageItem>(static_cast<int>(start) + i);
@@ -84,12 +83,12 @@ bool SystemsStatusMultiDisplayMode::Redraw2D(const int event, const SURFHANDLE s
         double integrity = damageStatus.fracIntegrity;
 
         if (integrity == 1.0)
-            SetTextColor(hDC, CREF(MEDIUM_GREEN));
+            skp->SetTextColor(CREF(MEDIUM_GREEN));
         else
-            SetTextColor(hDC, CREF(BRIGHT_RED));
+            skp->SetTextColor(CREF(BRIGHT_RED));
 
         sprintf(temp, "%s:", damageStatus.label);
-        TextOut(hDC, x, y, temp, static_cast<int>(strlen(temp))); // "Left Wing", etc.
+        skp->Text(x, y, temp, static_cast<int>(strlen(temp))); // "Left Wing", etc.
 
         if (damageStatus.onlineOffline)
         {
@@ -103,15 +102,13 @@ bool SystemsStatusMultiDisplayMode::Redraw2D(const int event, const SURFHANDLE s
             sprintf(temp, "%d%%", static_cast<int>(integrity * 100));
         }
 
-        TextOut(hDC, statusX, y, temp, static_cast<int>(strlen(temp)));
+        skp->Text(statusX, y, temp, static_cast<int>(strlen(temp)));
 
         // drop to next line
         y += m_fontPitch;
     }
 
-    // restore previous font and release device context
-    SelectObject(hDC, hPrevObject);
-    m_pParentMDA->ReleaseDC(surf, hDC);
+    oapiReleaseSketchpad(skp);
 
     return true;
 }

@@ -26,7 +26,6 @@
 
 #pragma once
 
-#include "windows.h"
 #include "XRVesselCtrl.h"
 #include "XRGrappleTargetVessel.h"
 #include "stringhasher.h"
@@ -44,9 +43,6 @@
 #define XR_GLOBAL_SETTINGS_REG_KEY "SOFTWARE\\AlteaAerospace\\XR"   // under HKEY_CURRENT_USER
 
 #define MAX_VELOCITY_FOR_WHEEL_STOP 0.04		  // max meters-per-second the ship can be moving and still be considered wheel-stop (used by IsLanded(); determines when parking brakes engage, for example).
-
-using namespace stdext;
-using namespace std;
 
 class Area;
 class PrePostStep;
@@ -81,17 +77,18 @@ public:
     VESSEL3_EXT(OBJHANDLE vessel, int fmodel = 1);
     virtual ~VESSEL3_EXT();
 
-	RegKeyManager m_regKeyManager;		// for global Orbiter-independent XR settings
+	//RegKeyManager m_regKeyManager;		// for global Orbiter-independent XR settings
 	
 	// Note: returns 0 if Orbiter is full-screen
+    /*
 	static HWND GetOrbiterRenderWindowHandle()
 	{
 		return ::FindWindow("Orbiter Render Window", nullptr);
 	}
+*/
+	void *GetModuleHandle() { return m_hModule; }
 
-	HMODULE GetModuleHandle() { return m_hModule; }
-
-    void SetModuleHandle(const HMODULE hModule) { m_hModule = hModule; }
+    void SetModuleHandle(void *hModule) { m_hModule = hModule; }
     void AddInstrumentPanel(InstrumentPanel *pPanel, const int panelWidth);
     void AddPreStep(PrePostStep *pPostStep);
     void AddPostStep(PrePostStep *pPreStep);
@@ -103,7 +100,7 @@ public:
     bool HasFocus() const { return m_hasFocus; }   // returns true if we have the focus, false if not
 
     // returns the number of '1' bits in dwBitmask
-    static int CountOneBits(DWORD dwBitmask)
+    static int CountOneBits(int dwBitmask)
     {
         int oneBitsCount = 0;
         for (int i = 0; i < 32; i++) {
@@ -113,7 +110,7 @@ public:
         return oneBitsCount;
     }
 
-    void SetMeshGroupsVisibility(const bool isVisible, const DEVMESHHANDLE hMesh, const int groupCount, const UINT *meshGroups) const
+    void SetMeshGroupsVisibility(const bool isVisible, const DEVMESHHANDLE hMesh, const int groupCount, const unsigned int *meshGroups) const
     {
         if (hMesh == nullptr)
             return;   // mesh not loaded yet
@@ -128,8 +125,8 @@ public:
     bool Is2DPanel(const int panelNumber) const { return (panelNumber <  GetVCPanelIDBase()); }
     bool IsVCPanel(const int panelNumber) const { return (panelNumber >= GetVCPanelIDBase()); }
     bool GetLandingTargetInfo(double &distanceOut, char * const pBaseNameOut, const int nameBufferLength);  // get distance and name of landing target (closest surface base)
-	DWORD GetVideoWindowWidth() { return m_videoWindowWidth;  }
-	DWORD GetVideoWindowHeight() { return m_videoWindowHeight; }
+	int GetVideoWindowWidth() { return m_videoWindowWidth;  }
+	int GetVideoWindowHeight() { return m_videoWindowHeight; }
 
     // Returns the linear simulation time since simulation start, ignoring any MJD changes (edits).
     // This is the same principle as oapiGetSimTime except that it always returns a value >= the previous frame's value.
@@ -140,26 +137,22 @@ public:
     // Note: it is OK for this method to be static without a mutex because Orbiter is single-threaded
     static double GetSystemUptime()
     {
-        // Even though we lose some precision going from 2^64 max down to 2^53 (53 bits mantissia in a double), that's still enough
-        // precision to track 104,249,991.37 days, or 285,616 years of uptime right down to the millisecond.  
-        // See https://stackoverflow.com/questions/1848700/biggest-integer-that-can-be-stored-in-a-double
-        const double uptimeMilli = static_cast<double>(GetTickCount64());  // GetTickCount64 requires Vista or higher, but that is our minimum target OS anyway
-        return (uptimeMilli / 1000);  // convert to seconds
+        return glfwGetTime();
     }
     
     //----------------------------------------------------------------------------
     // Implemented VESSEL3 callback methods; you should not normally need to override these
     //----------------------------------------------------------------------------
-    virtual bool clbkLoadPanel2D(int panelID, PANELHANDLE hPanel, DWORD viewW, DWORD viewH);
+    virtual bool clbkLoadPanel2D(int panelID, PANELHANDLE hPanel, int viewW, int viewH) override;
 
 	//----------------------------------------------------------------------------
     // Implemented VESSEL2 methods; you should not normally need to override these
     //----------------------------------------------------------------------------
-    virtual bool clbkLoadPanel(int panelID);   
-    virtual bool clbkPanelMouseEvent(int areaID, int event, int mx, int my);
-    virtual bool clbkPanelRedrawEvent(int areaID, int event, SURFHANDLE surf);
-    virtual bool clbkVCMouseEvent (int id, int event, VECTOR3 &p);
-    virtual bool clbkVCRedrawEvent(int areaID, int event, SURFHANDLE surf) { return clbkPanelRedrawEvent(areaID, event, surf); }
+    virtual bool clbkLoadPanel(int panelID) override;   
+    virtual bool clbkPanelMouseEvent(int areaID, int event, int mx, int my) override;
+    virtual bool clbkPanelRedrawEvent(int areaID, int event, SURFHANDLE surf) override;
+    virtual bool clbkVCMouseEvent (int id, int event, VECTOR3 &p) override;
+    virtual bool clbkVCRedrawEvent(int areaID, int event, SURFHANDLE surf)  override { return clbkPanelRedrawEvent(areaID, event, surf); }
     //----------------------------------------------------------------------------
 
     // you should not normally need to override these methods; however, they are virtual in case you need to sometime
@@ -177,7 +170,7 @@ public:
 
     // pure virtual methods
     virtual int GetVCPanelIDBase() const = 0;  // subclasses should simply return VC_PANEL_ID_BASE here
-    virtual DWORD MeshTextureIDToTextureIndex(const int meshTextureID, MESHHANDLE &hMesh) = 0;  // see DeltaGliderXR1.cpp for sample implementation
+    virtual int MeshTextureIDToTextureIndex(const int meshTextureID, MESHHANDLE &hMesh) = 0;  // see DeltaGliderXR1.cpp for sample implementation
 
     // non-virtual methods
     double GetDistanceToVessel(const VESSEL &targetVessel) const;
@@ -194,8 +187,8 @@ public:
     static void GetStatusSafe(const VESSEL &vessel, VESSELSTATUS2 &status, const bool resetToDefault);
 
     // static utility methods    
-    static bool IsToday(WORD wMonth, WORD wDay);  // month=1-12, day=1-31
-    static void SetMeshGroupVisible(DEVMESHHANDLE hMesh, DWORD dwMeshGroup, bool isVisible);
+    static bool IsToday(int wMonth, int wDay);  // month=1-12, day=1-31
+    static void SetMeshGroupVisible(DEVMESHHANDLE hMesh, int dwMeshGroup, bool isVisible);
     static int ResetAllFuelLevels(VESSEL *pVessel, const double levelFrac);
     static float ComputeVariableVolume(const double minVolume, const double maxVolume, double level);
 
@@ -226,7 +219,7 @@ private:
 	int m_videoWindowHeight;					 // in pixels; 0 = UNKNOWN (NOT PARSED YET)
     int m_lastVideoWindowWidth;                  // previous m_videoWindowWidth value; -1 = not set 
     int m_last2DPanelWidth;                      // 2D panel width for m_lastVideoWindowWidth; e.g., 1280, 1600, 1920
-    HMODULE m_hModule;
+    void *m_hModule;
     bool m_hasFocus;                             // true if we are in focus (i.e., we are the active ship), false if not
     unordered_map<int, InstrumentPanel *> m_panelMap; // map of all instrument panels: key = (panelWidth * 1000) + panel ID, value = InstrumentPanel *
     vector<PrePostStep *> m_postStepVector;      // list of PrePostStep objects; may be empty

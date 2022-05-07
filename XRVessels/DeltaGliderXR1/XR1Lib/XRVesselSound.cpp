@@ -24,6 +24,8 @@
 // ==============================================================
 
 #include "DeltaGliderXR1.h"
+#include <cassert>
+#include <cstring>
 
 // invoked during vessel initialization
 // Returns: true if init successful, false if XRSound not loaded
@@ -31,7 +33,7 @@ bool DeltaGliderXR1::InitSound()
 {
 #if 0 // {XXX} ONLY SET THIS TO 1 IF YOU WANT TO TEST XRSOUND 2.0'S MODULE FUNCTIONALITY
 #ifndef _DEBUG 
-#error INVALID CONFIGURATION: fix your XRVessel.cpp's InitSound()
+#error INVALID CONFIGURATION: fix your XRVessel.cpp InitSound()
 #endif
     m_pXRSound = XRSound::CreateInstance("XRSoundModuleTesting");
 #else
@@ -143,8 +145,8 @@ void DeltaGliderXR1::LoadXR1Sound(const Sound sound, const char* pFilename, XRSo
         return;
 
     // use member variable here so we can preserve the last file loaded for debugging purposes
-    sprintf(m_lastWavLoaded, "%s\\%s", m_pXRSoundPath, pFilename);
-    BOOL stat = m_pXRSound->LoadWav(sound, m_lastWavLoaded, playbackType);
+    sprintf(m_lastWavLoaded, "%s/%s", m_pXRSoundPath, pFilename);
+    bool stat = m_pXRSound->LoadWav(sound, m_lastWavLoaded, playbackType);
 #ifdef _DEBUG
     if (!stat)
         sprintf(oapiDebugString(), "ERROR: LoadXR1Sound: LoadWav failed, filename='%s'", pFilename);
@@ -235,7 +237,7 @@ void DeltaGliderXR1::PlaySound(Sound sound, const SoundType soundType, int volum
 
     // play the sound!
     const float volFrac = min(static_cast<float>(volume) / 255.0f, 1.0f);  // convert legacy volume 0-255 to 0-1.0.
-    BOOL stat = m_pXRSound->PlayWav(sound, bLoop, volFrac);
+    bool stat = m_pXRSound->PlayWav(sound, bLoop, volFrac);
 
     // We don't want "missing wave file" errors showing up for users; they may want to delete
     // some sound files because they don't like them, so we don't want to clutter the log with
@@ -304,13 +306,13 @@ void DeltaGliderXR1::ShowWarning(const char* pSoundFilename, const SoundType sou
     // the poststep will pick this sound at the next timestep and play it within 5 seconds
     if (pSoundFilename != nullptr)
     {
-        _ASSERTE(soundType != ST_None);
+        assert(soundType != ST_None);
         strcpy(m_warningWavFilename, pSoundFilename);
         m_warningWaveSoundType = soundType;
     }
     else
     {
-        _ASSERTE(soundType == ST_None);
+        assert(soundType == ST_None);
     }
 }
 

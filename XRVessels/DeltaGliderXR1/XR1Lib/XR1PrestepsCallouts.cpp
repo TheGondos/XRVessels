@@ -22,6 +22,8 @@
 #include "DeltaGliderXR1.h"
 #include "XR1PreSteps.h"
 #include "XRPayloadBay.h"
+#include <cassert>
+#include <climits>
 
 //---------------------------------------------------------------------------
 
@@ -56,7 +58,7 @@ void TakeoffAndLandingCalloutsAndCrashPreStep::clbkPrePostStep(const double simt
     {
         // let's blink the crash message on the main HUD
         if (fmod(simt, 3.0) <= 2.5)   // on for 2.5 seconds, off for 1/2-second
-            sprintf(GetXR1().m_hudWarningText, GetXR1().m_crashMessage);
+            sprintf(GetXR1().m_hudWarningText, "%s", GetXR1().m_crashMessage);
         else
             *GetXR1().m_hudWarningText = 0;
 
@@ -260,8 +262,8 @@ void TakeoffAndLandingCalloutsAndCrashPreStep::clbkPrePostStep(const double simt
             else  // check 100 knots (both takoff and landing)
             {
                 double mpsKnots = KNOTS_TO_MPS(100);
-                if ((airspeed >= mpsKnots) && (GetXR1().m_preStepPreviousAirspeed < mpsKnots) ||
-                    (airspeed <= mpsKnots) && (GetXR1().m_preStepPreviousAirspeed > mpsKnots))
+                if (((airspeed >= mpsKnots) && (GetXR1().m_preStepPreviousAirspeed < mpsKnots)) ||
+                    ((airspeed <= mpsKnots) && (GetXR1().m_preStepPreviousAirspeed > mpsKnots)))
                 {
                     GetXR1().PlaySound(GetXR1().OneHundredKnots, DeltaGliderXR1::ST_InformationCallout);
                 }
@@ -374,7 +376,7 @@ void MachCalloutsPreStep::clbkPrePostStep(const double simt, const double simdt,
 
     if (!groundContact && (mach <= 0))  // prevent resets when on ground
     {
-        m_previousMach = MAXLONG;   // out of the atmosphere
+        m_previousMach = LONG_MAX;   // out of the atmosphere
         return;     // nothing more to do
     }
 
@@ -498,7 +500,7 @@ void AltitudeCalloutsPreStep::clbkPrePostStep(const double simt, const double si
             // optimization: skip loop if distance > max callout distance
             if (altitude <= altitudeCallouts[0])
             {
-                for (int i = 0; i < (sizeof(altitudeCallouts) / sizeof(double)); i++)
+                for (size_t i = 0; i < (sizeof(altitudeCallouts) / sizeof(double)); i++)
                 {
                     const double a = altitudeCallouts[i];
 
@@ -600,8 +602,8 @@ void DockingCalloutsPreStep::clbkPrePostStep(const double simt, const double sim
 
     if ((distance >= 0) && (m_previousDistance >= 0))  // no callouts if not in range OR if we just entered range but haven't updated previous distance yet.
     {
-        _ASSERTE(m_intervalStartTime >= 0);
-        _ASSERTE(m_intervalStartDistance >= 0);
+        assert(m_intervalStartTime >= 0);
+        assert(m_intervalStartDistance >= 0);
 
         // Note: in order to support UCD (Universal Cargo Deck), we need to only play the warning if the ship has closed at least 0.1 meter over the last second (0.1 m/s)
         // Vessel distance "jitters" even when a vessel is attached to UCD which is attached in the XR payload bay.
@@ -641,7 +643,7 @@ void DockingCalloutsPreStep::clbkPrePostStep(const double simt, const double sim
             // optimization: skip loop if distance > max callout distance
             if (distance <= distanceCallouts[0])
             {
-                for (int i = 0; i < (sizeof(distanceCallouts) / sizeof(double)); i++)
+                for (size_t i = 0; i < (sizeof(distanceCallouts) / sizeof(double)); i++)
                 {
                     const double a = distanceCallouts[i];
 

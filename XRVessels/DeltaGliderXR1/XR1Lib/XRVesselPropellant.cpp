@@ -25,6 +25,7 @@
 
 #include "DeltaGliderXR1.h"
 #include "XRPayloadBay.h"
+#include <cassert>
 
 //
 // Fuel/LOX quantity methods; these take any payload bay consumables into account
@@ -46,7 +47,7 @@ PROP_TYPE DeltaGliderXR1::GetPropTypeForHandle(PROPELLANT_HANDLE ph) const
     else
     {
         // should never happen!
-        _ASSERTE(false);
+        assert(false);
         pt = PROP_TYPE::PT_NONE;
     }
 
@@ -119,14 +120,14 @@ void DeltaGliderXR1::SetXRPropellantMass(PROPELLANT_HANDLE ph, const double mass
 
             // if the caller's code is correct, we should never overflow the bay quantity
             // Need to account for slight rounding error possibility here in the nth decimal place, so 0.01 is way overkill, but fine for an assert
-            _ASSERTE(fabs(bayDeltaApplied - bayDeltaRequested) < 0.01);
+            assert(fabs(bayDeltaApplied - bayDeltaRequested) < 0.01);
         }
     }
     else
     {
         // no payload bay, so it should all fit in the internal tank!
         // Need to account for slight rounding error possibility here in the nth decimal place, so 0.01 is way overkill, but fine for an assert
-        _ASSERTE(fabs(deltaRemaining) < 0.01);
+        assert(fabs(deltaRemaining) < 0.01);
     }
 }
 
@@ -233,12 +234,12 @@ void DeltaGliderXR1::SetXRLOXMass(const double mass)
 
         // if the caller's code is correct, we should never overflow the bay quantity
         // Need to account for slight rounding error possibility here in the nth decimal place, so 0.01 is way overkill, but fine for an assert
-        _ASSERTE(fabs(bayDeltaApplied - bayDeltaRequested) < 0.01);
+        assert(fabs(bayDeltaApplied - bayDeltaRequested) < 0.01);
     }
     else
     {
         // no payload bay, so it should all fit in the internal tank!
         // Need to account for slight rounding error possibility here in the nth decimal place, so 0.01 is way overkill, but fine for an assert
-        _ASSERTE(fabs(deltaRemaining) < 0.01);
+        assert(fabs(deltaRemaining) < 0.01);
     }
 }

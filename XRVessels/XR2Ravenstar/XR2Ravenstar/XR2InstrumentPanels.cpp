@@ -26,8 +26,7 @@
 // Custom instrument panels for the XR2
 // ==============================================================
 
-#include "OrbiterSDK.h"
-#include "resource.h"
+#include "Orbitersdk.h"
 #include "XR2AreaIDs.h"
 
 #include "XR2InstrumentPanels.h"
@@ -50,6 +49,7 @@
 #include "XR2Areas.h"
 #include "XR2Components.h"
 #include "XR2PayloadScreenAreas.h"
+#include <cassert>
 
 // 2D cockpit coordinates for the eyepoint
 static const VECTOR3 twoDCockpitCoordinates = _V(0, 1.946, 7.27);   // save as VC pilot view except that X == 0
@@ -75,15 +75,15 @@ static const VECTOR3 twoDCockpitCoordinates = _V(0, 1.946, 7.27);   // save as V
 // vessel = our parent vessel
 // panelID = unique panel ID
 // panelResourceID = resource ID of this panel in our DLL; e.g., IDB_PANEL1_1280.  -1 = NONE
-XR2InstrumentPanel::XR2InstrumentPanel(XR2Ravenstar &vessel, const int panelID, const WORD panelResourceID, const bool force3DRedrawTo2D) :
+XR2InstrumentPanel::XR2InstrumentPanel(XR2Ravenstar &vessel, const int panelID, const char *panelResourceID, const bool force3DRedrawTo2D) :
     InstrumentPanel(vessel, panelID, (panelID - VC_PANEL_ID_BASE), panelResourceID, force3DRedrawTo2D)  // Orbiter VC panel ID is a delta from our globally unique panel ID)  
 {
 #ifdef _DEBUG
     const unsigned short NO_ID = (unsigned short)-1;
     if (IsVC())
-        _ASSERTE(panelResourceID == NO_ID);
+        assert(panelResourceID == NO_ID);
     else  // this is 2D panel, so panelResourceID should be valid
-        _ASSERTE(panelResourceID != NO_ID);
+        assert(panelResourceID != NO_ID);
 #endif
 }
 
@@ -115,17 +115,17 @@ void XR2InstrumentPanel::InitMDA(MultiDisplayArea *pMDA)
 // Returns: true on success, false on error (e.g., a bitmap failed to load)
 bool XR2MainInstrumentPanel::Activate() 
 {
-    const WORD panelResourceID = GetPanelResourceID();
+    const char *panelResourceID = GetPanelResourceID();
     
     // load our bitmap
-    m_hBmp = LoadBitmap(GetVessel().GetModuleHandle(), MAKEINTRESOURCE (panelResourceID));
+    m_hBmp = oapiLoadTexture(panelResourceID);
     if (m_hBmp == nullptr)
         return false;       // should never happen
 
     GetVessel().SetCameraOffset(twoDCockpitCoordinates);
     GetVessel().SetXRCameraDirection (_V(0,0,1)); // look forward
 
-    oapiRegisterPanelBackground(m_hBmp, PANEL_ATTACH_BOTTOM|PANEL_MOVEOUT_BOTTOM, 0xFFFFFF);  // white == transparent
+    oapiRegisterPanelBackground(m_hBmp, PANEL_ATTACH_BOTTOM|PANEL_MOVEOUT_BOTTOM);//, 0xFFFFFF);  // white == transparent
     oapiSetPanelNeighbours (-1, -1, PANEL_UPPER, PANEL_LOWER);
 
     // initialize the XR vessel's m_pMDA to point to *this panel's* MDA object
@@ -158,14 +158,14 @@ void XR2MainInstrumentPanel::Deactivate()
 // Returns: true on success, false on error (e.g., a bitmap failed to load)
 bool XR2PayloadInstrumentPanel::Activate()
 {
-    const WORD panelResourceID = GetPanelResourceID();
+    const char *panelResourceID = GetPanelResourceID();
 
     // load our bitmap
-    m_hBmp = LoadBitmap(GetVessel().GetModuleHandle(), MAKEINTRESOURCE (panelResourceID));
+    m_hBmp = oapiLoadTexture(panelResourceID);
     if (m_hBmp == nullptr)
         return false;       // should never happen
     
-    oapiRegisterPanelBackground (m_hBmp, PANEL_ATTACH_BOTTOM | PANEL_ATTACH_LEFT | PANEL_MOVEOUT_BOTTOM, 0xFFFFFF);  // white is transparent
+    oapiRegisterPanelBackground (m_hBmp, PANEL_ATTACH_BOTTOM | PANEL_ATTACH_LEFT | PANEL_MOVEOUT_BOTTOM);//, 0xFFFFFF);  // white is transparent
 
     // this panel is unique in that it is connected "one-way" to the upper panel to the right and the main panel below.
     oapiSetPanelNeighbours (-1, PANEL_UPPER, -1, PANEL_MAIN);
@@ -311,14 +311,14 @@ void XR2UpperInstrumentPanel::AddCommonAreas(const int width)
 // Returns: true on success, false on error (e.g., a bitmap failed to load)
 bool XR2UpperInstrumentPanel::Activate()
 {
-    const WORD panelResourceID = GetPanelResourceID();
+    const char *panelResourceID = GetPanelResourceID();
     
     // load our bitmap
-    m_hBmp = LoadBitmap(GetVessel().GetModuleHandle(), MAKEINTRESOURCE (panelResourceID));
+    m_hBmp = oapiLoadTexture(panelResourceID);
     if (m_hBmp == nullptr)
         return false;       // should never happen
     
-    oapiRegisterPanelBackground (m_hBmp, PANEL_ATTACH_TOP | PANEL_MOVEOUT_TOP, 0xFFFFFF);  // white is transparent
+    oapiRegisterPanelBackground (m_hBmp, PANEL_ATTACH_TOP | PANEL_MOVEOUT_TOP);//, 0xFFFFFF);  // white is transparent
     oapiSetPanelNeighbours (PANEL_PAYLOAD, -1, -1, PANEL_MAIN);
     GetVessel().SetCameraOffset(twoDCockpitCoordinates);
     GetVessel().SetXRCameraDirection (_V(0,0.5,0.866)); // look up
@@ -338,10 +338,11 @@ bool XR2UpperInstrumentPanel::Activate()
 // Returns: true on success, false on error (e.g., a bitmap failed to load)
 bool XR2LowerInstrumentPanel::Activate()
 {
-    const WORD panelResourceID = GetPanelResourceID();
+    const char *panelResourceID = GetPanelResourceID();
     
     // load our bitmap
-    m_hBmp = LoadBitmap(GetVessel().GetModuleHandle(), MAKEINTRESOURCE (panelResourceID));
+//    assert(false);
+    m_hBmp = oapiLoadTexture(panelResourceID); //FIXME
     if (m_hBmp == nullptr)
         return false;       // should never happen
 

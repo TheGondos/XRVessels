@@ -30,9 +30,6 @@
 
 #include <unordered_map>
 
-using namespace std;
-using namespace stdext;
-
 // must use forward reference here to avoid circular dependencies
 class Area;
 
@@ -43,7 +40,7 @@ public:
     virtual ~AreaGroup();
 
     // returns map of all Areas in this group
-    unordered_map<int, Area *> &GetAreaMap() { return m_areaMap; };
+    std::unordered_map<int, Area *> &GetAreaMap() { return m_areaMap; };
 
     Area *AddArea(Area *pArea);
     void ActivateAllAreas();
@@ -54,5 +51,5 @@ public:
 
 private:
     // data
-    unordered_map<int, Area *> m_areaMap;    // map of all areas in this group: key = area ID, value = Area *
+    std::unordered_map<int, Area *> m_areaMap;    // map of all areas in this group: key = area ID, value = Area *
 };

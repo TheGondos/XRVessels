@@ -64,7 +64,7 @@ int XR5Vanguard::clbkConsumeDirectKey(char *kstate)
 // --------------------------------------------------------------
 #define RET_IF_INCAP() if (IsCrewIncapacitatedOrNoPilotOnBoard()) return 1
 
-int XR5Vanguard::clbkConsumeBufferedKey(DWORD key, bool down, char *kstate)
+int XR5Vanguard::clbkConsumeBufferedKey(int key, bool down, char *kstate)
 {
     if (Playback()) 
         return 0; // don't allow manual user input during a playback
@@ -126,7 +126,7 @@ int XR5Vanguard::clbkConsumeBufferedKey(DWORD key, bool down, char *kstate)
                 return 1;
 
             case OAPI_KEY_SPACE:   // open control dialog
-                oapiOpenDialogEx (g_hDLL, IDD_CTRL, XR5Ctrl_DlgProc, DLG_CAPTIONCLOSE, this);
+                //oapiOpenDialogEx (g_hDLL, IDD_CTRL, XR5Ctrl_DlgProc, DLG_CAPTIONCLOSE, this);
             return 1;
             }
         }

@@ -26,7 +26,7 @@
 #include "XR1Globals.h"  // verify that types agree
 #include "XR1ConfigFileParser.h"
 #include "XR1PayloadDialog.h"
-
+#include "Bitmaps.h"
 //
 // Version globals
 //
@@ -39,7 +39,7 @@ const char *VERSION = "Version 2.0 Beta-1 [" ARCH_TYPE  " " BUILD_TYPE "], Build
 // file is always written to the Orbiter directory
 const char *XR_LOG_FILE = "DeltaGliderXR1.log";
 
-const char *XR_CONFIG_FILE = "Config\\DeltaGliderXR1Prefs.cfg";
+const char *XR_CONFIG_FILE = "Config/DeltaGliderXR1Prefs.cfg";
 
 // data hud text strings
 const char *DATA_HUD_VALUES[] =
@@ -118,12 +118,12 @@ const char *DATA_HUD_VALUES[] =
     "CTRL-NUMPAD7", "Attitude Hold: Reset Pitch/AOA",
     "CTRL-NUMPAD1", "Attitude Hold: Reset Both (level)",
     "NUMPAD9",      "Attitude Hold: Toggle AOA/Pitch Hold",
-    "NUMPAD2",      "Attitude Hold: Inc Pitch/AOA 2.5°",
-    "NUMPAD8",      "Attitude Hold: Dec Pitch/AOA 2.5°",
-    "ALT-NUMPAD2",  "Attitude Hold: Inc Pitch/AOA 0.5°",
-    "ALT-NUMPAD8",  "Attitude Hold: Dec Pitch/AOA 0.5°",
-    "NUMPAD4",      "Attitude Hold: Bank Left 5°",
-    "NUMPAD6",      "Attitude Hold: Bank Right 5°",
+    "NUMPAD2",      "Attitude Hold: Inc Pitch/AOA 2.5ï¿½",
+    "NUMPAD8",      "Attitude Hold: Dec Pitch/AOA 2.5ï¿½",
+    "ALT-NUMPAD2",  "Attitude Hold: Inc Pitch/AOA 0.5ï¿½",
+    "ALT-NUMPAD8",  "Attitude Hold: Dec Pitch/AOA 0.5ï¿½",
+    "NUMPAD4",      "Attitude Hold: Bank Left 5ï¿½",
+    "NUMPAD6",      "Attitude Hold: Bank Right 5ï¿½",
 
     "CTRL-NUMPAD8",  "Descent Hold: Increase Rate 2.5 m/s",
     "CTRL-NUMPAD2",  "Descent Hold: Decrease Rate 2.5 m/s",
@@ -495,7 +495,7 @@ const double NEUTRAL_CENTER_OF_LIFT = 0.0;  // in meters  (makes ship stable lan
 //
 // Globals
 //
-HMODULE g_hDLL;  // our DLL handle
+oapi::DynamicModule *g_hDLL;  // our DLL handle
 
 const double MAX_DESCENT_HOLD_RATE = 990;   // in m/s (1.22 and earlier: was 250 m/s)
 const double ADRATE_SMALL = 0.1;
@@ -687,7 +687,7 @@ const double XR1ConfigFileParser::m_apuFuelBurnRate[] =
 };
 
 // these are required by the framework in order to link, but the XR1 does not use them because it has no payload
-const VECTOR3 &PAYLOAD_SLOT_DIMENSIONS = _V(0, 0, 0);
+const VECTOR3 PAYLOAD_SLOT_DIMENSIONS = _V(0, 0, 0);
 const char *DEFAULT_PAYLOAD_THUMBNAIL_PATH = "";
 
 // welcome messages
@@ -715,7 +715,7 @@ const Turbopack TURBOPACKS_ARRAY[] =
 const int TURBOPACKS_ARRAY_SIZE = sizeof(TURBOPACKS_ARRAY) / sizeof(Turbopack);
 
 // vessel-relative coordinates where turbopacks spawn during deployment
-const VECTOR3 &TURBOPACK_SPAWN_COORDINATES = _V(0, 0, 15.0);
+const VECTOR3 TURBOPACK_SPAWN_COORDINATES = _V(0, 0, 15.0);
 
 // maximum distance in meters of turbopacks that will be auto-stowed
 const double STOW_TURBOPACK_DISTANCE = 20;
@@ -771,16 +771,16 @@ const double FRONT_GEAR_COMPRESSION_TRANSLATION_FACTOR = 1.0;
 const double REAR_GEAR_COMPRESSION_TRANSLATION_FACTOR = 1.0;
 
 // fuel/LOX dump particle stream coordinates; not used by the XR1
-const VECTOR3 &FUEL_DUMP_PARTICLE_STREAM_POS1 = _V(0,0,0);
-const VECTOR3 &FUEL_DUMP_PARTICLE_STREAM_DIR1 = _V(0,0,0);
-const VECTOR3 &FUEL_DUMP_PARTICLE_STREAM_POS2 = _V(0,0,0);
-const VECTOR3 &FUEL_DUMP_PARTICLE_STREAM_DIR2 = _V(0,0,0);
+const VECTOR3 FUEL_DUMP_PARTICLE_STREAM_POS1 = _V(0,0,0);
+const VECTOR3 FUEL_DUMP_PARTICLE_STREAM_DIR1 = _V(0,0,0);
+const VECTOR3 FUEL_DUMP_PARTICLE_STREAM_POS2 = _V(0,0,0);
+const VECTOR3 FUEL_DUMP_PARTICLE_STREAM_DIR2 = _V(0,0,0);
 
 // boil-off exhaust particle stream coordinates; not used by the XR1
-const VECTOR3 &BOIL_OFF_PARTICLE_STREAM_POS1 = _V(0,0,0);
-const VECTOR3 &BOIL_OFF_PARTICLE_STREAM_DIR1 = _V(0,0,0);
-const VECTOR3 &BOIL_OFF_PARTICLE_STREAM_POS2 = _V(0,0,0);
-const VECTOR3 &BOIL_OFF_PARTICLE_STREAM_DIR2 = _V(0,0,0);
+const VECTOR3 BOIL_OFF_PARTICLE_STREAM_POS1 = _V(0,0,0);
+const VECTOR3 BOIL_OFF_PARTICLE_STREAM_DIR1 = _V(0,0,0);
+const VECTOR3 BOIL_OFF_PARTICLE_STREAM_POS2 = _V(0,0,0);
+const VECTOR3 BOIL_OFF_PARTICLE_STREAM_DIR2 = _V(0,0,0);
 
 ////////////////////////////////////////////////////////////////
 
@@ -789,13 +789,13 @@ const VECTOR3 &BOIL_OFF_PARTICLE_STREAM_DIR2 = _V(0,0,0);
 // these currently work with subclasses only because the resource.h happens to match, since
 // the subclasses copied the XR1's resource.h as a base.  The real fix, however, is to abstract
 // out each shared resource ID here as a global.
-const int RES_IDB_FUEL_GAUGE = IDB_FUEL_GAUGE;
-const int RES_IDB_FUEL_GAUGE_DARK = -1;  // no payload in the XR1, so no dark gauge textures
+const char *RES_IDB_FUEL_GAUGE = IDB_FUEL_GAUGE;
+const char *RES_IDB_FUEL_GAUGE_DARK = nullptr;  // no payload in the XR1, so no dark gauge textures
 
-const int RES_IDB_LOX_GAUGE = IDB_LOX_GAUGE;
-const int RES_IDB_LOX_GAUGE_DARK = -1;  // no payload in the XR1, so no dark gauge textures
+const char *RES_IDB_LOX_GAUGE = IDB_LOX_GAUGE;
+const char *RES_IDB_LOX_GAUGE_DARK = nullptr;  // no payload in the XR1, so no dark gauge textures
 
-const int RES_IDB_COOLANT_GAUGE = IDB_COOLANT_GAUGE;
+const char *RES_IDB_COOLANT_GAUGE = IDB_COOLANT_GAUGE;
 
 ////////////////////////////////
 // payload dialog static data //

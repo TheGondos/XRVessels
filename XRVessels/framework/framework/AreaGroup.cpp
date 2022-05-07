@@ -24,7 +24,7 @@
 // Class to manage a group of areas; used as a base class
 // ==============================================================
 
-#include "OrbiterSDK.h"
+#include "Orbitersdk.h"
 #include "AreaGroup.h"
 #include "Area.h"
 

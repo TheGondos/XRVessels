@@ -189,7 +189,7 @@ bool XR2Ravenstar::clbkPanelRedrawEvent(int areaID, int event, SURFHANDLE surf)
 // We need to hook this to implement our dual-mode AF Ctrl logic.
 // --------------------------------------------------------------
 // mode: 0=disabled, 1=pitch, 7=on
-void XR2Ravenstar::clbkADCtrlMode(DWORD mode)
+void XR2Ravenstar::clbkADCtrlMode(int mode)
 {
     // invoke the superclass to do the work
     DeltaGliderXR1::clbkADCtrlMode(mode);

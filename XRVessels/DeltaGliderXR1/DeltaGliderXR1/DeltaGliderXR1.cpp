@@ -22,7 +22,6 @@
 #define ORBITER_MODULE
 
 #include "DeltaGliderXR1.h"
-#include "DlgCtrl.h"
 #include "XR1Areas.h"   // for XR1_VCPANEL_TEXTURE_xxx definitions
 
 // ==============================================================
@@ -32,19 +31,17 @@
 // --------------------------------------------------------------
 // Module initialisation
 // --------------------------------------------------------------
-DLLCLBK void InitModule (HINSTANCE hModule)
+DLLCLBK void InitModule (oapi::DynamicModule *hModule)
 {
     g_hDLL = hModule;
-    oapiRegisterCustomControls(hModule);
 }
 
 // --------------------------------------------------------------
 // Module cleanup
 // NOTE: this is called even if fast shutdown is enabled.
 // --------------------------------------------------------------
-DLLCLBK void ExitModule (HINSTANCE hModule)
+DLLCLBK void ExitModule (oapi::DynamicModule *hModule)
 {
-    oapiUnregisterCustomControls(hModule);
 }
 
 // --------------------------------------------------------------

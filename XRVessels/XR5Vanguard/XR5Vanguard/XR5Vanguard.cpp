@@ -28,9 +28,10 @@
 #define ORBITER_MODULE
 
 #include "XR5Vanguard.h"
-#include "DlgCtrl.h"
+//#include "DlgCtrl.h"
 #include <stdio.h>
-
+#include <cassert>
+#include <climits>
 #include "XR5AreaIDs.h"  
 #include "XR5Globals.h"
 
@@ -43,18 +44,16 @@
 // --------------------------------------------------------------
 // Module initialisation
 // --------------------------------------------------------------
-DLLCLBK void InitModule (HINSTANCE hModule)
+DLLCLBK void InitModule (oapi::DynamicModule *hModule)
 {
     g_hDLL = hModule;
-    oapiRegisterCustomControls(hModule);
 }
 
 // --------------------------------------------------------------
 // Module cleanup
 // --------------------------------------------------------------
-DLLCLBK void ExitModule (HINSTANCE hModule)
+DLLCLBK void ExitModule (oapi::DynamicModule *hModule)
 {
-    oapiUnregisterCustomControls(hModule);
     XRPayloadClassData::Terminate();     // clean up global cache
 }
 
@@ -172,6 +171,72 @@ XR5Vanguard::~XR5Vanguard()
     // Note: our superclass handles cleanup of m_pPayloadBay and s_hPayloadEditorDialog
 }
 
+int XR5Vanguard::DrawPayloadSlots(ImVec4 *colors) {
+    const ImVec2 button_sz(ImVec2(40, 40));
+
+    int ret = 0;
+
+/*
+16 17 18 19 20    30 31 32   36
+11 12 13 14 15    27 28 29   35
+ 6  7  8  9 10    24 25 26   34
+ 1  2  3  4  5    21 22 23   33
+*/
+    ImGui::BeginChild("Level 1", ImVec2(ImGui::GetContentRegionAvail().x/3, ImGui::GetContentRegionAvail().y - 40), true);
+    ImGui::TextUnformatted("Level 1");
+    for(int i = 0; i < 4; i++) {
+        for(int j = 0; j < 5; j++) {
+            int slot = (3 - i) * 5 + j + 1;
+            char txt[16];
+            sprintf(txt, "%d", slot);
+            ImGui::PushStyleColor(ImGuiCol_Border, colors[slot - 1]);
+            if(ImGui::Button(txt, button_sz)) ret = slot;
+            if(j != 4) ImGui::SameLine();
+        }
+    }
+    ImGui::PopStyleColor(20);
+    ImGui::EndChild();
+    ImGui::SameLine();
+    ImGui::BeginChild("Level 2", ImVec2(ImGui::GetContentRegionAvail().x/2, ImGui::GetContentRegionAvail().y - 40), true);
+    ImGui::TextUnformatted("Level 2");
+    for(int i = 0; i < 4; i++) {
+        for(int j = 0; j < 3; j++) {
+            int slot = 20 + (3 - i) * 3 + j + 1;
+            char txt[16];
+            sprintf(txt, "%d", slot);
+            ImGui::PushStyleColor(ImGuiCol_Border, colors[slot - 1]);
+            if(ImGui::Button(txt, button_sz)) ret = slot;
+            if(j != 2) ImGui::SameLine();
+        }
+    }
+    ImGui::PopStyleColor(12);
+    ImGui::EndChild();
+    ImGui::SameLine();
+    ImGui::BeginChild("Level 3", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - 40), true);
+    ImGui::TextUnformatted("Level 3");
+    for(int i = 0; i < 4; i++) {
+        int slot = 36 - i;
+        char txt[16];
+        sprintf(txt, "%d", slot);
+        ImGui::PushStyleColor(ImGuiCol_Border, colors[slot - 1]);
+        if(ImGui::Button(txt, button_sz)) ret = slot;
+    }
+    ImGui::PopStyleColor(4);
+    ImGui::EndChild();
+    ImGui::SameLine();
+/*
+    ImGui::PushStyleColor(ImGuiCol_Border, colors[2]);
+    if(ImGui::Button("3", button_sz1)) ret = 3;
+    ImGui::PushStyleColor(ImGuiCol_Border, colors[1]);
+    if(ImGui::Button("2", button_sz1)) ret = 2;
+    ImGui::PushStyleColor(ImGuiCol_Border, colors[0]);
+    if(ImGui::Button("1", button_sz2)) ret = 1;
+    ImGui::PopStyleColor(3);*/
+    ImGui::TextUnformatted("Std. Slot Dimensions : 6.09L x 2.43W x 2.59H");
+    ImGui::TextUnformatted("Ctr. Slot Dimensions : 6.09L x 3.65W x 2.59H");
+    return ret;
+}
+
 // ==============================================================
 // Overloaded callback functions
 // ==============================================================
@@ -207,18 +272,13 @@ void XR5Vanguard::ReinitializeDamageableControlSurfaces()
 // Message callback function for control dialog box
 // ==============================================================
 
-INT_PTR CALLBACK XR5Ctrl_DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+/*
+INT_PTR CALLBACK XR5Ctrl_DlgProc (HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM lParam)
 {
     XR5Vanguard *dg = (uMsg == WM_INITDIALOG ? reinterpret_cast<XR5Vanguard *>(lParam) : reinterpret_cast<XR5Vanguard *>(oapiGetDialogContext(hWnd)));
     // pointer to vessel instance was passed as dialog context
     
     switch (uMsg) {
-    /* Note: for some reason Orbiter appears to be trapping keystrokes, so this will not work.
-    case WM_KEYDOWN:
-        if (wParam == VK_ESCAPE)
-            oapiCloseDialog(hWnd);   // bye, bye
-        break;  // pass it on
-    */
 
     case WM_INITDIALOG:
         dg->UpdateCtrlDialog(dg, hWnd);
@@ -385,7 +445,7 @@ void XR5Vanguard::UpdateCtrlDialog(XR5Vanguard *dg, HWND hWnd)
     op = static_cast<int>(dg->beacon[5].active) ? 1:0;
     SendDlgItemMessage (hWnd, IDC_STROBELIGHT, BM_SETCHECK, bstatus[op], 0);
 }
-
+*/
 // toggle RCS docking mode
 // rcsMode: true = set docking mode, false = set normal mode
 // Returns: true if mode switched successfully, false if mode switch was inhibited
@@ -591,7 +651,7 @@ void XR5Vanguard::SetGearParameters(double state)
     TriggerRedrawArea(AID_GEARINDICATOR);
 
     // PERFORMANCE ENHANCEMENT: hide the gear if it is fully retracted; otherwise, render it
-    static const UINT gearMeshGroups[] = 
+    static const unsigned int gearMeshGroups[] = 
     { 
         GRP_nose_oleo_piston, GRP_nose_axle_piston, GRP_nose_axle_cylinder, GRP_nose_axle, GRP_nose_oleo_piston, GRP_nose_gear_wheel_right, GRP_nose_gear_wheel_left,
         GRP_axle_left, GRP_axle_right, GRP_gear_main_oleo_cylinder_right, GRP_axle_piston_left, GRP_axle_cylinder_left, GRP_axle_cylinder_right, GRP_axle_piston_right, GRP_oleo_piston_right,
@@ -652,7 +712,7 @@ void XR5Vanguard::ActivateElevator(DoorStatus action)
 
     TriggerRedrawArea(AID_ELEVATORSWITCH);
     TriggerRedrawArea(AID_ELEVATORINDICATOR);
-    UpdateCtrlDialog(this);
+    //UpdateCtrlDialog(this);
     RecordEvent("ELEVATOR", close ? "CLOSE" : "OPEN");
 }
 
@@ -702,7 +762,7 @@ void XR5Vanguard::ActivateRadiator(DoorStatus action)
     TriggerRedrawArea(AID_RADIATORSWITCH);
     TriggerRedrawArea(AID_RADIATORINDICATOR);
 
-    UpdateCtrlDialog(this);
+    //UpdateCtrlDialog(this);
     RecordEvent ("RADIATOR", close ? "CLOSE" : "OPEN");
 }
 
@@ -850,7 +910,7 @@ void XR5Vanguard::DefineMmuAirlock()
 
         default:
             // should never happen!
-            _ASSERTE(false);
+            assert(false);
             break;
     }
 
@@ -955,10 +1015,10 @@ void XR5Vanguard::ApplySkin()
 // meshTextureID = vessel-specific constant that is translated to a texture index specific to our vessel's .msh file.  meshTextureID 
 // NOTE: meshTextureID=VCPANEL_TEXTURE_NONE = -1 = "no texture" (i.e., "not applicable"); defined in Area.h.
 // hMesh = OUTPUT: will be set to the mesh handle of the mesh associated with meshTextureID.
-DWORD XR5Vanguard::MeshTextureIDToTextureIndex(const int meshTextureID, MESHHANDLE &hMesh)
+int XR5Vanguard::MeshTextureIDToTextureIndex(const int meshTextureID, MESHHANDLE &hMesh)
 {
-    _ASSERTE(false);  // should never reach here!
+    assert(false);  // should never reach here!
 
     hMesh = nullptr;      
-    return MAXDWORD;   // bogus
+    return INT_MAX;   // bogus
 }

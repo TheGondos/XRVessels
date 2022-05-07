@@ -162,15 +162,15 @@ public:
     bool SetCell(int row, int column, const SHField &field, const Units units);
     Cell &GetCell(int x, int y) { return m_cells[x][y]; }
 
-    void SetTextColor(COLORREF color) { m_textColor = color; }
-    COLORREF GetTextColor() const { return m_textColor; }
+    void SetTextColor(uint32_t color) { m_textColor = color; }
+    uint32_t GetTextColor() const { return m_textColor; }
 
-    void SetBackgroundColor(COLORREF color) { m_backgroundColor = color; }
-    COLORREF GetBackgroundColor() const { return m_backgroundColor; }
+    void SetBackgroundColor(uint32_t color) { m_backgroundColor = color; }
+    uint32_t GetBackgroundColor() const { return m_backgroundColor; }
     
 private:
     Cell m_cells[SH_ROW_COUNT][2];  // 7 rows, 2 column per row
-    COLORREF m_textColor;
-    COLORREF m_backgroundColor;
+    uint32_t m_textColor;
+    uint32_t m_backgroundColor;
 };
 

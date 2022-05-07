@@ -27,7 +27,6 @@
 // Handles upper panel components and associated areas.
 // ==============================================================
 
-#include "resource.h"
 #include "AreaIDs.h"
 #include "DeltaGliderXR1.h"
 

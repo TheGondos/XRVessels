@@ -27,10 +27,10 @@
 // ==============================================================
 
 #include "XR5Vanguard.h"
-#include "ScnEditorAPI.h"
-#include "DlgCtrl.h"
+//#include "ScnEditorAPI.h"
+//#include "DlgCtrl.h"
 #include "XR1PayloadDialog.h"
-
+#if 0
 // ==============================================================
 // Scenario editor interface
 // ==============================================================
@@ -158,3 +158,4 @@ DLLCLBK void secInit (HWND hEditor, OBJHANDLE hVessel)
     EditorFuncSpec efs = { "Payload", XR1PayloadDialog::EditorFunc};
     SendMessage (hEditor, WM_SCNEDITOR, SE_ADDFUNCBUTTON, reinterpret_cast<LPARAM>(&efs));
 }
+#endif

@@ -26,8 +26,7 @@
 // Custom XR5 components.
 // ==============================================================
 
-#include "orbitersdk.h"
-#include "resource.h"
+#include "Orbitersdk.h"
 #include "XR5Vanguard.h"
 
 #include "XR1MainPanelAreas.h"  

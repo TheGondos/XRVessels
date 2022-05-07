@@ -29,6 +29,7 @@
 #include "XR3Phoenix.h"
 #include "XR3PayloadBay.h"
 #include "XRPayloadBaySlot.h"
+#include <cassert>
 
 // TODO: update this for the XR3's actual payload bay; this current file is simply cloned from the XR5 for template purposes
 
@@ -200,8 +201,8 @@ XR3PayloadBay::XR3PayloadBay(VESSEL &parentVessel) :
 // Returns the ship-local coordinates to deploy the selected slot payload while landed
 VECTOR3 XR3PayloadBay::GetLandedDeployToCoords(const int slotNumber)
 {
-    _ASSERTE(slotNumber > 0);
-    _ASSERTE(slotNumber <= GetSlotCount());
+    assert(slotNumber > 0);
+    assert(slotNumber <= GetSlotCount());
 
     double xFactor;
     double xAdjustment = 0;

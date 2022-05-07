@@ -27,7 +27,6 @@
 // Handles lower panel components and associated areas.
 // ==============================================================
 
-#include "resource.h"
 #include "AreaIDs.h"
 #include "DeltaGliderXR1.h"
 
@@ -35,6 +34,7 @@
 #include "XR1MainPanelComponents.h"    // for APUFuelNumberArea
 #include "XR1FuelDisplayComponent.h"   // for fuel qty areas
 #include "XR1LowerPanelComponents.h"
+#include "Bitmaps.h"
 
 //----------------------------------------------------------------------------------
 
@@ -210,7 +210,7 @@ OxygenRemainingPanelComponent::OxygenRemainingPanelComponent(InstrumentPanel &pa
 CoolantGaugeComponent::CoolantGaugeComponent(InstrumentPanel &parentPanel, COORD2 topLeft) :
     XR1Component(parentPanel, topLeft)
 {
-    AddArea(new LargeFuelBarArea (parentPanel, GetAbsCoords(_COORD2(  0,  23)), AID_COOLANT_BAR, MAX_COOLANT_GAUGE_TEMP, &(GetXR1().m_coolantTemp), RES_IDB_COOLANT_GAUGE, -1, MIN_COOLANT_GAUGE_TEMP));
+    AddArea(new LargeFuelBarArea (parentPanel, GetAbsCoords(_COORD2(  0,  23)), AID_COOLANT_BAR, MAX_COOLANT_GAUGE_TEMP, &(GetXR1().m_coolantTemp), RES_IDB_COOLANT_GAUGE, nullptr, MIN_COOLANT_GAUGE_TEMP));
     AddArea(new CoolantNumberArea(parentPanel, GetAbsCoords(_COORD2(  6,   4)), AID_COOLANT_TEXT));
     AddArea(new DoorMediumLEDArea(parentPanel, GetAbsCoords(_COORD2( -1,  56)), AID_FUELHATCHLED, GetXR1().fuelhatch_status));
 }

@@ -29,7 +29,7 @@
 
 #pragma once
 
-#include "orbitersdk.h"
+#include "Orbitersdk.h"
 
 class DeltaGliderXR1;
 
@@ -225,7 +225,7 @@ extern const char *ALL_SYSTEMS_NOMINAL_MSG;
 //
 // Globals
 //
-extern HMODULE g_hDLL;
+extern oapi::DynamicModule *g_hDLL;
 
 // Global enum; NOT_SET is only used by GearCalloutsPostStep
 enum class DoorStatus { NOT_SET = -2, DOOR_FAILED, DOOR_CLOSED, DOOR_OPEN, DOOR_CLOSING, DOOR_OPENING };
@@ -413,7 +413,7 @@ struct HullTemperatureLimits
 // ==============================================================
 // Global callback prototypes 
 
-INT_PTR CALLBACK XR1Ctrl_DlgProc(HWND, UINT, WPARAM, LPARAM);
+//INT_PTR CALLBACK XR1Ctrl_DlgProc(HWND, UINT, WPARAM, LPARAM);
 
 // callout globals
 extern const double V1_CALLOUT_AIRSPEED;
@@ -430,7 +430,7 @@ struct Turbopack
 
 extern const Turbopack TURBOPACKS_ARRAY[];
 extern const int TURBOPACKS_ARRAY_SIZE;
-extern const VECTOR3 &TURBOPACK_SPAWN_COORDINATES;
+extern const VECTOR3 TURBOPACK_SPAWN_COORDINATES;
 extern const double STOW_TURBOPACK_DISTANCE;
 
 // resource ID globals used by common areas
@@ -438,16 +438,16 @@ extern const double STOW_TURBOPACK_DISTANCE;
 // these currently work with subclasses only because the resource.h happens to match, since
 // the subclasses copied the XR1's resource.h as a base.  The real fix, however, is to abstract
 // out each shared resource ID here as a global.
-extern const int RES_IDB_FUEL_GAUGE;
-extern const int RES_IDB_FUEL_GAUGE_DARK;
-extern const int RES_IDB_LOX_GAUGE;
-extern const int RES_IDB_LOX_GAUGE_DARK;
-extern const int RES_IDB_COOLANT_GAUGE;
+extern const char * RES_IDB_FUEL_GAUGE;
+extern const char * RES_IDB_FUEL_GAUGE_DARK;
+extern const char * RES_IDB_LOX_GAUGE;
+extern const char * RES_IDB_LOX_GAUGE_DARK;
+extern const char * RES_IDB_COOLANT_GAUGE;
 
 ///////////////////////////////////////////////////////////////////////////
 
 // payload bay globals; these are not used by the XR1
-extern const VECTOR3 &PAYLOAD_SLOT_DIMENSIONS;
+extern const VECTOR3 PAYLOAD_SLOT_DIMENSIONS;
 extern const char *DEFAULT_PAYLOAD_THUMBNAIL_PATH;
 extern const double PAYLOAD_BAY_DELTAY_TO_GROUND;
 extern const double PAYLOAD_BAY_DELTAX_TO_GROUND;
@@ -479,18 +479,18 @@ extern const double REAR_GEAR_COMPRESSION_TRANSLATION_FACTOR;
 // fuel/LOX dump particle stream coordinates; not used by the XR1
 // If you implement fuel/LOX dump streams, remember to initialize
 // XR1.m_pFuelDumpParticleStreamSpec.
-extern const VECTOR3 &FUEL_DUMP_PARTICLE_STREAM_POS1;
-extern const VECTOR3 &FUEL_DUMP_PARTICLE_STREAM_DIR1;
-extern const VECTOR3 &FUEL_DUMP_PARTICLE_STREAM_POS2;
-extern const VECTOR3 &FUEL_DUMP_PARTICLE_STREAM_DIR2;
+extern const VECTOR3 FUEL_DUMP_PARTICLE_STREAM_POS1;
+extern const VECTOR3 FUEL_DUMP_PARTICLE_STREAM_DIR1;
+extern const VECTOR3 FUEL_DUMP_PARTICLE_STREAM_POS2;
+extern const VECTOR3 FUEL_DUMP_PARTICLE_STREAM_DIR2;
 
 // boil-off exhaust particle stream coordinates; not used by the XR1
 // If you implement boil-off streams, remember to initialize
 // XR1.m_pBoilOffExhaustParticleStreamSpec.
-extern const VECTOR3 &BOIL_OFF_PARTICLE_STREAM_POS1;
-extern const VECTOR3 &BOIL_OFF_PARTICLE_STREAM_DIR1;
-extern const VECTOR3 &BOIL_OFF_PARTICLE_STREAM_POS2;
-extern const VECTOR3 &BOIL_OFF_PARTICLE_STREAM_DIR2;
+extern const VECTOR3 BOIL_OFF_PARTICLE_STREAM_POS1;
+extern const VECTOR3 BOIL_OFF_PARTICLE_STREAM_DIR1;
+extern const VECTOR3 BOIL_OFF_PARTICLE_STREAM_POS2;
+extern const VECTOR3 BOIL_OFF_PARTICLE_STREAM_DIR2;
 
 // number of spotlights defined
 extern const int SPOTLIGHT_COUNT;

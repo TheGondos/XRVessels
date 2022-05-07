@@ -30,7 +30,7 @@
 #pragma once
 
 #include "Orbitersdk.h"
-#include "vessel3ext.h"
+#include "Vessel3Ext.h"
 #include "Area.h"
 #include "XR1Areas.h"
 #include "TextBox.h"
@@ -111,19 +111,19 @@ public:
     OnOffState GetState() const { return m_state; }  // Off, TurningOn, On, TurningOff
     
     // retrieve the background and highlight colors; if a TextBox is present, that value overrides any colors set manually
-    COLORREF GetBackgroundColor() const { return m_bgColorRef; }
-    COLORREF GetHighlightColor()  const { return m_hlColorRef; }
-    void SetHighlightColor(COLORREF highlightColor) { m_hlColorRef = highlightColor; }
+    uint32_t GetBackgroundColor() const { return m_bgColorRef; }
+    uint32_t GetHighlightColor()  const { return m_hlColorRef; }
+    void SetHighlightColor(uint32_t highlightColor) { m_hlColorRef = highlightColor; }
     int GetWidth() const { return m_width; }
     int GetHeight() const { return m_height; }
-    COLORREF GetColor() const { return m_colorRef; }
+    uint32_t GetColor() const { return m_colorRef; }
     
-    void SetColor(COLORREF color);              // will create new pen, too
-    void SetBackgroundColor(COLORREF bgColor);  // will create new brush, too
+    void SetColor(uint32_t color);              // will create new pen, too
+    void SetBackgroundColor(uint32_t bgColor);  // will create new brush, too
 
     // subclass must implement these methods
     // NOTE: the subclass MUST draw text from the supplied topY coordinate!
-    virtual bool DrawHUD(const int event, const int topyY, HDC hDC, COLORREF colorRef, bool forceRender) = 0;
+    virtual bool DrawHUD(const int event, const int topyY, oapi::Sketchpad *skp, uint32_t colorRef, bool forceRender) = 0;
     virtual bool isOn() = 0;    // returns TRUE if HUD is turned on, FALSE if turned off
 
 protected:
@@ -131,11 +131,11 @@ protected:
     int m_topYCoordinate;   // current top of HUD line; scrolled as HUD turns on or off
     int m_width;
     int m_height;
-    COLORREF m_colorRef;
-    COLORREF m_bgColorRef;
-    COLORREF m_hlColorRef;
-    HPEN m_pen0;
-    HBRUSH m_hBackgroundBrush;
+    uint32_t m_colorRef;
+    uint32_t m_bgColorRef;
+    uint32_t m_hlColorRef;
+    oapi::Pen *m_pen0;
+    oapi::Brush *m_hBackgroundBrush;
     TextBox *m_pTextBox;    // may be null
     int m_lastRenderedTopYCoordinate;
 
@@ -154,14 +154,14 @@ class SecondaryHUDArea: public PopupHUDArea
 public:
     SecondaryHUDArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID);
     virtual ~SecondaryHUDArea();
-    virtual bool DrawHUD(const int event, const int topY, HDC hDC, COLORREF colorRef, bool forceRender);
+    virtual bool DrawHUD(const int event, const int topY, oapi::Sketchpad *skp, uint32_t colorRef, bool forceRender);
     virtual bool isOn();    
     virtual void SetHUDColors();
-    virtual void RenderCell(HDC hDC, SecondaryHUDMode &secondaryHUD, const int row, const int column, const int topY);
+    virtual void RenderCell(oapi::Sketchpad *skp, SecondaryHUDMode &secondaryHUD, const int row, const int column, const int topY);
     virtual void PopulateCell(SecondaryHUDMode::Cell &cell);
 
 protected:
-    HFONT m_mainFont;
+    oapi::Font *m_mainFont;
     int m_lineSpacing;  // pixels between text lines
     int m_lastHUDMode;  // 1-5
 };
@@ -174,11 +174,11 @@ class TertiaryHUDArea: public PopupHUDArea
 public:
     TertiaryHUDArea(InstrumentPanel &parentPanel, const COORD2 panelCoordinates, const int areaID);
     virtual ~TertiaryHUDArea();
-    virtual bool DrawHUD(const int event, const int topY, HDC hDC, COLORREF colorRef, bool forceRender);
+    virtual bool DrawHUD(const int event, const int topY, oapi::Sketchpad *skp, uint32_t colorRef, bool forceRender);
     virtual bool isOn();
     virtual void SetHUDColors();
 
 protected:
-    HFONT m_mainFont;
+    oapi::Font *m_mainFont;
     int m_lineSpacing;  // pixels between text lines
 };

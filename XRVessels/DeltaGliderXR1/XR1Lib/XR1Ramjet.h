@@ -78,15 +78,15 @@ public:
 	void Thrust (double *F) const;
 
 	// returns current fuel mass flow of thruster idx
-	inline double DMF (UINT idx) const { return thdef[idx]->dmf; }
+	inline double DMF (unsigned int idx) const { return thdef[idx]->dmf; }
 
 	// returns diffuser, combustion or exhaust temperature [K] of thruster idx
 	// {DEB} these are ADJUSTED temperatures for the XR1
-	double Temp (UINT idx, UINT which) const; 
+	double Temp (unsigned int idx, unsigned int which) const; 
 
 	// returns thrust-specific fuel consumption of thruster idx
 	// based on last thrust calculation
-	double TSFC (UINT idx) const;
+	double TSFC (unsigned int idx) const;
 
     // new for XR1: retrieve most recent frame's thrust for the given thruster index (0-n)
     // this is useful for thrust gauges, where we don't want to re-compute the thrust again in the same frame
@@ -114,7 +114,7 @@ public:
 		double T[3];           //   temperatures                   -+ 0=diffuser, 1=burner, 2=exhaust
         double pd;             //   diffuser pressure
 	} **thdef;
-	UINT nthdef;               // number of XR1Ramjet thrusters
+	unsigned int nthdef;               // number of XR1Ramjet thrusters
 
     // disable/enable an engine
     void SetEngineIntegrity(int engine, double integ) { m_integrity[engine] = integ; }

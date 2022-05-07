@@ -44,7 +44,7 @@
 class XR1InstrumentPanel : public InstrumentPanel
 {
 public:
-    XR1InstrumentPanel(DeltaGliderXR1 &vessel, const int panelID, const WORD panelResourceID = -1);  // panelResourceID is not always used
+    XR1InstrumentPanel(DeltaGliderXR1 &vessel, const int panelID, const char *panelResourceID = nullptr);  // panelResourceID is not always used
 
     // convenience method to return our actual vessel object
     DeltaGliderXR1 &GetXR1() const { return static_cast<DeltaGliderXR1 &>(GetVessel()); }
@@ -63,7 +63,7 @@ private:
 class XR1MainInstrumentPanel : public XR1InstrumentPanel
 {
 public:
-    XR1MainInstrumentPanel(DeltaGliderXR1 &vessel, const WORD panelResourceID) :
+    XR1MainInstrumentPanel(DeltaGliderXR1 &vessel, const char *panelResourceID) :
         XR1InstrumentPanel(vessel, PANEL_MAIN, panelResourceID)
     {
     }
@@ -75,7 +75,7 @@ public:
 class XR1UpperInstrumentPanel : public XR1InstrumentPanel
 {
 public:
-    XR1UpperInstrumentPanel(DeltaGliderXR1 &vessel, const WORD panelResourceID) :
+    XR1UpperInstrumentPanel(DeltaGliderXR1 &vessel, const char *panelResourceID) :
         XR1InstrumentPanel(vessel, PANEL_UPPER, panelResourceID)
     {
     }
@@ -86,7 +86,7 @@ public:
 class XR1LowerInstrumentPanel : public XR1InstrumentPanel
 {
 public:
-    XR1LowerInstrumentPanel(DeltaGliderXR1 &vessel, const WORD panelResourceID) :
+    XR1LowerInstrumentPanel(DeltaGliderXR1 &vessel, const char *panelResourceID) :
         XR1InstrumentPanel(vessel, PANEL_LOWER, panelResourceID)
     {
     }

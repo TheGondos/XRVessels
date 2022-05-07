@@ -246,7 +246,7 @@ public:
 
 protected:
     void SetWheelRotVel(const double simdt, const double groundSpeed, const bool isWheelOnGround, double &wheelRotationVelocity);
-    void SetXRAnimationForVelocity(const double simdt, const UINT &animationHandle, const double currentRotVel, double &wheelProc, const double rotationFraction, const double wheelCircumference);
+    void SetXRAnimationForVelocity(const double simdt, const unsigned int &animationHandle, const double currentRotVel, double &wheelProc, const double rotationFraction, const double wheelCircumference);
 
     double m_noseWheelProc;         // nose wheels animation state: 0 <= n <= 1
     double m_rearWheelProc;         // rear wheels animation state: 0 <= n <= 1

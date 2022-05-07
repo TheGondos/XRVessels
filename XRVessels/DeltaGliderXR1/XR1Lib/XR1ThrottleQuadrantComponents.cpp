@@ -27,12 +27,12 @@
 // Handles main, hover, and scram throttle controls
 // ==============================================================
 
-#include "orbitersdk.h"
-#include "resource.h"
+#include "Orbitersdk.h"
 #include "AreaIDs.h"
 #include "XR1InstrumentPanels.h"
 #include "XR1Areas.h"
 #include "XR1ThrottleQuadrantComponents.h"
+#include "Bitmaps.h"
 
 // Constructor
 // parentPanel = parent instrument panel
@@ -112,7 +112,7 @@ void MainThrottleArea::Activate()
 
 bool MainThrottleArea::Redraw2D(const int event, const SURFHANDLE surf)
 {
-    UINT pos;
+    int pos;
     bool redraw = false;
 
     for (int i = 0; i < 2; i++)
@@ -122,7 +122,7 @@ bool MainThrottleArea::Redraw2D(const int event, const SURFHANDLE surf)
         if (level > 0)
         {
             // main engines firing
-            pos = (UINT)((1.0-level)*108.0);
+            pos = (int)((1.0-level)*108.0);
         }
         else
         {
@@ -131,7 +131,7 @@ bool MainThrottleArea::Redraw2D(const int event, const SURFHANDLE surf)
             if (level > 0) 
             {
                 // retro rockets firing
-                pos = 125+(UINT)(level*32.0);   // 125 = just off idle up to 32 more pixels (for 100% retro thrust)
+                pos = 125+(int)(level*32.0);   // 125 = just off idle up to 32 more pixels (for 100% retro thrust)
             }
             else
             {
@@ -158,18 +158,18 @@ bool MainThrottleArea::Redraw2D(const int event, const SURFHANDLE surf)
 
 bool MainThrottleArea::Redraw3D(const int event, const SURFHANDLE surf)
 {
-    UINT pos;
+    int pos;
     for (int i = 0; i < 2; i++)
     {
         double level = GetVessel().GetThrusterLevel(GetXR1().th_main[i]);
 
         if (level > 0) 
-            pos = 150 + (UINT)(level*300.0);    // main thrust
+            pos = 150 + (int)(level*300.0);    // main thrust
         else
         { 
             // retro thrust
             level = GetVessel().GetThrusterLevel(GetXR1().th_retro[i]);
-            pos = 150 - (UINT)(level*150.0);
+            pos = 150 - (int)(level*150.0);
         }
         if (pos != m_engsliderpos[i])
             GetXR1().SetXRAnimation(GetXR1().anim_mainthrottle[i], (m_engsliderpos[i] = pos)/450.0);
@@ -297,7 +297,7 @@ bool LargeHoverThrottleArea::Redraw2D(const int event, const SURFHANDLE surf)
     bool retVal = false;
 
     double level = GetVessel().GetThrusterLevel(GetXR1().th_hover[0]);
-    UINT pos = (UINT)((1.0-level)*116.0);
+    int pos = (int)((1.0-level)*116.0);
     if (pos != m_engsliderpos)
     {
         oapiBltPanelAreaBackground (GetAreaID(), surf);
@@ -311,7 +311,7 @@ bool LargeHoverThrottleArea::Redraw2D(const int event, const SURFHANDLE surf)
 bool LargeHoverThrottleArea::Redraw3D(const int event, const SURFHANDLE surf)
 {
     double level = GetVessel().GetThrusterLevel(GetXR1().th_hover[0]);
-    UINT pos = (UINT)(level * 500.0);
+    int pos = (int)(level * 500.0);
     if (pos != m_engsliderpos)
     {
         GetXR1().SetXRAnimation(GetXR1().anim_hoverthrottle, level);
@@ -391,7 +391,7 @@ bool SmallHoverThrottleArea::Redraw2D(const int event, const SURFHANDLE surf)
     bool retVal = false;
 
     double level = GetVessel().GetThrusterLevel(GetXR1().th_hover[0]);
-    UINT pos = (UINT)((1.0-level) * 50.0);
+    int pos = (int)((1.0-level) * 50.0);
     if (pos != m_engsliderpos)
     {
         oapiBltPanelAreaBackground (GetAreaID(), surf);
@@ -452,13 +452,13 @@ void ScramThrottleArea::Activate()
 
 bool ScramThrottleArea::Redraw2D(const int event, const SURFHANDLE surf)
 {
-    UINT i, pos;
+    int i, pos;
     bool redraw = false;
 
     for (i = 0; i < 2; i++)
     {
         double level = GetVessel().GetThrusterLevel(GetXR1().th_scram[i]);
-        pos = (UINT)((1.0-level) * 84.0);
+        pos = (int)((1.0-level) * 84.0);
         if (pos != m_engsliderpos[i])
             m_engsliderpos[i] = pos, redraw = true;
     }
@@ -478,7 +478,7 @@ bool ScramThrottleArea::Redraw3D(const int event, const SURFHANDLE surf)
     for (int i = 0; i < 2; i++)
     {
         double level = GetVessel().GetThrusterLevel(GetXR1().th_scram[i]);
-        UINT pos = (UINT)(level*500.0);
+        int pos = (int)(level*500.0);
         if (pos != m_engsliderpos[i])
         {
             GetXR1().SetXRAnimation(GetXR1().anim_scramthrottle[i], level);

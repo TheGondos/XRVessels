@@ -32,6 +32,7 @@
 #include "InstrumentPanel.h"
 #include "Area.h"
 #include "XR5Vanguard.h"
+#include "Bitmaps.h"
 
 //
 // Class definitions
@@ -42,7 +43,7 @@
 class XR5InstrumentPanel : public InstrumentPanel
 {
 public:
-    XR5InstrumentPanel(XR5Vanguard &vessel, const int panelID, const WORD panelResourceID = -1);
+    XR5InstrumentPanel(XR5Vanguard &vessel, const int panelID, const char *panelResourceID = nullptr);
 
     // convenience method to return our actual vessel object
     XR5Vanguard &GetXR5() const { return static_cast<XR5Vanguard &>(GetVessel()); }
@@ -61,7 +62,7 @@ private:
 class XR5MainInstrumentPanel : public XR5InstrumentPanel
 {
 public:
-    XR5MainInstrumentPanel(XR5Vanguard &vessel, const WORD panelResourceID) :
+    XR5MainInstrumentPanel(XR5Vanguard &vessel, const char *panelResourceID) :
         XR5InstrumentPanel(vessel, PANEL_MAIN, panelResourceID)
     {
     }
@@ -73,7 +74,7 @@ public:
 class XR5OverheadInstrumentPanel : public XR5InstrumentPanel
 {
 public:
-    XR5OverheadInstrumentPanel(XR5Vanguard &vessel, const WORD panelResourceID) :
+    XR5OverheadInstrumentPanel(XR5Vanguard &vessel, const char *panelResourceID) :
         XR5InstrumentPanel(vessel, PANEL_OVERHEAD, panelResourceID)
     {
         AddCommonAreas();
@@ -88,7 +89,7 @@ private:
 class XR5UpperInstrumentPanel : public XR5InstrumentPanel
 {
 public:
-    XR5UpperInstrumentPanel::XR5UpperInstrumentPanel(XR5Vanguard &vessel, const WORD panelResourceID) :
+    XR5UpperInstrumentPanel(XR5Vanguard &vessel, const char *panelResourceID) :
         XR5InstrumentPanel(vessel, PANEL_UPPER, panelResourceID)
     {
     }
@@ -103,7 +104,7 @@ protected:
 class XR5LowerInstrumentPanel : public XR5InstrumentPanel
 {
 public:
-    XR5LowerInstrumentPanel(XR5Vanguard &vessel, const WORD panelResourceID) :
+    XR5LowerInstrumentPanel(XR5Vanguard &vessel, const char *panelResourceID) :
         XR5InstrumentPanel(vessel, PANEL_LOWER, panelResourceID)
     {
     }
@@ -118,7 +119,7 @@ protected:
 class XR5PayloadInstrumentPanel : public XR5InstrumentPanel
 {
 public:
-    XR5PayloadInstrumentPanel(XR5Vanguard &vessel, const WORD panelResourceID) :
+    XR5PayloadInstrumentPanel(XR5Vanguard &vessel, const char *panelResourceID) :
         XR5InstrumentPanel(vessel, PANEL_PAYLOAD, panelResourceID)
     {
         AddCommonAreas();       // no shift for this panel
@@ -139,7 +140,7 @@ protected:
 class XR5PayloadInstrumentPanel1280 : public XR5PayloadInstrumentPanel
 {
 public:
-    XR5PayloadInstrumentPanel1280::XR5PayloadInstrumentPanel1280(XR5Vanguard &vessel) : 
+    XR5PayloadInstrumentPanel1280(XR5Vanguard &vessel) : 
         XR5PayloadInstrumentPanel(vessel, IDB_PANEL5_1280)
     {
     }
@@ -149,7 +150,7 @@ public:
 class XR5OverheadInstrumentPanel1280 : public XR5OverheadInstrumentPanel
 {
 public:
-    XR5OverheadInstrumentPanel1280::XR5OverheadInstrumentPanel1280(XR5Vanguard &vessel) : 
+    XR5OverheadInstrumentPanel1280(XR5Vanguard &vessel) : 
         XR5OverheadInstrumentPanel(vessel, IDB_PANEL4_1280)
     {
     }
@@ -188,7 +189,7 @@ public:
 class XR5PayloadInstrumentPanel1600 : public XR5PayloadInstrumentPanel
 {
 public:
-    XR5PayloadInstrumentPanel1600::XR5PayloadInstrumentPanel1600(XR5Vanguard &vessel) : 
+    XR5PayloadInstrumentPanel1600(XR5Vanguard &vessel) : 
         XR5PayloadInstrumentPanel(vessel, IDB_PANEL5_1600)
     {
     }
@@ -198,7 +199,7 @@ public:
 class XR5OverheadInstrumentPanel1600 : public XR5OverheadInstrumentPanel
 {
 public:
-    XR5OverheadInstrumentPanel1600::XR5OverheadInstrumentPanel1600(XR5Vanguard &vessel) : 
+    XR5OverheadInstrumentPanel1600(XR5Vanguard &vessel) : 
         XR5OverheadInstrumentPanel(vessel, IDB_PANEL4_1600)
     {
     }
@@ -238,7 +239,7 @@ public:
 class XR5PayloadInstrumentPanel1920 : public XR5PayloadInstrumentPanel
 {
 public:
-    XR5PayloadInstrumentPanel1920::XR5PayloadInstrumentPanel1920(XR5Vanguard &vessel) : 
+    XR5PayloadInstrumentPanel1920(XR5Vanguard &vessel) : 
         XR5PayloadInstrumentPanel(vessel, IDB_PANEL5_1920)
     {
     }
@@ -248,7 +249,7 @@ public:
 class XR5OverheadInstrumentPanel1920 : public XR5OverheadInstrumentPanel
 {
 public:
-    XR5OverheadInstrumentPanel1920::XR5OverheadInstrumentPanel1920(XR5Vanguard &vessel) : 
+    XR5OverheadInstrumentPanel1920(XR5Vanguard &vessel) : 
         XR5OverheadInstrumentPanel(vessel, IDB_PANEL4_1920)
     {
     }

@@ -62,7 +62,13 @@ void DeltaGliderXR1::PerformCrashDamage()
     FailAileronsIfDamaged();
 
     // Deactivate doors
-    hoverdoor_status = nose_status = hatch_status = radiator_status = brake_status = rcover_status = brake_status = DoorStatus::DOOR_FAILED;
+    hoverdoor_status = DoorStatus::DOOR_FAILED;
+    nose_status = DoorStatus::DOOR_FAILED;
+    hatch_status = DoorStatus::DOOR_FAILED;
+    radiator_status = DoorStatus::DOOR_FAILED;
+    brake_status = DoorStatus::DOOR_FAILED;
+    rcover_status = DoorStatus::DOOR_FAILED;
+    brake_status = DoorStatus::DOOR_FAILED;
 
     //
     // deactivate engines 
@@ -260,7 +266,7 @@ void DeltaGliderXR1::SetDamageStatus(DamageItem item, double fracIntegrity)
         break;
 
     default:        // should never happen!
-        sprintf(oapiDebugString(), "WARNING: invalid damage ID in scenario file: %d", item);
+        sprintf(oapiDebugString(), "WARNING: invalid damage ID in scenario file: %d", (int)item);
         break;
     }
 
@@ -315,7 +321,7 @@ void DeltaGliderXR1::ApplyDamage()
     SetDamageVisuals();
 }
 
-static UINT AileronGrp[8] = {29,51,30,52,35,55,36,54};
+static unsigned int AileronGrp[8] = {29,51,30,52,35,55,36,54};
 
 // Note: do not call this base class method from sub: visuals are vessel-specific
 void DeltaGliderXR1::SetDamageVisuals()
@@ -453,7 +459,7 @@ void DeltaGliderXR1::DoGearCollapse(const char *pMsg, double touchdownVerticalSp
 // fail a door
 // doorProc = nose_proc, ladder_proc, etc.
 // anim = anim_gear, anim_rcover, etc.
-void DeltaGliderXR1::FailDoor(double &doorProc, UINT anim)
+void DeltaGliderXR1::FailDoor(double &doorProc, unsigned int anim)
 {
     doorProc = fmod(oapiRand(), 0.3) + 0.2;     // damage range is 0.2 - 0.5
     SetXRAnimation(anim, doorProc);

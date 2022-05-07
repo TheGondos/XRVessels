@@ -164,9 +164,9 @@ void DeltaGliderXR1::SetCustomAutopilotMode(AUTOPILOT mode, bool playSound, bool
         if (mode != AUTOPILOT::AP_OFF)     // autopilot on?
         {
             if (m_holdAOA)
-                sprintf(temp, "Hold AOA=%+.1f°, Hold Bank=%+.1f°", m_setPitchOrAOA, m_setBank);
+                sprintf(temp, "Hold AOA=%+.1fï¿½, Hold Bank=%+.1fï¿½", m_setPitchOrAOA, m_setBank);
             else
-                sprintf(temp, "Hold Pitch=%+.1f°, Hold Bank=%+.1f°", m_setPitchOrAOA, m_setBank);
+                sprintf(temp, "Hold Pitch=%+.1fï¿½, Hold Bank=%+.1fï¿½", m_setPitchOrAOA, m_setBank);
 
             ShowInfo(nullptr, DeltaGliderXR1::ST_None, temp);
             m_initialAHBankCompleted = false;  // defensive coding: reset just in case
@@ -196,7 +196,7 @@ void DeltaGliderXR1::SetCustomAutopilotMode(AUTOPILOT mode, bool playSound, bool
             m_autoLand = false; // reset
         }
         break;
-
+    default: break;
         // no default handler; may be AP_OFF
     }
 
@@ -299,6 +299,7 @@ void DeltaGliderXR1::SetAirspeedHold(bool playSound, const AIRSPEEDHOLD_ADJUST m
         sprintf(msg, "Airspeed Hold: set to %.1lf m/s.", m_setAirspeed);
         break;
 
+    default: break;
         // no default handler here
     };
 
@@ -358,6 +359,7 @@ void DeltaGliderXR1::SetAutoDescentRate(bool playSound, const AUTODESCENT_ADJUST
             strcpy(msg, "Descent Hold: AUTO-LAND disengaged.");
         }
         break;
+    default: break;
 
         // no default handler here
     };
@@ -404,10 +406,10 @@ void DeltaGliderXR1::SyncAttitudeHold(bool playSound, bool forcePitchHoldMode)
     m_setBank = newBank;
 
     char msg[50];
-    sprintf(msg, "Attitude Hold: %s synced to %+4.1f°", (m_holdAOA ? "AOA" : "Pitch"), m_setPitchOrAOA);
+    sprintf(msg, "Attitude Hold: %s synced to %+4.1fï¿½", (m_holdAOA ? "AOA" : "Pitch"), m_setPitchOrAOA);
     ShowInfo(nullptr, DeltaGliderXR1::ST_None, msg);
 
-    sprintf(msg, "Attitude Hold: Bank synced to %+4.1f°", m_setBank);
+    sprintf(msg, "Attitude Hold: Bank synced to %+4.1fï¿½", m_setBank);
     ShowInfo(nullptr, DeltaGliderXR1::ST_None, msg);
 }
 
@@ -430,7 +432,7 @@ void DeltaGliderXR1::ToggleAOAPitchAttitudeHold(bool playSound)
     else  // Attitude Hold autopilot NOT engaged; do not change target values
     {
         char msg[50];
-        sprintf(msg, "Attitude Hold: Holding %+4.1f° %s", m_setPitchOrAOA, (m_holdAOA ? "AOA" : "PITCH"));
+        sprintf(msg, "Attitude Hold: Holding %+4.1fï¿½ %s", m_setPitchOrAOA, (m_holdAOA ? "AOA" : "PITCH"));
         ShowInfo(nullptr, DeltaGliderXR1::ST_None, msg);
     }
 }
@@ -593,7 +595,7 @@ void DeltaGliderXR1::IncrementAttitudeHoldPitch(bool playSound, bool changeAxis,
         PlaySound(BeepHigh, ST_Other);
 
         char temp[40];
-        sprintf(temp, "Attitude Hold: %s %+4.1f°", (m_holdAOA ? "AOA" : "Pitch"), m_setPitchOrAOA);
+        sprintf(temp, "Attitude Hold: %s %+4.1fï¿½", (m_holdAOA ? "AOA" : "Pitch"), m_setPitchOrAOA);
         ShowInfo(nullptr, DeltaGliderXR1::ST_None, temp);
     }
 }
@@ -613,7 +615,7 @@ void DeltaGliderXR1::DecrementAttitudeHoldPitch(bool playSound, bool changeAxis,
         PlaySound(BeepLow, ST_Other);
 
         char temp[40];
-        sprintf(temp, "Attitude Hold: %s %+4.1f°", (m_holdAOA ? "AOA" : "Pitch"), m_setPitchOrAOA);
+        sprintf(temp, "Attitude Hold: %s %+4.1fï¿½", (m_holdAOA ? "AOA" : "Pitch"), m_setPitchOrAOA);
         ShowInfo(nullptr, DeltaGliderXR1::ST_None, temp);
     }
 }
@@ -633,7 +635,7 @@ void DeltaGliderXR1::IncrementAttitudeHoldBank(bool playSound, bool changeAxis)
         PlaySound(BeepHigh, ST_Other);
 
         char temp[40];
-        sprintf(temp, "Attitude Hold: Bank %+4.1f°", m_setBank);
+        sprintf(temp, "Attitude Hold: Bank %+4.1fï¿½", m_setBank);
         ShowInfo(nullptr, DeltaGliderXR1::ST_None, temp);
     }
 }
@@ -653,7 +655,7 @@ void DeltaGliderXR1::DecrementAttitudeHoldBank(bool playSound, bool changeAxis)
         PlaySound(BeepLow, ST_Other);
 
         char temp[40];
-        sprintf(temp, "Attitude Hold: Bank %+4.1f°", m_setBank);
+        sprintf(temp, "Attitude Hold: Bank %+4.1fï¿½", m_setBank);
         ShowInfo(nullptr, DeltaGliderXR1::ST_None, temp);
     }
 }

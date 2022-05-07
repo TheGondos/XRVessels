@@ -35,7 +35,7 @@
 // panelResourceID = resource ID of this panel in our DLL; e.g., IDB_PANEL1_1280.  -1 = NONE
 // force3DRedrawTo2D = true to force all 3D area redraws to invoke Redraw2D instead of Redraw3D (e.g., for glass panel virtual cockpits that have no animation)
 //     NOTE: force3DRedrawTo2D is useful because it allows a glass-cockpit VC to use and/or inherit the base class XR1 areas without having to override all the existing Redraw3D methods just so call Redraw2D for each one.
-InstrumentPanel::InstrumentPanel(VESSEL3_EXT &vessel, const int panelID, const int vcPanelID, const WORD panelResourceID, const bool force3DRedrawTo2D) :
+InstrumentPanel::InstrumentPanel(VESSEL3_EXT &vessel, const int panelID, const int vcPanelID, const char *panelResourceID, const bool force3DRedrawTo2D) :
         AreaGroup(), 
         m_vessel(vessel), m_panelID(panelID), m_vcPanelID(vcPanelID), m_hBmp(nullptr), m_isActive(false), 
         m_panelResourceID(panelResourceID), m_force3DRedrawTo2D(force3DRedrawTo2D)
@@ -78,8 +78,10 @@ void InstrumentPanel::Deactivate()
         DeactivateAllAreas();
 
         // free our bitmap, if any
-        if (m_hBmp != nullptr)
-            DeleteObject(m_hBmp);
+        if (m_hBmp != nullptr) {
+            oapiReleaseTexture(m_hBmp);
+            m_hBmp = nullptr;
+        }
 
         SetActive(false);   // panel deactivated now
     }

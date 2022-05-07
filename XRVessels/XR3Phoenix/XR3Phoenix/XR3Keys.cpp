@@ -64,7 +64,7 @@ int XR3Phoenix::clbkConsumeDirectKey(char *kstate)
 // --------------------------------------------------------------
 #define RET_IF_INCAP() if (IsCrewIncapacitatedOrNoPilotOnBoard()) return 1
 
-int XR3Phoenix::clbkConsumeBufferedKey(DWORD key, bool down, char *kstate)
+int XR3Phoenix::clbkConsumeBufferedKey(int key, bool down, char *kstate)
 {
     if (Playback()) 
         return 0; // don't allow manual user input during a playback

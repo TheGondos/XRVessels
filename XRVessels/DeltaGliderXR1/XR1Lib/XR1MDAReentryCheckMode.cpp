@@ -21,10 +21,9 @@
 
 // ==============================================================
 
-#include "resource.h"
-
 #include "DeltaGliderXR1.h"
 #include "XR1MultiDisplayArea.h"
+#include "Bitmaps.h"
 
 //-------------------------------------------------------------------------
 
@@ -66,7 +65,8 @@ void ReentryCheckMultiDisplayMode::OnParentAttach()
 void ReentryCheckMultiDisplayMode::Activate()
 {
     m_backgroundSurface = CreateSurface(IDB_REENTRY_CHECK_MULTI_DISPLAY);
-    m_mainFont = CreateFont(12, 0, 0, 0, 700, 0, 0, 0, 0, 0, 0, 0, FF_MODERN, "Microsoft Sans Serif");
+//    m_mainFont = CreateFont(12, 0, 0, 0, 700, 0, 0, 0, 0, 0, 0, 0, FF_MODERN, "Microsoft Sans Serif");
+    m_mainFont = oapiCreateFont(12, true, "Microsoft Sans Serif");
 
     // check doors and issue correct callout here
     int openDoorCount = 0;
@@ -82,7 +82,7 @@ void ReentryCheckMultiDisplayMode::Activate()
 void ReentryCheckMultiDisplayMode::Deactivate()
 {
     DestroySurface(&m_backgroundSurface);
-    DeleteObject(m_mainFont);
+    oapiReleaseFont(m_mainFont);
 }
 
 // play the status callout sound
@@ -117,11 +117,11 @@ bool ReentryCheckMultiDisplayMode::Redraw2D(const int event, const SURFHANDLE su
     DeltaGliderXR1::SafeBlt(surf, m_backgroundSurface, 0, 0, 0, 0, screenSize.x, screenSize.y);
 
     // obtain device context and save existing font
-    HDC hDC = m_pParentMDA->GetDC(surf);
-    HFONT hPrevObject = (HFONT)SelectObject(hDC, m_mainFont);
+    oapi::Sketchpad *skp = oapiGetSketchpad(surf);
+    skp->SetFont(m_mainFont);
 
-    SetBkMode(hDC, TRANSPARENT);
-    SetTextAlign(hDC, TA_LEFT);
+    skp->SetBackgroundMode(oapi::Sketchpad::BK_TRANSPARENT);
+    skp->SetTextAlign(oapi::Sketchpad::LEFT);
 
     // set starting coordinates 
     COORD2 startingCoords = GetStartingCoords();
@@ -134,7 +134,7 @@ bool ReentryCheckMultiDisplayMode::Redraw2D(const int event, const SURFHANDLE su
     {
         const DoorInfo* pDI = m_pDoorInfo[i];
 
-        COLORREF textColor;
+        uint32_t textColor;
         const char* pStatus;
         bool renderStatus = true;  // assume NOT in blink "off" state
         switch (pDI->m_doorStatus)
@@ -157,7 +157,7 @@ bool ReentryCheckMultiDisplayMode::Redraw2D(const int event, const SURFHANDLE su
             break;
 
         case DoorStatus::DOOR_OPENING:
-        case DoorStatus::DOOR_CLOSING:
+        case DoorStatus::DOOR_CLOSING: {
             textColor = CREF(BRIGHT_YELLOW);
             pStatus = "In Transit";
             const double simt = GetAbsoluteSimTime();
@@ -165,12 +165,14 @@ bool ReentryCheckMultiDisplayMode::Redraw2D(const int event, const SURFHANDLE su
             openDoorCount++;
             break;
         }
+        default: break;
+        }
 
         // render the door status if requested
         if (renderStatus)
         {
-            SetTextColor(hDC, textColor);
-            TextOut(hDC, x, y, pStatus, static_cast<int>(strlen(pStatus))); // "Left Wing", etc.
+            skp->SetTextColor(textColor);
+            skp->Text(x, y, pStatus, static_cast<int>(strlen(pStatus))); // "Left Wing", etc.
         }
 
         // drop to next line
@@ -179,7 +181,7 @@ bool ReentryCheckMultiDisplayMode::Redraw2D(const int event, const SURFHANDLE su
 
     // now render overall status on the bottom line
     const char* pStatus;
-    COLORREF textColor;
+    uint32_t textColor;
     bool renderStatus = true;   // assume NOT blinking
     if (openDoorCount > 0)
     {
@@ -196,15 +198,14 @@ bool ReentryCheckMultiDisplayMode::Redraw2D(const int event, const SURFHANDLE su
 
     if (renderStatus)
     {
-        SetTextAlign(hDC, TA_CENTER);
-        SetTextColor(hDC, textColor);
+        skp->SetTextAlign(oapi::Sketchpad::CENTER);
+        skp->SetTextColor(textColor);
         COORD2 c = GetStatusLineCoords();
-        TextOut(hDC, c.x, c.y, pStatus, static_cast<int>(strlen(pStatus)));
+        skp->Text(c.x, c.y, pStatus, static_cast<int>(strlen(pStatus)));
     }
 
     // restore previous font and release device context
-    SelectObject(hDC, hPrevObject);
-    m_pParentMDA->ReleaseDC(surf, hDC);
+    oapiReleaseSketchpad(skp);
 
     // play sound if our status changed from previous loop
     bool status = (openDoorCount == 0);     // true = OK

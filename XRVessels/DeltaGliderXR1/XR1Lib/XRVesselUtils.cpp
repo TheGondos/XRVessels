@@ -28,10 +28,12 @@
 #include "XRPayloadBay.h"
 #include "XR1PayloadDialog.h"
 #include "XR1Areas.h"
+#include <cassert>
 
 // save the current Orbiter window coordinates; this is invoked when Orbiter exits or saves a scenario
 void DeltaGliderXR1::SaveOrbiterRenderWindowPosition()
 {
+	/*
 	// save the Orbiter render coordinates to the registry
 	const HWND hOrbiterWnd = GetOrbiterRenderWindowHandle();
 	if (hOrbiterWnd)    // will only be nullptr for full-screen mode
@@ -52,11 +54,13 @@ void DeltaGliderXR1::SaveOrbiterRenderWindowPosition()
 			m_pConfig->WriteLog(msg);
 		}
 	}
+	*/
 }
 
 // Move the Orbiter window to its previously saved coordinates.
 void DeltaGliderXR1::RestoreOrbiterRenderWindowPosition()
 {
+	/*
 	static bool s_isFirstRun = true;		// process-wide singleton
 
 	// Restore the render window coordinates
@@ -64,7 +68,7 @@ void DeltaGliderXR1::RestoreOrbiterRenderWindowPosition()
 	if (hOrbiterWnd)    // will only be nullptr for full-screen mode
 	{
 		// See if the restoring Orbiter window coordinates is allowed
-		DWORD dwDisableWindowPosRestore = 0;
+		int dwDisableWindowPosRestore = 0;
 		m_regKeyManager.ReadRegistryDWORD("DisableWindowPosRestore", dwDisableWindowPosRestore);
 		if (s_isFirstRun)	// skip next check silently if this is not the first run
 		{
@@ -75,8 +79,8 @@ void DeltaGliderXR1::RestoreOrbiterRenderWindowPosition()
 				xCoordValName.Format("x_window_coord_%u", GetVideoWindowWidth());
 				yCoordValName.Format("y_window_coord_%u", GetVideoWindowHeight());
 				int x, y;   // NOTE: coordinates must be treated as signed integers since they can go negative with dual monitors
-				bool bSuccess = m_regKeyManager.ReadRegistryDWORD(xCoordValName, (DWORD&)x);
-				bSuccess &= m_regKeyManager.ReadRegistryDWORD(yCoordValName, (DWORD&)y);
+				bool bSuccess = m_regKeyManager.ReadRegistryDWORD(xCoordValName, (int&)x);
+				bSuccess &= m_regKeyManager.ReadRegistryDWORD(yCoordValName, (int&)y);
 				if (bSuccess)
 				{
 					::SetWindowPos(hOrbiterWnd, 0, static_cast<int>(x), static_cast<int>(y), 0, 0, (SWP_NOSIZE | SWP_NOZORDER));
@@ -98,6 +102,7 @@ void DeltaGliderXR1::RestoreOrbiterRenderWindowPosition()
 		}
 	}
 	s_isFirstRun = false;		// remember for next time
+	*/
 }
 
 // --------------------------------------------------------------
@@ -210,7 +215,7 @@ void DeltaGliderXR1::SetXRTouchdownPoints(const VECTOR3& pt1, const VECTOR3& pt2
 	// copy over all the hull touchdown points
 	for (int i = 0; i < HULL_TOUCHDOWN_POINTS_COUNT; i++)
 	{
-		pVtxArray[3 + i] = { HULL_TOUCHDOWN_POINTS[i], hull_stiffness, hull_damping, hull_mu_lat };  // lng is not used for hull touchdown points (see Orbiter docs)
+		pVtxArray[3 + i] = { HULL_TOUCHDOWN_POINTS[i], hull_stiffness, hull_damping, hull_mu_lat, 0.0 };  // lng is not used for hull touchdown points (see Orbiter docs)
 	}
 	SetTouchdownPoints(pVtxArray, vtxArrayElementCount);
 	delete []pVtxArray;
@@ -271,13 +276,13 @@ void DeltaGliderXR1::FatalError(const char* pMsg)
 {
 	// write to the log
 	GetXR1Config()->WriteLog(pMsg);
-
+	fprintf(stderr, "XR1Fatal error : %s\n", pMsg);
 	// close the main window so the dialog box will appear
-	const HWND mainWindow = GetForegroundWindow();
+	//const HWND mainWindow = GetForegroundWindow();
 
 	// show critical error, close the window, and exit
-	MessageBox(mainWindow, pMsg, "Orbiter DG-XR1 Fatal Error", MB_OK | MB_SETFOREGROUND | MB_SYSTEMMODAL);
-	CloseWindow(mainWindow);
+	//MessageBox(mainWindow, pMsg, "Orbiter DG-XR1 Fatal Error", MB_OK | MB_SETFOREGROUND | MB_SYSTEMMODAL);
+	//CloseWindow(mainWindow);
 	exit(-1);   // bye, bye
 }
 
@@ -381,6 +386,17 @@ void DeltaGliderXR1::TogglePayloadEditor()
 	if (m_pPayloadBay == nullptr)
 		return;
 
+	if(!s_hPayloadEditorDialog) s_hPayloadEditorDialog = std::make_unique<XR1PayloadDialog>("XR1PayloadDialog");
+
+	if(s_hPayloadEditorDialog->IsVisible()) {
+		PlaySound(BeepLow, DeltaGliderXR1::ST_Other);
+		oapiCloseDialog(s_hPayloadEditorDialog.get());
+	} else {
+		PlaySound(BeepHigh, DeltaGliderXR1::ST_Other);
+		s_hPayloadEditorDialog->SetVessel(this);
+		oapiOpenDialog(s_hPayloadEditorDialog.get());
+	}
+/*
 	if (s_hPayloadEditorDialog != 0)
 	{
 		// editor is open: close it
@@ -393,7 +409,7 @@ void DeltaGliderXR1::TogglePayloadEditor()
 		// editor is closed: open it
 		PlaySound(BeepHigh, DeltaGliderXR1::ST_Other);
 		s_hPayloadEditorDialog = XR1PayloadDialog::Launch(GetHandle());
-	}
+	}*/
 }
 
 // returns the total payload mass in KG
@@ -599,7 +615,7 @@ void DeltaGliderXR1::SetNavlight(bool on)
 
 	TriggerRedrawArea(AID_NAVLIGHTSWITCH);
 	TriggerRedrawArea(AID_SWITCHLED_NAV);
-	UpdateCtrlDialog(this);
+	//UpdateCtrlDialog(this);
 	RecordEvent("NAVLIGHT", on ? "ON" : "OFF");
 }
 
@@ -608,7 +624,7 @@ void DeltaGliderXR1::SetBeacon(bool on)
 	beacon[3].active = beacon[4].active = on;
 	TriggerRedrawArea(AID_BEACONSWITCH);
 	TriggerRedrawArea(AID_SWITCHLED_BEACON);  // repaint the new indicator as well
-	UpdateCtrlDialog(this);
+	//UpdateCtrlDialog(this);
 	RecordEvent("BEACONLIGHT", on ? "ON" : "OFF");
 }
 
@@ -617,7 +633,7 @@ void DeltaGliderXR1::SetStrobe(bool on)
 	beacon[5].active = beacon[6].active = on;
 	TriggerRedrawArea(AID_STROBESWITCH);
 	TriggerRedrawArea(AID_SWITCHLED_STROBE);  // repaint the new indicator as well
-	UpdateCtrlDialog(this);
+	//UpdateCtrlDialog(this);
 	RecordEvent("STROBELIGHT", on ? "ON" : "OFF");
 }
 
@@ -705,15 +721,15 @@ void DeltaGliderXR1::ReinitializeDamageableControlSurfaces()
 // meshTextureID = vessel-specific constant that is translated to a texture index specific to our vessel's .msh file.  meshTextureID 
 // NOTE: meshTextureID=VCPANEL_TEXTURE_NONE = -1 = "no texture" (i.e., "not applicable"); defined in Area.h.
 // hMesh = OUTPUT: will be set to the mesh handle of the mesh associated with meshTextureID.
-DWORD DeltaGliderXR1::MeshTextureIDToTextureIndex(const int meshTextureID, MESHHANDLE& hMesh)
+int DeltaGliderXR1::MeshTextureIDToTextureIndex(const int meshTextureID, MESHHANDLE& hMesh)
 {
 	// sanity check
-	_ASSERTE(meshTextureID > VCPANEL_TEXTURE_NONE);
+	assert(meshTextureID > VCPANEL_TEXTURE_NONE);
 
 	// same mesh for all VC textures
 	hMesh = vcmesh_tpl;  // assign by reference
 
-	DWORD retVal = 0;
+	int retVal = 0;
 	switch (meshTextureID)
 	{
 	case XR1_VCPANEL_TEXTURE_LEFT:
@@ -729,14 +745,14 @@ DWORD DeltaGliderXR1::MeshTextureIDToTextureIndex(const int meshTextureID, MESHH
 		break;
 
 	default:   // should never happen!
-		_ASSERTE(false);
+		assert(false);
 		// fall through with retVal 0
 		break;
 	}
 
 	// validate return values
-	_ASSERTE(retVal >= 0);
-	_ASSERTE(hMesh != nullptr);
+	assert(retVal >= 0);
+	assert(hMesh != nullptr);
 
 	return retVal;
 }
@@ -749,7 +765,7 @@ void DeltaGliderXR1::ResetMET()
 	m_metTimerRunning = false;     // not running now
 	RecordEvent("RESETMET", ".");
 }
-
+/*
 void DeltaGliderXR1::UpdateCtrlDialog(DeltaGliderXR1 *dg, HWND hWnd)
 {
 	static int bstatus[2] = { BST_UNCHECKED, BST_CHECKED };
@@ -798,3 +814,4 @@ void DeltaGliderXR1::UpdateCtrlDialog(DeltaGliderXR1 *dg, HWND hWnd)
 	op = static_cast<int>(dg->beacon[5].active) ? 1 : 0;
 	SendDlgItemMessage(hWnd, IDC_STROBELIGHT, BM_SETCHECK, bstatus[op], 0);
 }
+*/
