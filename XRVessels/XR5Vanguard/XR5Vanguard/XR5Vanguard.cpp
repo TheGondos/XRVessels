@@ -44,7 +44,7 @@
 // --------------------------------------------------------------
 // Module initialisation
 // --------------------------------------------------------------
-DLLCLBK void InitModule (oapi::DynamicModule *hModule)
+DLLCLBK void InitModule (MODULEHANDLE hModule)
 {
     g_hDLL = hModule;
 }
@@ -52,7 +52,7 @@ DLLCLBK void InitModule (oapi::DynamicModule *hModule)
 // --------------------------------------------------------------
 // Module cleanup
 // --------------------------------------------------------------
-DLLCLBK void ExitModule (oapi::DynamicModule *hModule)
+DLLCLBK void ExitModule (MODULEHANDLE hModule)
 {
     XRPayloadClassData::Terminate();     // clean up global cache
 }

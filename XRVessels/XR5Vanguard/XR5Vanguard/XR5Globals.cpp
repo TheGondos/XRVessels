@@ -518,7 +518,7 @@ const int VC_PANEL_ID_BASE = 100;  // no VC, so assume all panel IDs below 100 a
 //
 // Globals
 //
-oapi::DynamicModule *g_hDLL;  // our DLL handle
+MODULEHANDLE g_hDLL;  // our DLL handle
 
 const double MAX_DESCENT_HOLD_RATE = 990;   // in m/s (1.22 and earlier: was 250 m/s)
 const double ADRATE_SMALL = 0.1;

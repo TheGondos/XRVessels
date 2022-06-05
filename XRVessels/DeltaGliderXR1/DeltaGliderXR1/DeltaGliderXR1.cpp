@@ -31,7 +31,7 @@
 // --------------------------------------------------------------
 // Module initialisation
 // --------------------------------------------------------------
-DLLCLBK void InitModule (oapi::DynamicModule *hModule)
+DLLCLBK void InitModule (MODULEHANDLE hModule)
 {
     g_hDLL = hModule;
 }
@@ -40,7 +40,7 @@ DLLCLBK void InitModule (oapi::DynamicModule *hModule)
 // Module cleanup
 // NOTE: this is called even if fast shutdown is enabled.
 // --------------------------------------------------------------
-DLLCLBK void ExitModule (oapi::DynamicModule *hModule)
+DLLCLBK void ExitModule (MODULEHANDLE hModule)
 {
 }
 

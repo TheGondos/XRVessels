@@ -225,7 +225,7 @@ extern const char *ALL_SYSTEMS_NOMINAL_MSG;
 //
 // Globals
 //
-extern oapi::DynamicModule *g_hDLL;
+extern MODULEHANDLE g_hDLL;
 
 // Global enum; NOT_SET is only used by GearCalloutsPostStep
 enum class DoorStatus { NOT_SET = -2, DOOR_FAILED, DOOR_CLOSED, DOOR_OPEN, DOOR_CLOSING, DOOR_OPENING };
