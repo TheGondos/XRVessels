@@ -45,7 +45,7 @@ int g_dwCmd;                  // custom function identifier
 // This function is called when Orbiter starts or when the module
 // is activated.
 //==============================================================
-DLLCLBK void opcDLLInit(DynamicModule *hDLL)
+DLLCLBK void opcDLLInit(MODULEHANDLE hDLL)
 {
     // create our singleton MainDialog object
     XRVCMainDialog *pDlg = new XRVCMainDialog(hDLL); 
@@ -63,7 +63,7 @@ DLLCLBK void opcDLLInit(DynamicModule *hDLL)
 // This function is called when Orbiter shuts down or when the
 // module is deactivated.
 //==============================================================
-DLLCLBK void opcDLLExit (DynamicModule *hDLL)
+DLLCLBK void opcDLLExit (MODULEHANDLE hDLL)
 {
     char logMsg[256];
 

@@ -46,7 +46,7 @@
 // --------------------------------------------------------------
 // Module initialisation
 // --------------------------------------------------------------
-DLLCLBK void InitModule (DynamicModule *hModule)
+DLLCLBK void InitModule (MODULEHANDLE hModule)
 {
     g_hDLL = hModule;
     oapiRegisterCustomControls(hModule);
@@ -55,7 +55,7 @@ DLLCLBK void InitModule (DynamicModule *hModule)
 // --------------------------------------------------------------
 // Module cleanup
 // --------------------------------------------------------------
-DLLCLBK void ExitModule (DynamicModule *hModule)
+DLLCLBK void ExitModule (MODULEHANDLE hModule)
 {
     oapiUnregisterCustomControls(hModule);
     XRPayloadClassData::Terminate();     // clean up global cache

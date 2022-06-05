@@ -495,7 +495,7 @@ const double NEUTRAL_CENTER_OF_LIFT = 0.0;  // in meters  (makes ship stable lan
 //
 // Globals
 //
-oapi::DynamicModule *g_hDLL;  // our DLL handle
+MODULEHANDLE g_hDLL;  // our DLL handle
 
 const double MAX_DESCENT_HOLD_RATE = 990;   // in m/s (1.22 and earlier: was 250 m/s)
 const double ADRATE_SMALL = 0.1;
