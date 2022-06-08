@@ -340,6 +340,8 @@ void AnalogGaugeArea::DrawNeedle(oapi::Sketchpad *skp, int x, int y, double rad,
 {
     // handle needle response delay
     double dt = oapiGetSimStep();  // delta time since last frame
+    if(dt == 0.0) return;
+
     if ((fabs(angle - m_lastIndicatorAngle) / dt) >= speed)
     {
         if (angle > m_lastIndicatorAngle)
