@@ -40,7 +40,7 @@
 DeltaGliderXR1::DeltaGliderXR1 (OBJHANDLE hObj, int fmodel, XR1ConfigFileParser *pConfigFileParser) : 
     VESSEL3_EXT(hObj, fmodel),
     m_secondaryHUDMode(3), m_preStepPreviousAirspeed(0), m_preStepPreviousGearFullyUncompressedAltitude(-1), m_airborneTargetTime(0), 
-    m_takeoffTime(0), m_touchdownTime(0), m_preStepPreviousVerticalSpeed(0), m_forceWarning(false), m_accScale(AccScale::NONE), m_maxGaugeAcc(0),
+    m_takeoffTime(0), m_touchdownTime(0), m_preStepPreviousVerticalSpeed(0), m_forceWarning(false), m_accScale(AccScale::NONE), m_maxGaugeAcc(2.0),
     m_isCrashed(false),
     m_noseconeTemp(0), m_leftWingTemp(0), m_rightWingTemp(0), m_cockpitTemp(0), m_topHullTemp(0),
     m_activeMultiDisplayMode(DEFAULT_MMID), m_activeTempScale(TempScale::Celsius), m_pMDA(nullptr),
