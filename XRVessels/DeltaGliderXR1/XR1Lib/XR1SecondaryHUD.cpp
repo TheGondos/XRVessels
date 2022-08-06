@@ -161,8 +161,9 @@ bool SecondaryHUDArea::DrawHUD(const int event, const int topY, oapi::Sketchpad 
     // fill the background area if not transparent; this is to make the background solid between letters
     if (bgColor != CWHITE)
     {
-        //FIXME : filled rectangle
+        auto old = skp->SetBrush(m_hBackgroundBrush);
         skp->Rectangle(0, m_topYCoordinate, m_width, m_height);
+        skp->SetBrush(old);
     }
 
     // set the background mode

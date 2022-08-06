@@ -294,7 +294,7 @@ void SetSlopePostStep::clbkPrePostStep(const double simt, const double simdt, co
 
                     // compute the triangle's 'b' leg (ground distance traveled)
                     // b = sqrt( c^2 - a^2 )
-                    const double b = sqrt((c*c) - (a*a));
+                    const double b = sqrt(fabs((c*c) - (a*a)));
 
                     // how we have the 'a' and 'b' legs; compute the slope angle
                     // A = arctan(a / b)

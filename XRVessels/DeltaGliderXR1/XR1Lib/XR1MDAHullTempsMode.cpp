@@ -48,8 +48,10 @@ void HullTempsMultiDisplayMode::Activate()
     m_indicatorSurface = CreateSurface(IDB_INDICATOR2);
     m_pParentMDA->SetSurfaceColorKey(m_indicatorSurface, CWHITE);
 
-    m_pKfcFont = oapiCreateFont(15, true, "Microsoft Sans Serif", FONT_BOLD);  // was 14 for GetDC
-    m_pCoolantFont = oapiCreateFont(13, true, "Microsoft Sans Serif", FONT_BOLD);  // was 12 for GetDC
+//    m_pKfcFont = oapiCreateFont(15, true, "Microsoft Sans Serif", FONT_BOLD);  // was 14 for GetDC
+//    m_pCoolantFont = oapiCreateFont(13, true, "Microsoft Sans Serif", FONT_BOLD);  // was 12 for GetDC
+    m_pKfcFont = oapiCreateFont(14, true, "Microsoft Sans Serif", FONT_BOLD);  // was 14 for GetDC
+    m_pCoolantFont = oapiCreateFont(12, true, "Microsoft Sans Serif", FONT_BOLD);  // was 12 for GetDC
 }
 
 void HullTempsMultiDisplayMode::Deactivate()
@@ -117,11 +119,11 @@ bool HullTempsMultiDisplayMode::Redraw2D(const int event, const SURFHANDLE surf)
 
     const char* pScale;
     if (GetXR1().m_activeTempScale == TempScale::Kelvin)
-        pScale = "\370K";
+        pScale = u8"°K";
     else if (GetXR1().m_activeTempScale == TempScale::Celsius)
-        pScale = "\370C";
+        pScale = u8"°C";
     else
-        pScale = "\370F";
+        pScale = u8"°F";
 
     skp->Text(35, 22 + fontSizeDelta, pScale, static_cast<int>(strlen(pScale)));
 
@@ -239,7 +241,7 @@ void HullTempsMultiDisplayMode::GetCoolantTemperatureStr(double tempC, char* pSt
 
     // Do not round the value!  We need to match the warning PostStep exactly, and rounding up makes us arrive early.
     // HOWEVER: NOTE THAT sprintf will round the value!
-    sprintf(pStrOut, "%.1lf�", tempConverted);
+    sprintf(pStrOut, u8"%.1lf°", tempConverted);
 }
 
 // convert temperature in K to a displayable string 
@@ -274,7 +276,7 @@ void HullTempsMultiDisplayMode::GetTemperatureStr(double tempK, char* pStrOut)
 
     // Do not round the value!  We want to match the damage code exactly (although it is technically not critical), and rounding up makes us arrive early.
 
-    sprintf(pStrOut, "%.1lf�", tempConverted);
+    sprintf(pStrOut, u8"%.1lf°", tempConverted);
 }
 
 bool HullTempsMultiDisplayMode::ProcessMouseEvent(const int event, const int mx, const int my)

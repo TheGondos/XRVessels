@@ -124,9 +124,9 @@ bool TertiaryHUDArea::DrawHUD(const int event, const int topY, oapi::Sketchpad *
     // fill the background area if not transparent; this is to make the background solid between letters
     if (GetXR1().GetXR1Config()->TertiaryHUDBackgroundColor != CWHITE)
     {
-  //      RECT r = { 0, m_topYCoordinate, m_width, m_height };
+        auto old = skp->SetBrush(m_hBackgroundBrush);
         skp->Rectangle(0, m_topYCoordinate, m_width, m_height);
-//        FillRect(hDC, &r, m_hBackgroundBrush);
+        skp->SetBrush(old);
     }
 
     // invoke new TextBox handler to draw text using a TRANSPARENT background; this same TextBox handler
