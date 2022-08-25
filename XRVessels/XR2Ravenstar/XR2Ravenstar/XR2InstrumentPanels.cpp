@@ -125,7 +125,7 @@ bool XR2MainInstrumentPanel::Activate()
     GetVessel().SetCameraOffset(twoDCockpitCoordinates);
     GetVessel().SetXRCameraDirection (_V(0,0,1)); // look forward
 
-    oapiRegisterPanelBackground(m_hBmp, PANEL_ATTACH_BOTTOM|PANEL_MOVEOUT_BOTTOM);//, 0xFFFFFF);  // white == transparent
+    oapiRegisterPanelBackground(m_hBmp, PANEL_ATTACH_BOTTOM|PANEL_MOVEOUT_BOTTOM, 0xFFFFFF);  // white == transparent
     oapiSetPanelNeighbours (-1, -1, PANEL_UPPER, PANEL_LOWER);
 
     // initialize the XR vessel's m_pMDA to point to *this panel's* MDA object
@@ -165,7 +165,7 @@ bool XR2PayloadInstrumentPanel::Activate()
     if (m_hBmp == nullptr)
         return false;       // should never happen
     
-    oapiRegisterPanelBackground (m_hBmp, PANEL_ATTACH_BOTTOM | PANEL_ATTACH_LEFT | PANEL_MOVEOUT_BOTTOM);//, 0xFFFFFF);  // white is transparent
+    oapiRegisterPanelBackground (m_hBmp, PANEL_ATTACH_BOTTOM | PANEL_ATTACH_LEFT | PANEL_MOVEOUT_BOTTOM, 0xFFFFFF);  // white is transparent
 
     // this panel is unique in that it is connected "one-way" to the upper panel to the right and the main panel below.
     oapiSetPanelNeighbours (-1, PANEL_UPPER, -1, PANEL_MAIN);
@@ -318,7 +318,7 @@ bool XR2UpperInstrumentPanel::Activate()
     if (m_hBmp == nullptr)
         return false;       // should never happen
     
-    oapiRegisterPanelBackground (m_hBmp, PANEL_ATTACH_TOP | PANEL_MOVEOUT_TOP);//, 0xFFFFFF);  // white is transparent
+    oapiRegisterPanelBackground (m_hBmp, PANEL_ATTACH_TOP | PANEL_MOVEOUT_TOP, 0xFFFFFF);  // white is transparent
     oapiSetPanelNeighbours (PANEL_PAYLOAD, -1, -1, PANEL_MAIN);
     GetVessel().SetCameraOffset(twoDCockpitCoordinates);
     GetVessel().SetXRCameraDirection (_V(0,0.5,0.866)); // look up

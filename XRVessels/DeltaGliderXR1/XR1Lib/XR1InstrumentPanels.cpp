@@ -100,7 +100,7 @@ bool XR1MainInstrumentPanel::Activate()
     GetVessel().SetCameraOffset(twoDCockpktCoordinates);
     GetVessel().SetXRCameraDirection (_V(0,0,1)); // look forward
 
-    oapiRegisterPanelBackground(m_hBmp, PANEL_ATTACH_BOTTOM|PANEL_MOVEOUT_BOTTOM);//, 0xFFFFFF);  // white == transparent
+    oapiRegisterPanelBackground(m_hBmp, PANEL_ATTACH_BOTTOM|PANEL_MOVEOUT_BOTTOM, 0xFFFFFF);  // white == transparent
     oapiSetPanelNeighbours (-1, -1, PANEL_UPPER, PANEL_LOWER);
 
     // initialize the XR vessel's m_pMDA to point to *this panel's* MDA object
@@ -140,7 +140,7 @@ bool XR1UpperInstrumentPanel::Activate()
     if (m_hBmp == nullptr)
         return false;       // should never happen
     
-    oapiRegisterPanelBackground(m_hBmp, PANEL_ATTACH_TOP | PANEL_MOVEOUT_TOP);//, 0xFFFFFF);  // white is transparent
+    oapiRegisterPanelBackground(m_hBmp, PANEL_ATTACH_TOP | PANEL_MOVEOUT_TOP, 0xFFFFFF);  // white is transparent
     oapiSetPanelNeighbours (-1, -1, -1, PANEL_MAIN);
     GetVessel().SetCameraOffset(twoDCockpktCoordinates);
     GetVessel().SetXRCameraDirection (_V(0,0.5,0.866)); // look up
