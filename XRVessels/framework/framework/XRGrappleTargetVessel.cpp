@@ -112,7 +112,7 @@ bool XRGrappleTargetVessel::Update()
         //
 
         // if both parent and target landed, lock delta-V to zero
-        // Note: this assumes that the vessel and the payload are landed on the same body (which is higly likely since the payload is 
+        // Note: this assumes that the vessel and the payload are landed on the same body (which is highly likely since the payload is 
         // in range), so it's not worth handling the other case.  We don't want delta-V jumping around when both are landed.
         if (m_parentVessel.IsLanded() && pTargetVessel->GroundContact())
         {
@@ -120,7 +120,11 @@ bool XRGrappleTargetVessel::Update()
         }
         else
         {
-            m_deltaV = m_pDistanceRollingArray->GetSum() / m_pTimeRollingArray->GetSum();  // total distance / total time (meters / seconds)
+            if(m_pTimeRollingArray->GetSampleCount() > 0) {
+                m_deltaV = m_pDistanceRollingArray->GetSum() / m_pTimeRollingArray->GetSum();  // total distance / total time (meters / seconds)
+            } else {
+                m_deltaV = 0.0;
+            }
         }
     }
     else    // target deleted!
