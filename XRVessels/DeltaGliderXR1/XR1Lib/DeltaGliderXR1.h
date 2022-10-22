@@ -1028,7 +1028,7 @@ public:
     virtual double GetPayloadGrappleRangeLimit() const { return (IsLanded() ? PAYLOAD_GRAPPLE_RANGE_LANDED : PAYLOAD_GRAPPLE_RANGE_ORBIT); }
     virtual void ClearGrappleTarget(bool playBeep);
     virtual double GetPayloadMass() const;
-	virtual int DrawPayloadSlots(ImVec4 *colors) { printf("DrawPayloadSlots should overridden if payload available\n"); assert(false); exit(EXIT_FAILURE); }
+	virtual int DrawPayloadSlots(ImVec4 *colors) { printf("DrawPayloadSlots should be overridden if payload available\n"); assert(false); exit(EXIT_FAILURE); }
     void TogglePayloadEditor();
     // No way to do this: bool TrackGrappleTarget(bool showMessage);
     

@@ -175,6 +175,7 @@ int XR2Ravenstar::DrawPayloadSlots(ImVec4 *colors) {
 
     int ret = 0;
 
+    ImGui::BeginGroupPanel("Slots", ImVec2(0,0));
     ImGui::PushStyleColor(ImGuiCol_Border, colors[2]);
     if(ImGui::Button("3", button_sz1)) ret = 3;
     ImGui::PushStyleColor(ImGuiCol_Border, colors[1]);
@@ -182,9 +183,12 @@ int XR2Ravenstar::DrawPayloadSlots(ImVec4 *colors) {
     ImGui::PushStyleColor(ImGuiCol_Border, colors[0]);
     if(ImGui::Button("1", button_sz2)) ret = 1;
     ImGui::PopStyleColor(3);
-    ImGui::TextUnformatted("Slot 3 Dimensions : 1.45L x 3.45W x 2.12H");
-    ImGui::TextUnformatted("Slot 2 Dimensions : 1.45L x 3.45W x 2.12H");
-    ImGui::TextUnformatted("Slot 1 Dimensions : 2.06L x 3.45W x 2.41H");
+    ImGui::EndGroupPanel();
+    ImGui::BeginGroupPanel("Dimensions", ImVec2(0,0));
+    ImGui::TextUnformatted("Slot 3 : 1.45L x 3.45W x 2.12H");
+    ImGui::TextUnformatted("Slot 2 : 1.45L x 3.45W x 2.12H");
+    ImGui::TextUnformatted("Slot 1 : 2.06L x 3.45W x 2.41H");
+    ImGui::EndGroupPanel();
     return ret;
 }
 

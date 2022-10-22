@@ -19,111 +19,19 @@
   Web: https://www.alteaaerospace.com
 **/
 
-#if 0
 #include "DeltaGliderXR1.h"
 #include "ScnEditorAPI.h"
-#include "DlgCtrl.h"
+#include "font_awesome_5.h"
+#include <imgui-knobs.h>
 
+/*
 static HELPCONTEXT g_hc = {
     "html/vessels/deltaglider.chm",
         0,
         "html/vessels/deltaglider.chm::/deltaglider.hhc",
         "html/vessels/deltaglider.chm::/deltaglider.hhk"
 };
-
-// static helper methods
-static void UpdateDamage (HWND hTab, DeltaGliderXR1 *dg)
-{
-    int i;
-    char cbuf[256];
-    i = static_cast<int>((dg->lwingstatus*100.0+0.5));
-    sprintf (cbuf, "%d %%", i);
-    SetWindowText (GetDlgItem (hTab, IDC_LEFTWING_STATUS), cbuf);
-    oapiSetGaugePos (GetDlgItem (hTab, IDC_LEFTWING_SLIDER), i);
-    i = static_cast<int>((dg->rwingstatus*100.0+0.5));
-    sprintf (cbuf, "%d %%", i);
-    SetWindowText (GetDlgItem (hTab, IDC_RIGHTWING_STATUS), cbuf);
-    oapiSetGaugePos (GetDlgItem (hTab, IDC_RIGHTWING_SLIDER), i);
-}
-
-// ==============================================================
-// Scenario editor interface
-// ==============================================================
-
-DeltaGliderXR1 *GetDG (HWND hDlg)
-{
-    // retrieve DG interface from scenario editor
-    OBJHANDLE vessel;
-    SendMessage (hDlg, WM_SCNEDITOR, SE_GETVESSEL, reinterpret_cast<LPARAM>(&vessel));
-    return static_cast<DeltaGliderXR1 *>(oapiGetVesselInterface(vessel));
-}
-
-// --------------------------------------------------------------
-// Message procedure for editor page 1 (animation settings)
-// --------------------------------------------------------------
-INT_PTR CALLBACK EdPg1Proc (HWND hTab, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    switch (uMsg) {
-    case WM_COMMAND:
-        switch (LOWORD (wParam)) {
-        case IDHELP:
-            g_hc.topic = "/SE_Anim.htm";
-            oapiOpenHelp (&g_hc);
-            return TRUE;
-        case IDC_GEAR_UP:
-            GetDG(hTab)->ActivateLandingGear(DoorStatus::DOOR_CLOSED);
-            return TRUE;
-        case IDC_GEAR_DOWN:
-            GetDG(hTab)->ActivateLandingGear(DoorStatus::DOOR_OPEN);
-            return TRUE;
-        case IDC_RETRO_CLOSE:
-            GetDG(hTab)->ActivateRCover(DoorStatus::DOOR_CLOSED);
-            return TRUE;
-        case IDC_RETRO_OPEN:
-            GetDG(hTab)->ActivateRCover(DoorStatus::DOOR_OPEN);
-            return TRUE;
-        case IDC_OLOCK_CLOSE:
-            GetDG(hTab)->ActivateOuterAirlock(DoorStatus::DOOR_CLOSED);
-            return TRUE;
-        case IDC_OLOCK_OPEN:
-            GetDG(hTab)->ActivateOuterAirlock(DoorStatus::DOOR_OPEN);
-            return TRUE;
-        case IDC_ILOCK_CLOSE:
-            GetDG(hTab)->ActivateInnerAirlock(DoorStatus::DOOR_CLOSED);
-            return TRUE;
-        case IDC_ILOCK_OPEN:
-            GetDG(hTab)->ActivateInnerAirlock(DoorStatus::DOOR_OPEN);
-            return TRUE;
-        case IDC_NCONE_CLOSE:
-            GetDG(hTab)->ActivateOuterAirlock(DoorStatus::DOOR_CLOSED);  // NOTE: outer airlock must close, too!
-            GetDG(hTab)->ActivateNoseCone(DoorStatus::DOOR_CLOSED);
-            return TRUE;
-        case IDC_NCONE_OPEN:
-            GetDG(hTab)->ActivateNoseCone(DoorStatus::DOOR_OPEN);
-            return TRUE;
-        case IDC_LADDER_RETRACT:
-            GetDG(hTab)->ActivateLadder(DoorStatus::DOOR_CLOSED);
-            return TRUE;
-        case IDC_LADDER_EXTEND:
-            GetDG(hTab)->ActivateLadder(DoorStatus::DOOR_OPEN);
-            return TRUE;
-        case IDC_HATCH_CLOSE:
-            GetDG(hTab)->ActivateHatch(DoorStatus::DOOR_CLOSED);
-            return TRUE;
-        case IDC_HATCH_OPEN:
-            GetDG(hTab)->ActivateHatch(DoorStatus::DOOR_OPEN);
-            return TRUE;
-        case IDC_RADIATOR_RETRACT:
-            GetDG(hTab)->ActivateRadiator(DoorStatus::DOOR_CLOSED);
-            return TRUE;
-        case IDC_RADIATOR_EXTEND:
-            GetDG(hTab)->ActivateRadiator(DoorStatus::DOOR_OPEN);
-            return TRUE;
-        }
-        break;
-    }
-    return FALSE;
-}
+*/
 
 #if 0  // this was not compatible with UMMU to begin with
 // --------------------------------------------------------------
@@ -199,6 +107,7 @@ INT_PTR CALLBACK EdPg2Proc (HWND hTab, UINT uMsg, WPARAM wParam, LPARAM lParam)
 // --------------------------------------------------------------
 // Message procedure for editor page 3 (damage)
 // --------------------------------------------------------------
+#if 0
 INT_PTR CALLBACK EdPg3Proc (HWND hTab, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     DeltaGliderXR1 *dg;
@@ -246,17 +155,156 @@ INT_PTR CALLBACK EdPg3Proc (HWND hTab, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     return FALSE;
 }
+#endif
+// --------------------------------------------------------------
+// Add vessel-specific pages into scenario editor
+// --------------------------------------------------------------
+
+
+static void DrawState(DoorStatus status, std::array<const char *, 4> &&desc) {
+    const char *txt;
+    switch(status) {
+        case DoorStatus::DOOR_FAILED:   txt = "Failed"; break;
+        case DoorStatus::DOOR_CLOSED:   txt = desc[0]; break;
+        case DoorStatus::DOOR_CLOSING:  txt = desc[1]; break;
+        case DoorStatus::DOOR_OPENING:  txt = desc[2]; break;
+        case DoorStatus::DOOR_OPEN:     txt = desc[3]; break;
+        default: // fallthrough
+        case DoorStatus::NOT_SET:       txt = "Not set"; break;
+    }
+
+	ImGui::SetNextItemWidth(80.0f);
+	ImGui::BeginDisabled(true);
+	ImGui::SameLine();
+	ImGui::TextUnformatted(txt);
+	ImGui::SameLine();
+	ImGui::EndDisabled();
+}
+
+static void DrawControl(const char *name, double ratio, DoorStatus &status, std::function<void(DoorStatus)> onChange,
+                        std::array<const char *, 2> &&btn, std::array<const char *, 4> &&desc) {
+    const ImVec2 button_sz(ImVec2(60, 20));
+    ImGui::BeginGroupPanel(name, ImVec2(ImGui::GetContentRegionAvail().x * ratio, 0));
+    ImGui::PushID(name);
+    if(ImGui::Button(btn[0], button_sz)) { onChange(DoorStatus::DOOR_CLOSED); }
+    DrawState(status, std::move(desc));
+    if(ImGui::Button(btn[1], button_sz)) { onChange(DoorStatus::DOOR_OPEN); }
+    ImGui::PopID();
+    ImGui::EndGroupPanel();
+
+}
+
+static void DrawXR1Controls(DeltaGliderXR1 *dg) {
+	const ImVec2 button_sz(ImVec2(60, 20));
+
+    DoorStatus orgAPUState = dg->apu_status;
+
+    // hotwire the apu to ON so we can move the doors by "cheating" here
+    dg->apu_status = DoorStatus::DOOR_OPEN;
+
+    DrawControl("Landing gear", 0.5, dg->gear_status,
+                [dg](DoorStatus s) {dg->ActivateLandingGear (s);},
+                {"Up","Down"},{"Raised", "Raising", "Lowering", "Lowered"});
+    ImGui::SameLine();
+    DrawControl("Air brake", 1.0, dg->brake_status,
+                [dg](DoorStatus s) {dg->ActivateAirbrake (s);},
+                {"Stow","Deploy"},{"Stowed", "Stowing", "Extending", "Extended"});
+
+
+    DrawControl("Outer airlock", 0.5, dg->olock_status,
+                [dg](DoorStatus s) {dg->ActivateOuterAirlock (s);},
+                {"Close","Open"},{"Closed", "Closing", "Opening", "Opened"});
+    ImGui::SameLine();
+    DrawControl("Inner airlock", 1.0, dg->ilock_status,
+                [dg](DoorStatus s) {dg->ActivateInnerAirlock (s);},
+                {"Close","Open"},{"Closed", "Closing", "Opening", "Opened"});
+
+
+    DrawControl("Nose cone", 0.5, dg->nose_status,
+                [dg](DoorStatus s) {
+                    switch(s) {
+                        case DoorStatus::DOOR_CLOSED:
+                            dg->ActivateOuterAirlock (s);
+                            dg->ActivateNoseCone (s);
+                            break;
+                        case DoorStatus::DOOR_OPEN:
+                            dg->ActivateNoseCone (s);
+                            break;
+                        default:
+                            break;
+                    }
+                },
+                {"Close","Open"},{"Closed", "Closing", "Opening", "Opened"});
+    ImGui::SameLine();
+    DrawControl("Hatch", 1.0, dg->hatch_status,
+                [dg](DoorStatus s) {dg->ActivateHatch (s);},
+                {"Close","Open"},{"Closed", "Closing", "Opening", "Opened"});
+
+
+    DrawControl("SCRAM doors", 0.5, dg->scramdoor_status,
+                [dg](DoorStatus s) {dg->ActivateScramDoors (s);},
+                {"Close","Open"},{"Closed", "Closing", "Opening", "Opened"});
+    ImGui::SameLine();
+    DrawControl("Hover doors", 1.0, dg->hoverdoor_status,
+                [dg](DoorStatus s) {dg->ActivateHoverDoors (s);},
+                {"Close","Open"},{"Closed", "Closing", "Opening", "Opened"});
+
+
+    DrawControl("Radiator", 0.5, dg->radiator_status,
+                [dg](DoorStatus s) {dg->ActivateRadiator (s);},
+                {"Close","Open"},{"Closed", "Closing", "Opening", "Opened"});
+    ImGui::SameLine();
+    DrawControl("Ladder", 1.0, dg->ladder_status,
+                [dg](DoorStatus s) {dg->ActivateLadder (s);},
+                {"Close","Open"},{"Closed", "Closing", "Opening", "Opened"});
+
+
+    DrawControl("Retro doors", 0.5, dg->rcover_status,
+                [dg](DoorStatus s) {dg->ActivateRCover (s);},
+                {"Close","Open"},{"Closed", "Closing", "Opening", "Opened"});
+    ImGui::SameLine();
+    DrawControl("Chamber", 1.0, dg->chamber_status,
+                [dg](DoorStatus s) {dg->ActivateChamber (s, true);},
+                {"Close","Open"},{"Closed", "Closing", "Opening", "Opened"});
+
+
+    // restore original APU state
+    dg->apu_status = orgAPUState;
+}
+
+void DrawXR1Damage(DeltaGliderXR1 *dg) {
+    ImGui::BeginGroupPanel("Wings integrity");
+    float tmp = dg->lwingstatus * 100.0;
+    if (ImGuiKnobs::Knob("Left", &tmp, 0.0f, 100.0f, 1.0f, "%.2f%%", ImGuiKnobVariant_WiperOnly, 50.0, ImGuiKnobFlags_DragHorizontal)) {
+        dg->lwingstatus = tmp / 100.0;
+        dg->ApplyDamage ();
+    }
+    ImGui::SameLine();
+    tmp = dg->rwingstatus * 100.0;
+    if (ImGuiKnobs::Knob("Right", &tmp, 0.0f, 100.0f, 1.0f, "%.2f%%", ImGuiKnobVariant_WiperOnly, 50.0, ImGuiKnobFlags_DragHorizontal)) {
+        dg->rwingstatus = tmp / 100.0;
+        dg->ApplyDamage ();
+    }
+    ImGui::EndGroupPanel();
+}
+
+static void DrawScnEditorTabs(OBJHANDLE hVessel) {
+	DeltaGliderXR1 *dg = (DeltaGliderXR1*)oapiGetVesselInterface (hVessel);
+	if(ImGui::BeginTabItem(ICON_FA_DRAFTING_COMPASS" Animations")) {
+		DrawXR1Controls(dg);
+		ImGui::EndTabItem();
+	}
+	if(ImGui::BeginTabItem(ICON_FA_WRENCH " Damage")) {
+        DrawXR1Damage(dg);
+		ImGui::EndTabItem();
+	}
+}
 
 // --------------------------------------------------------------
 // Add vessel-specific pages into scenario editor
 // --------------------------------------------------------------
-DLLCLBK void secInit (HWND hEditor, OBJHANDLE vessel)
+
+DLLCLBK ScnDrawCustomTabs secInit ()
 {
-    DeltaGliderXR1 *dg = static_cast<DeltaGliderXR1 *>(oapiGetVesselInterface(vessel));
-    
-    EditorPageSpec eps1 = {"Animations", g_hDLL, IDD_EDITOR_PG1, EdPg1Proc};
-    SendMessage (hEditor, WM_SCNEDITOR, SE_ADDPAGEBUTTON, reinterpret_cast<LPARAM>(&eps1));
-    EditorPageSpec eps3 = {"Damage", g_hDLL, IDD_EDITOR_PG3, EdPg3Proc};
-    SendMessage (hEditor, WM_SCNEDITOR, SE_ADDPAGEBUTTON, reinterpret_cast<LPARAM>(&eps3));
+	return DrawScnEditorTabs;
 }
-#endif

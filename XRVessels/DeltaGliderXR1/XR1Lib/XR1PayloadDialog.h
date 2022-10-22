@@ -48,6 +48,7 @@ public:
 
     XR1PayloadDialog(const std::string &name);
     void Show() override;
+    void DrawPayloadEditor();
     static const std::string etype;
     
 protected:

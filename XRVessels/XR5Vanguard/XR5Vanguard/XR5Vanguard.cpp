@@ -182,8 +182,7 @@ int XR5Vanguard::DrawPayloadSlots(ImVec4 *colors) {
  6  7  8  9 10    24 25 26   34
  1  2  3  4  5    21 22 23   33
 */
-    ImGui::BeginChild("Level 1", ImVec2(ImGui::GetContentRegionAvail().x/3, ImGui::GetContentRegionAvail().y - 40), true);
-    ImGui::TextUnformatted("Level 1");
+    ImGui::BeginGroupPanel("Level 1", ImVec2(0, 0));
     for(int i = 0; i < 4; i++) {
         for(int j = 0; j < 5; j++) {
             int slot = (3 - i) * 5 + j + 1;
@@ -195,10 +194,9 @@ int XR5Vanguard::DrawPayloadSlots(ImVec4 *colors) {
         }
     }
     ImGui::PopStyleColor(20);
-    ImGui::EndChild();
+    ImGui::EndGroupPanel();
     ImGui::SameLine();
-    ImGui::BeginChild("Level 2", ImVec2(ImGui::GetContentRegionAvail().x/2, ImGui::GetContentRegionAvail().y - 40), true);
-    ImGui::TextUnformatted("Level 2");
+    ImGui::BeginGroupPanel("Level 2", ImVec2(0, 0));
     for(int i = 0; i < 4; i++) {
         for(int j = 0; j < 3; j++) {
             int slot = 20 + (3 - i) * 3 + j + 1;
@@ -210,10 +208,9 @@ int XR5Vanguard::DrawPayloadSlots(ImVec4 *colors) {
         }
     }
     ImGui::PopStyleColor(12);
-    ImGui::EndChild();
+    ImGui::EndGroupPanel();
     ImGui::SameLine();
-    ImGui::BeginChild("Level 3", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - 40), true);
-    ImGui::TextUnformatted("Level 3");
+    ImGui::BeginGroupPanel("Level 3", ImVec2(0, 0));
     for(int i = 0; i < 4; i++) {
         int slot = 36 - i;
         char txt[16];
@@ -222,18 +219,12 @@ int XR5Vanguard::DrawPayloadSlots(ImVec4 *colors) {
         if(ImGui::Button(txt, button_sz)) ret = slot;
     }
     ImGui::PopStyleColor(4);
-    ImGui::EndChild();
-    ImGui::SameLine();
-/*
-    ImGui::PushStyleColor(ImGuiCol_Border, colors[2]);
-    if(ImGui::Button("3", button_sz1)) ret = 3;
-    ImGui::PushStyleColor(ImGuiCol_Border, colors[1]);
-    if(ImGui::Button("2", button_sz1)) ret = 2;
-    ImGui::PushStyleColor(ImGuiCol_Border, colors[0]);
-    if(ImGui::Button("1", button_sz2)) ret = 1;
-    ImGui::PopStyleColor(3);*/
-    ImGui::TextUnformatted("Std. Slot Dimensions : 6.09L x 2.43W x 2.59H");
-    ImGui::TextUnformatted("Ctr. Slot Dimensions : 6.09L x 3.65W x 2.59H");
+    ImGui::EndGroupPanel();
+
+    ImGui::BeginGroupPanel("Slot dimensions", ImVec2(0, 0));
+    ImGui::TextUnformatted("Std. : 6.09L x 2.43W x 2.59H");
+    ImGui::TextUnformatted("Ctr. : 6.09L x 3.65W x 2.59H");
+    ImGui::EndGroupPanel();
     return ret;
 }
 

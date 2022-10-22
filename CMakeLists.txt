@@ -92,6 +92,7 @@ add_dependencies(XR5Vanguard
 target_link_libraries(DeltaGliderXR1
     imgui
     XRSound_dll
+    imgui-knobs
 )
 
 target_link_libraries(XR2Ravenstar
@@ -128,6 +129,7 @@ target_include_directories(DeltaGliderXR1 PUBLIC
     ${ORBITER_BINARY_SDK_DIR}/XRSound
     ${CMAKE_CURRENT_SOURCE_DIR}/XRVessels/DeltaGliderXR1/DeltaGliderXR1
     ${CMAKE_CURRENT_SOURCE_DIR}/XRVessels/DeltaGliderXR1/XR1Lib
+	PUBLIC ${ORBITER_SOURCE_MODULE_DIR}/ScnEditor      # for ScnEditorAPI.h
 )
 
 target_include_directories(XR2Ravenstar PUBLIC
@@ -136,6 +138,7 @@ target_include_directories(XR2Ravenstar PUBLIC
     ${ORBITER_BINARY_SDK_DIR}/XRSound
     ${CMAKE_CURRENT_SOURCE_DIR}/XRVessels/XR2Ravenstar/XR2Ravenstar
     ${CMAKE_CURRENT_SOURCE_DIR}/XRVessels/DeltaGliderXR1/XR1Lib
+	PUBLIC ${ORBITER_SOURCE_MODULE_DIR}/ScnEditor      # for ScnEditorAPI.h
 )
 
 target_include_directories(XR5Vanguard PUBLIC
@@ -144,6 +147,7 @@ target_include_directories(XR5Vanguard PUBLIC
     ${ORBITER_BINARY_SDK_DIR}/XRSound
     ${CMAKE_CURRENT_SOURCE_DIR}/XRVessels/XR5Vanguard/XR5Vanguard
     ${CMAKE_CURRENT_SOURCE_DIR}/XRVessels/DeltaGliderXR1/XR1Lib
+	PUBLIC ${ORBITER_SOURCE_MODULE_DIR}/ScnEditor      # for ScnEditorAPI.h
 )
 
 install(TARGETS DeltaGliderXR1

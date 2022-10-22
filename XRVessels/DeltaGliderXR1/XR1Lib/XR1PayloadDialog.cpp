@@ -142,94 +142,100 @@ void XR1PayloadDialog::DrawPayloadSelection() {
 
 }
 
-void XR1PayloadDialog::Show() {
-
+void XR1PayloadDialog::DrawPayloadEditor() {
     const ImVec4 emptyColor { 0.0f, 0.0f, 0.0f, 0.0f };
     const ImVec4 filledColor { 0.4f, 0.8f, 0.4f, 1.0f };
     const ImVec4 highlightedColor { 0.6f, 0.6f, 0.1f, 1.0f };
     const ImVec4 disabledColor { 0.8f, 0.1f, 0.1f, 1.0f };
     ImVec4 cols[slotCount];
-    if(show && slotCount > 0) {
-		ImGui::Begin(name.c_str(), &show);
-        ImGui::BeginChild("ChildTop", ImVec2(ImGui::GetContentRegionAvail().x, 120));
-        DrawPayloadSelection();
-        ImGui::EndChild();
 
-        if(ImGui::Button("Empty Payload Bay")) {
-            // Remove all items of the currently-selected payload.
-            m_pDGXR1->m_pPayloadBay->DeleteAllAttachedPayloadVessels();
-            m_pDGXR1->PlaySound(m_pDGXR1->SwitchOff, DeltaGliderXR1::ST_Other, MED_CLICK);  // medium click 
-        }
+    ImGui::BeginChild("ChildTop", ImVec2(ImGui::GetContentRegionAvail().x, 120));
+    DrawPayloadSelection();
+    ImGui::EndChild();
 
-        ImGui::SameLine();
-        if(ImGui::Button("Fill Bay") && m_SelectedPayloadClass.length() > 0) {
-            // Fill all open slots in the bay with the currently-selected payload;
-            // this will walk through each slot in order and try to add a module to each.
+    if(ImGui::Button("Empty Payload Bay")) {
+        // Remove all items of the currently-selected payload.
+        m_pDGXR1->m_pPayloadBay->DeleteAllAttachedPayloadVessels();
+        m_pDGXR1->PlaySound(m_pDGXR1->SwitchOff, DeltaGliderXR1::ST_Other, MED_CLICK);  // medium click 
+    }
 
-            m_pDGXR1->m_pPayloadBay->CreateAndAttachPayloadVesselInAllSlots(m_SelectedPayloadClass.c_str());
-            m_pDGXR1->PlaySound(m_pDGXR1->SwitchOn, DeltaGliderXR1::ST_Other, MED_CLICK);  // medium click 
-        }
+    ImGui::SameLine();
+    if(ImGui::Button("Fill Bay") && m_SelectedPayloadClass.length() > 0) {
+        // Fill all open slots in the bay with the currently-selected payload;
+        // this will walk through each slot in order and try to add a module to each.
 
-        ImGui::SameLine();
-        if(ImGui::Button("Remove All") && m_SelectedPayloadClass.length() > 0) {
-            // Remove all items of the currently-selected payload.
+        m_pDGXR1->m_pPayloadBay->CreateAndAttachPayloadVesselInAllSlots(m_SelectedPayloadClass.c_str());
+        m_pDGXR1->PlaySound(m_pDGXR1->SwitchOn, DeltaGliderXR1::ST_Other, MED_CLICK);  // medium click 
+    }
 
-            m_pDGXR1->m_pPayloadBay->DeleteAllAttachedPayloadVesselsOfClassname(m_SelectedPayloadClass.c_str());
-            m_pDGXR1->PlaySound(m_pDGXR1->SwitchOff, DeltaGliderXR1::ST_Other, MED_CLICK);  // medium click 
-        }
+    ImGui::SameLine();
+    if(ImGui::Button("Remove All") && m_SelectedPayloadClass.length() > 0) {
+        // Remove all items of the currently-selected payload.
 
-        XR1PayloadBay *pBay = static_cast<XR1PayloadBay *>(m_pDGXR1->m_pPayloadBay);
-        for (int i=0; i < pBay->GetSlotCount(); i++)
-        {
-            const int slotNumber = i+1;   // slot numbers are one-based
-            const XRPayloadBaySlot *pSlot = pBay->GetSlot(slotNumber);  
-            const bool isEnabled = pSlot->IsEnabled();
+        m_pDGXR1->m_pPayloadBay->DeleteAllAttachedPayloadVesselsOfClassname(m_SelectedPayloadClass.c_str());
+        m_pDGXR1->PlaySound(m_pDGXR1->SwitchOff, DeltaGliderXR1::ST_Other, MED_CLICK);  // medium click 
+    }
 
-            // Set color based on whether payload is in this slot
-            if(isEnabled) {
-                if(pSlot->IsOccupied()) {
+    XR1PayloadBay *pBay = static_cast<XR1PayloadBay *>(m_pDGXR1->m_pPayloadBay);
+    for (int i=0; i < pBay->GetSlotCount(); i++)
+    {
+        const int slotNumber = i+1;   // slot numbers are one-based
+        const XRPayloadBaySlot *pSlot = pBay->GetSlot(slotNumber);  
+        const bool isEnabled = pSlot->IsEnabled();
 
-                    VESSEL *pChildVessel = pSlot->GetChild();
-                    if (pChildVessel != nullptr && m_SelectedPayloadClass == pChildVessel->GetClassName()) {
-                        cols[i] = highlightedColor;
-                    } else {
-                        cols[i] = filledColor;
-                    }
+        // Set color based on whether payload is in this slot
+        if(isEnabled) {
+            if(pSlot->IsOccupied()) {
+
+                VESSEL *pChildVessel = pSlot->GetChild();
+                if (pChildVessel != nullptr && m_SelectedPayloadClass == pChildVessel->GetClassName()) {
+                    cols[i] = highlightedColor;
                 } else {
-                    cols[i] = emptyColor;
+                    cols[i] = filledColor;
                 }
             } else {
-                // enable/disable the button for this slot
-                cols[i] = disabledColor;
+                cols[i] = emptyColor;
             }
+        } else {
+            // enable/disable the button for this slot
+            cols[i] = disabledColor;
+        }
+    }
+
+    ImGui::BeginChild("ChildSlots", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y));
+    int slotClicked = m_pDGXR1->DrawPayloadSlots(cols);
+
+    if(slotClicked) {
+        const XRPayloadBaySlot *pSlot = pBay->GetSlot(slotClicked);
+        if(pSlot->IsEnabled() && !pSlot->IsOccupied())
+        {
+            AddPayloadToSlot(slotClicked);
+            m_pDGXR1->PlaySound(m_pDGXR1->SwitchOn, DeltaGliderXR1::ST_Other, MED_CLICK);  // medium click 
+        }
+        else
+        {
+            RemovePayloadFromSlot(slotClicked);
+            m_pDGXR1->PlaySound(m_pDGXR1->SwitchOff, DeltaGliderXR1::ST_Other, MED_CLICK);  // medium click 
         }
 
-        ImGui::BeginChild("ChildSlots", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - 60));
-        int slotClicked = m_pDGXR1->DrawPayloadSlots(cols);
-        ImGui::EndChild();
-
-        if(slotClicked) {
-            const XRPayloadBaySlot *pSlot = pBay->GetSlot(slotClicked);
-            if(pSlot->IsEnabled() && !pSlot->IsOccupied())
-            {
-                AddPayloadToSlot(slotClicked);
-                m_pDGXR1->PlaySound(m_pDGXR1->SwitchOn, DeltaGliderXR1::ST_Other, MED_CLICK);  // medium click 
-            }
-            else
-            {
-                RemovePayloadFromSlot(slotClicked);
-                m_pDGXR1->PlaySound(m_pDGXR1->SwitchOff, DeltaGliderXR1::ST_Other, MED_CLICK);  // medium click 
-            }
-
-        }
+    }
 
 
-        const double vesselMass = m_pDGXR1->GetMass();
-        const double payloadMass = m_pDGXR1->GetPayloadMass();
+    const double vesselMass = m_pDGXR1->GetMass();
+    const double payloadMass = m_pDGXR1->GetPayloadMass();
+    ImGui::SameLine();
+    ImGui::BeginGroupPanel("Total mass", ImVec2(0,0));
+    ImGui::Text("Payload : %10.1f kg (%10.1lf lb)", payloadMass, payloadMass * 2.20462262);
+    ImGui::Text("Vessel  : %10.1f kg (%10.1lf lb)", vesselMass, vesselMass * 2.20462262);
+    ImGui::EndGroupPanel();
+    ImGui::EndChild();
 
-        ImGui::Text("Total Payload Mass : %10.1f kg (%10.1lf lb)", payloadMass, payloadMass * 2.20462262);
-        ImGui::Text("Total Vessel Mass : %10.1f kg (%10.1lf lb)", vesselMass, vesselMass * 2.20462262);
+}
 
+void XR1PayloadDialog::Show() {
+    if(show && slotCount > 0) {
+		ImGui::Begin(name.c_str(), &show);
+        DrawPayloadEditor();
         ImGui::End();
     }
 }
