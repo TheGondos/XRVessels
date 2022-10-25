@@ -23,6 +23,8 @@
 #include "ScnEditorAPI.h"
 #include "font_awesome_5.h"
 #include <imgui-knobs.h>
+#include <array>
+#include <functional>
 
 /*
 static HELPCONTEXT g_hc = {

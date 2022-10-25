@@ -30,6 +30,8 @@
 #include "ScnEditorAPI.h"
 #include "XR1PayloadDialog.h"
 #include "font_awesome_5.h"
+#include <array>
+#include <functional>
 
 // ==============================================================
 // Scenario editor interface
