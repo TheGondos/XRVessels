@@ -90,18 +90,14 @@ add_dependencies(XR5Vanguard
 )
 
 target_link_libraries(DeltaGliderXR1
-    imgui
     XRSound_dll
-    imgui-knobs
 )
 
 target_link_libraries(XR2Ravenstar
-    imgui
     XRSound_dll
 )
 
 target_link_libraries(XR5Vanguard
-    imgui
     XRSound_dll
 )
 
@@ -124,7 +120,7 @@ set_target_properties(XR5Vanguard
 )
 
 target_include_directories(DeltaGliderXR1 PUBLIC
-	${ORBITER_SOURCE_SDK_INCLUDE_DIR}
+	${ORBITER_BINARY_SDK_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/XRVessels/framework/framework
     ${ORBITER_BINARY_SDK_DIR}/XRSound
     ${CMAKE_CURRENT_SOURCE_DIR}/XRVessels/DeltaGliderXR1/DeltaGliderXR1
@@ -133,7 +129,7 @@ target_include_directories(DeltaGliderXR1 PUBLIC
 )
 
 target_include_directories(XR2Ravenstar PUBLIC
-	${ORBITER_SOURCE_SDK_INCLUDE_DIR}
+	${ORBITER_BINARY_SDK_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/XRVessels/framework/framework
     ${ORBITER_BINARY_SDK_DIR}/XRSound
     ${CMAKE_CURRENT_SOURCE_DIR}/XRVessels/XR2Ravenstar/XR2Ravenstar
@@ -142,7 +138,7 @@ target_include_directories(XR2Ravenstar PUBLIC
 )
 
 target_include_directories(XR5Vanguard PUBLIC
-	${ORBITER_SOURCE_SDK_INCLUDE_DIR}
+	${ORBITER_BINARY_SDK_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/XRVessels/framework/framework
     ${ORBITER_BINARY_SDK_DIR}/XRSound
     ${CMAKE_CURRENT_SOURCE_DIR}/XRVessels/XR5Vanguard/XR5Vanguard
