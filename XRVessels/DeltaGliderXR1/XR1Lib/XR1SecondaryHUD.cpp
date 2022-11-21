@@ -289,17 +289,17 @@ void SecondaryHUDArea::PopulateCell(SecondaryHUDMode::Cell& cell)
         value = GetXR1().GetExternalTemperature();   // Kelvin
         if (units == Units::u_K)
         {
-            sprintf(valueStr, "%.4lf �K", value);
+            sprintf(valueStr, "%.4lf °K", value);
         }
         else if (units == Units::u_C)
         {
             value = KelvinToCelsius(value);
-            sprintf(valueStr, "%.4lf �C", value);
+            sprintf(valueStr, "%.4lf °C", value);
         }
         else    // Fahrenheit
         {
             value = KelvinToFahrenheit(value);
-            sprintf(valueStr, "%.4lf �F", value);
+            sprintf(valueStr, "%.4lf °F", value);
         }
         break;
 
@@ -310,7 +310,7 @@ void SecondaryHUDArea::PopulateCell(SecondaryHUDMode::Cell& cell)
             sprintf(valueStr, "---");
         else
         {
-            sprintf(valueStr, "%.3lf�", (value * DEG));
+            sprintf(valueStr, "%.3lf°", (value * DEG));
         }
     }
     break;
@@ -346,12 +346,12 @@ void SecondaryHUDArea::PopulateCell(SecondaryHUDMode::Cell& cell)
 
         if (units == Units::u_met)  // metric
         {
-            sprintf(valueStr, "%.4lf m/s�", value);
+            sprintf(valueStr, "%.4lf m/s²", value);
         }
         else if (units == Units::u_imp)    // imperial
         {
             value = MetersToFeet(value);
-            sprintf(valueStr, "%.4lf fps�", value);
+            sprintf(valueStr, "%.4lf fps²", value);
         }
         else  // G
         {
@@ -404,7 +404,7 @@ void SecondaryHUDArea::PopulateCell(SecondaryHUDMode::Cell& cell)
         ELEMENTS e;
         GetVessel().GetElements(nullptr, e, nullptr, 0, FRAME_EQU);
         value = e.i * DEG;  // in degrees
-        sprintf(valueStr, "%.4lf�", value);  // reduce to 11 chars for slight clipping issue
+        sprintf(valueStr, "%.4lf°", value);  // reduce to 11 chars for slight clipping issue
     }
     break;
 
@@ -506,7 +506,7 @@ void SecondaryHUDArea::PopulateCell(SecondaryHUDMode::Cell& cell)
             value = GetVessel().GetAOA();
 
         value *= DEG;   // convert to degrees
-        sprintf(valueStr, "%+.3lf�", value);
+        sprintf(valueStr, "%+.3lf°", value);
         break;
 
     case FieldID::Long:
@@ -525,7 +525,7 @@ void SecondaryHUDArea::PopulateCell(SecondaryHUDMode::Cell& cell)
             else
                 dir = ((fieldID == FieldID::Long) ? 'E' : 'N');
 
-            sprintf(valueStr, "%.5lf� %c", fabs(pos), dir);
+            sprintf(valueStr, "%.5lf° %c", fabs(pos), dir);
         }
     }
     break;
@@ -637,17 +637,17 @@ void SecondaryHUDArea::PopulateCell(SecondaryHUDMode::Cell& cell)
 
         if (units == Units::u_K)
         {
-            sprintf(valueStr, "%.3lf �K", value);
+            sprintf(valueStr, "%.3lf °K", value);
         }
         else if (units == Units::u_C)
         {
             value = KelvinToCelsius(value);
-            sprintf(valueStr, "%.3lf �C", value);
+            sprintf(valueStr, "%.3lf °C", value);
         }
         else    // Fahrenheit
         {
             value = KelvinToFahrenheit(value);
-            sprintf(valueStr, "%.3lf �F", value);
+            sprintf(valueStr, "%.3lf °F", value);
         }
     }
     break;
