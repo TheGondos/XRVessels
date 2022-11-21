@@ -82,9 +82,9 @@ TertiaryHUDArea::TertiaryHUDArea(InstrumentPanel& parentPanel, const COORD2 pane
 
     // create our font
     // NOTE: we want an ALIASED font for a non-transparent background, or UNALIASED font for transparent background
-//FIXME
-//    const int antialiasFlag = ((config.TertiaryHUDBackgroundColor == 0xFFFFFF) ? NONANTIALIASED_QUALITY : 0);
-    m_mainFont = oapiCreateFont(14, true, "Arial");
+
+    const bool antialiasFlag = ((config.TertiaryHUDBackgroundColor == 0xFFFFFF) ? false : true);
+    m_mainFont = oapiCreateFont(14, true, "Arial", FONT_NORMAL, antialiasFlag);
     m_lineSpacing = 11;     // pixels between lines
 }
 

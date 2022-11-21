@@ -109,7 +109,7 @@ bool PopupHUDArea::Redraw2D(const int event, const SURFHANDLE surf)
 
     if (m_topYCoordinate < m_height) // is HUD not OFF; i.e., is the top of the HUD visible?
     {
-        oapi::Sketchpad *skp = oapiGetSketchpad(surf);
+        oapi::Sketchpad *skp = oapiGetSketchpad(surf, m_bgColorRef == CWHITE ? false : true);
 
         // only render the HUD frame if we have not already rendered it at this topY coordinate OR if this is PANEL_REDRAW_INIT
         bool forceRender = (event == PANEL_REDRAW_INIT) || (m_lastRenderedTopYCoordinate != m_topYCoordinate);  // if frame has moved, we MUST re-render everything

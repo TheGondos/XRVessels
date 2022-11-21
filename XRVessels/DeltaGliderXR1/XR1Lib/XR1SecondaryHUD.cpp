@@ -120,7 +120,7 @@ void SecondaryHUDArea::SetHUDColors()
         // NOTE: do not use ANTIALIASED_QUALITY instead of '0' for the second parameter!  It looks better under Vista to leave it at 0 for some reason.
         if (mode != m_lastHUDMode)
         {
-            //const int antialiasFlag = ((backgroundColor == 0xFFFFFF) ? NONANTIALIASED_QUALITY : 0);
+            const bool antialiasFlag = ((backgroundColor == 0xFFFFFF) ? false : true);
 
             // release old font 
             if (m_mainFont != 0)
@@ -128,7 +128,7 @@ void SecondaryHUDArea::SetHUDColors()
 
             // create new font
 //            m_mainFont = CreateFont(14, 0, 0, 0, 400, 0, 0, 0, 0, 0, 0, antialiasFlag, 0, "Arial");
-            m_mainFont = oapiCreateFont(14, true, "Arial");
+            m_mainFont = oapiCreateFont(14, true, "Arial", FONT_NORMAL, antialiasFlag);
         }
     }
 }
