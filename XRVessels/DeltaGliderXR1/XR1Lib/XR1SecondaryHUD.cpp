@@ -167,7 +167,7 @@ bool SecondaryHUDArea::DrawHUD(const int event, const int topY, oapi::Sketchpad 
     }
 
     // set the background mode
-    skp->SetBackgroundMode(((GetBackgroundColor() == CWHITE) ? oapi::Sketchpad::BkgMode::BK_TRANSPARENT : oapi::Sketchpad::BkgMode::BK_OPAQUE));
+    //skp->SetBackgroundMode(((GetBackgroundColor() == CWHITE) ? oapi::Sketchpad::BkgMode::BK_TRANSPARENT : oapi::Sketchpad::BkgMode::BK_OPAQUE));
 
     // render each cell on the HUD
     // NOTE: must render from the BOTTOM-UP so that the descenders render on each row
