@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 class DeltaGliderXR1;
 
 // # of rows on the secondary HUD
